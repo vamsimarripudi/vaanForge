@@ -434,6 +434,30 @@ enum OperationsCommandAction {
   disable_agent
 }
 
+enum DeveloperAppStatus {
+  active
+  disabled
+}
+
+enum ApiKeyStatus {
+  active
+  revoked
+  rotated
+}
+
+enum PluginStatus {
+  draft
+  review
+  published
+  disabled
+}
+
+enum WebhookEndpointStatus {
+  active
+  paused
+  failed
+}
+
 model User {
   id             String        @id @default(cuid())
   email          String        @unique
@@ -589,6 +613,15 @@ model Organization {
   operationsBusinessMetrics OperationsBusinessMetric[]
   maintenanceWindows MaintenanceWindow[]
   emergencyActions EmergencyAction[]
+  developerAccounts DeveloperAccount[]
+  developerApps DeveloperApp[]
+  apiKeys ApiKey[]
+  oauthClients OAuthClient[]
+  sdkVersions SdkVersion[]
+  pluginRegistry PluginRegistryEntry[]
+  webhookEndpoints WebhookEndpoint[]
+  apiUsageLogs ApiUsageLog[]
+  apiRateLimits ApiRateLimit[]
   settings        OrganizationSettings?
   auditLogs     AuditLog[]
   dailyNotes    DailyNote[]
@@ -2912,6 +2945,221 @@ model EmergencyAction {
   @@map("emergency_actions")
   @@index([organizationId, action])
   @@index([organizationId, createdAt])
+}
+
+model DeveloperAccount {
+  id              String       @id @default(cuid())
+  developerId     String       @unique
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  userId          String
+  displayName     String
+  status          String
+  ownerId         String
+  priority        String
+  dueDate         DateTime
+  nextAction      String
+  activityHistory Json
+  apps            DeveloperApp[]
+  apiKeys         ApiKey[]
+  oauthClients    OAuthClient[]
+  plugins         PluginRegistryEntry[]
+  webhooks        WebhookEndpoint[]
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@map("developer_accounts")
+  @@unique([organizationId, userId])
+  @@index([organizationId, status])
+}
+
+model DeveloperApp {
+  id             String             @id @default(cuid())
+  appId          String             @unique
+  developerId    String
+  developer      DeveloperAccount   @relation(fields: [developerId], references: [developerId], onDelete: Cascade)
+  organizationId String
+  organization   Organization       @relation(fields: [organizationId], references: [id])
+  name           String
+  description    String
+  status         DeveloperAppStatus
+  redirectUris   String[]
+  scopes         String[]
+  ownerId        String
+  priority       String
+  dueDate        DateTime
+  nextAction     String
+  activityHistory Json
+  apiKeys        ApiKey[]
+  oauthClients   OAuthClient[]
+  webhooks       WebhookEndpoint[]
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  @@map("developer_apps")
+  @@index([organizationId, developerId])
+  @@index([organizationId, status])
+}
+
+model ApiKey {
+  id               String            @id @default(cuid())
+  keyId            String            @unique
+  developerId      String
+  developer        DeveloperAccount  @relation(fields: [developerId], references: [developerId], onDelete: Cascade)
+  appId            String?
+  app              DeveloperApp?     @relation(fields: [appId], references: [appId])
+  organizationId   String
+  organization     Organization      @relation(fields: [organizationId], references: [id])
+  name             String
+  keyHash          String
+  prefix           String
+  scopes           String[]
+  status           ApiKeyStatus
+  lastUsedAt       DateTime?
+  expiresAt        DateTime?
+  rotatedFromKeyId String?
+  ipAllowlist      String[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@map("api_keys")
+  @@index([organizationId, developerId])
+  @@index([organizationId, status])
+  @@index([prefix])
+}
+
+model OAuthClient {
+  id               String            @id @default(cuid())
+  clientId         String            @unique
+  appId            String
+  app              DeveloperApp      @relation(fields: [appId], references: [appId], onDelete: Cascade)
+  developerId      String
+  developer        DeveloperAccount  @relation(fields: [developerId], references: [developerId], onDelete: Cascade)
+  organizationId   String
+  organization     Organization      @relation(fields: [organizationId], references: [id])
+  clientSecretHash String
+  redirectUris     String[]
+  scopes           String[]
+  grantTypes       String[]
+  status           DeveloperAppStatus
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@map("oauth_clients")
+  @@index([organizationId, appId])
+}
+
+model SdkVersion {
+  id                String       @id @default(cuid())
+  sdkId             String       @unique
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id])
+  language          String
+  packageName       String
+  version           String
+  apiSpecVersion    String
+  downloadUrl       String
+  checksum          String
+  status            String
+  generatedFromSpec String
+  createdAt         DateTime     @default(now())
+
+  @@map("sdk_versions")
+  @@index([organizationId, language])
+  @@unique([organizationId, language, version])
+}
+
+model PluginRegistryEntry {
+  id              String            @id @default(cuid())
+  pluginId        String            @unique
+  organizationId  String
+  organization    Organization      @relation(fields: [organizationId], references: [id])
+  developerId     String
+  developer       DeveloperAccount  @relation(fields: [developerId], references: [developerId], onDelete: Cascade)
+  name            String
+  pluginType      String
+  version         String
+  manifest        Json
+  permissions     String[]
+  status          PluginStatus
+  reviewNotes     String?
+  ownerId         String
+  priority        String
+  dueDate         DateTime
+  nextAction      String
+  activityHistory Json
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@map("plugin_registry")
+  @@index([organizationId, pluginType])
+  @@index([organizationId, status])
+}
+
+model WebhookEndpoint {
+  id                String                @id @default(cuid())
+  webhookId         String                @unique
+  developerId       String
+  developer         DeveloperAccount      @relation(fields: [developerId], references: [developerId], onDelete: Cascade)
+  appId             String?
+  app               DeveloperApp?         @relation(fields: [appId], references: [appId])
+  organizationId    String
+  organization      Organization          @relation(fields: [organizationId], references: [id])
+  url               String
+  events            String[]
+  signingSecretHash String
+  status            WebhookEndpointStatus
+  retryPolicy       Json
+  lastDeliveryAt    DateTime?
+  failureCount      Int
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  @@map("webhook_endpoints")
+  @@index([organizationId, developerId])
+  @@index([organizationId, status])
+}
+
+model ApiUsageLog {
+  id                   String       @id @default(cuid())
+  usageId              String       @unique
+  organizationId       String
+  organization         Organization @relation(fields: [organizationId], references: [id])
+  developerId          String?
+  appId                String?
+  keyId                String?
+  apiVersion           String
+  method               String
+  path                 String
+  statusCode           Int
+  latencyMs            Int
+  requestId            String
+  responseStandardized Boolean
+  createdAt            DateTime     @default(now())
+
+  @@map("api_usage_logs")
+  @@index([organizationId, developerId])
+  @@index([organizationId, apiVersion])
+  @@index([organizationId, createdAt])
+}
+
+model ApiRateLimit {
+  id             String       @id @default(cuid())
+  limitId        String       @unique
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  developerId    String?
+  keyId          String?
+  windowKey      String
+  limit          Int
+  used           Int
+  resetAt        DateTime
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("api_rate_limits")
+  @@unique([organizationId, windowKey])
+  @@index([organizationId, keyId])
 }
 
 model OrganizationSettings {

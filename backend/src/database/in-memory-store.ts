@@ -1685,6 +1685,164 @@ export interface StoredEmergencyAction {
   createdAt: string;
 }
 
+export type StoredDeveloperAppStatus = "active" | "disabled";
+export type StoredApiKeyStatus = "active" | "revoked" | "rotated";
+export type StoredPluginStatus = "draft" | "review" | "published" | "disabled";
+export type StoredWebhookStatus = "active" | "paused" | "failed";
+
+export interface StoredDeveloperAccount {
+  id: string;
+  developerId: string;
+  organizationId: string;
+  userId: string;
+  displayName: string;
+  status: "active" | "suspended";
+  ownerId: string;
+  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  dueDate: string;
+  nextAction: string;
+  activityHistory: Array<Record<string, unknown>>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredDeveloperApp {
+  id: string;
+  appId: string;
+  developerId: string;
+  organizationId: string;
+  name: string;
+  description: string;
+  status: StoredDeveloperAppStatus;
+  redirectUris: string[];
+  scopes: string[];
+  ownerId: string;
+  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  dueDate: string;
+  nextAction: string;
+  activityHistory: Array<Record<string, unknown>>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredApiKey {
+  id: string;
+  keyId: string;
+  developerId: string;
+  appId?: string;
+  organizationId: string;
+  name: string;
+  keyHash: string;
+  prefix: string;
+  scopes: string[];
+  status: StoredApiKeyStatus;
+  lastUsedAt?: string;
+  expiresAt?: string;
+  rotatedFromKeyId?: string;
+  ipAllowlist: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredOAuthClient {
+  id: string;
+  clientId: string;
+  appId: string;
+  developerId: string;
+  organizationId: string;
+  clientSecretHash: string;
+  redirectUris: string[];
+  scopes: string[];
+  grantTypes: string[];
+  status: StoredDeveloperAppStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredSdkVersion {
+  id: string;
+  sdkId: string;
+  organizationId: string;
+  language: "typescript" | "flutter" | "kotlin" | "swift" | "python" | "java" | "go";
+  packageName: string;
+  version: string;
+  apiSpecVersion: string;
+  downloadUrl: string;
+  checksum: string;
+  status: "current" | "deprecated";
+  generatedFromSpec: string;
+  createdAt: string;
+}
+
+export interface StoredPluginRegistryEntry {
+  id: string;
+  pluginId: string;
+  organizationId: string;
+  developerId: string;
+  name: string;
+  pluginType: "agent" | "workflow" | "template" | "validation" | "deployment" | "event_hook";
+  version: string;
+  manifest: Record<string, unknown>;
+  permissions: string[];
+  status: StoredPluginStatus;
+  reviewNotes?: string;
+  ownerId: string;
+  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  dueDate: string;
+  nextAction: string;
+  activityHistory: Array<Record<string, unknown>>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredWebhookEndpoint {
+  id: string;
+  webhookId: string;
+  developerId: string;
+  appId?: string;
+  organizationId: string;
+  url: string;
+  events: string[];
+  signingSecretHash: string;
+  status: StoredWebhookStatus;
+  retryPolicy: Record<string, unknown>;
+  lastDeliveryAt?: string;
+  failureCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredApiUsageLog {
+  id: string;
+  usageId: string;
+  organizationId: string;
+  developerId?: string;
+  appId?: string;
+  keyId?: string;
+  apiVersion: string;
+  method: string;
+  path: string;
+  statusCode: number;
+  latencyMs: number;
+  requestId: string;
+  responseStandardized: boolean;
+  createdAt: string;
+}
+
+export interface StoredApiRateLimit {
+  id: string;
+  limitId: string;
+  organizationId: string;
+  developerId?: string;
+  keyId?: string;
+  windowKey: string;
+  limit: number;
+  used: number;
+  resetAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface StoredSettings {
   organizationId: string;
   themeMode: "light" | "dark" | "system";
@@ -1813,6 +1971,15 @@ export interface StoreState {
   operationsBusinessMetrics: StoredOperationsBusinessMetric[];
   maintenanceWindows: StoredMaintenanceWindow[];
   emergencyActions: StoredEmergencyAction[];
+  developerAccounts: StoredDeveloperAccount[];
+  developerApps: StoredDeveloperApp[];
+  apiKeys: StoredApiKey[];
+  oauthClients: StoredOAuthClient[];
+  sdkVersions: StoredSdkVersion[];
+  pluginRegistry: StoredPluginRegistryEntry[];
+  webhookEndpoints: StoredWebhookEndpoint[];
+  apiUsageLogs: StoredApiUsageLog[];
+  apiRateLimits: StoredApiRateLimit[];
   settings: StoredSettings[];
 }
 
@@ -1934,6 +2101,15 @@ export const store: StoreState = {
   operationsBusinessMetrics: [],
   maintenanceWindows: [],
   emergencyActions: [],
+  developerAccounts: [],
+  developerApps: [],
+  apiKeys: [],
+  oauthClients: [],
+  sdkVersions: [],
+  pluginRegistry: [],
+  webhookEndpoints: [],
+  apiUsageLogs: [],
+  apiRateLimits: [],
   settings: []
 };
 

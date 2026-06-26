@@ -11,6 +11,7 @@ const navItems = [
   { href: "/billing", label: "Billing" },
   { href: "/account", label: "Account" },
   { href: "/builder", label: "Builder" },
+  { href: "/developers", label: "Developers" },
   { href: "/admin", label: "Admin" },
   { href: "/admin/agent", label: "Agent" },
   { href: "/admin/operations", label: "Ops Center" },

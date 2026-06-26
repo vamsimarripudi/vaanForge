@@ -21,7 +21,8 @@
     "launch:readiness": "npm run readiness:check --workspace backend",
     "db:migrate:deploy": "npm run prisma:migrate:deploy --workspace backend",
     "seed:demo": "npm run seed:demo --workspace backend",
-    "phase:status": "node scripts/phase-status.js"
+    "phase:status": "node scripts/phase-status.js",
+    "kdp": "node scripts/kdp-cli.js"
   },
   "engines": {
     "node": ">=20.0.0"

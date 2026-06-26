@@ -27,6 +27,7 @@ The product is built for the VMNexus ecosystem and supports VFormix, VMetron, Va
 - **Customer Builder Portal** - lets customers create projects, approve blueprints, track progress, review outputs, and request changes.
 - **Billing + Credits** - manages plans, subscriptions, usage limits, credit wallets, invoices, and Razorpay webhooks.
 - **Enterprise Operations Center** - monitors system health, agent fleet, products, incidents, audit logs, analytics, queues, deployments, and emergency controls.
+- **KRAVIA Developer Platform** - gives external developers versioned APIs, API keys, OAuth-ready apps, SDK metadata, webhooks, plugins, CLI access, and usage analytics.
 
 ## Repository Layout
 
@@ -54,6 +55,7 @@ The two deployable app folders are `frontend/` and `backend/`. Keep the root wor
 - `/admin/agent/memory`
 - `/admin/agent/billing`
 - `/admin/operations`
+- `/developers`
 
 ### Builder
 
@@ -80,6 +82,8 @@ The backend is mounted under `/api/v1`. Key API groups include:
 - `/api/v1/vaanforge/*`
 - `/api/v1/admin/agent/*`
 - `/api/v1/admin/operations/*`
+- `/api/v1/developers/*`
+- `/api/v1/gateway/v1/*`
 - `/api/v1/admin/vformix/*`
 - `/api/v1/builder/*`
 - `/api/v1/builder/billing/*`
