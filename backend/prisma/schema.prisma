@@ -406,6 +406,34 @@ enum CustomerCreditTransactionType {
   adjustment
 }
 
+enum OperationsIncidentSeverity {
+  SEV1
+  SEV2
+  SEV3
+  SEV4
+}
+
+enum OperationsIncidentStatus {
+  open
+  investigating
+  mitigated
+  resolved
+  postmortem
+}
+
+enum OperationsCommandAction {
+  pause_deployments
+  pause_agent_generation
+  emergency_stop
+  resume_services
+  maintenance_mode
+  scheduled_maintenance
+  restart_agent
+  drain_agent
+  enable_agent
+  disable_agent
+}
+
 model User {
   id             String        @id @default(cuid())
   email          String        @unique
@@ -553,6 +581,14 @@ model Organization {
   dataExportRequests DataExportRequest[]
   dataDeleteRequests DataDeleteRequest[]
   launchReadinessChecks LaunchReadinessCheck[]
+  operationsIncidents OperationsIncident[]
+  operationsAuditLogs OperationsAuditLog[]
+  operationsHealthChecks OperationsHealthCheck[]
+  operationsAgentMetrics OperationsAgentMetric[]
+  operationsProductMetrics OperationsProductMetric[]
+  operationsBusinessMetrics OperationsBusinessMetric[]
+  maintenanceWindows MaintenanceWindow[]
+  emergencyActions EmergencyAction[]
   settings        OrganizationSettings?
   auditLogs     AuditLog[]
   dailyNotes    DailyNote[]
@@ -2707,6 +2743,175 @@ model LaunchReadinessCheck {
 
   @@map("launch_readiness_checks")
   @@index([organizationId, category])
+}
+
+model OperationsIncident {
+  id               String                   @id @default(cuid())
+  incidentId       String                   @unique
+  organizationId   String
+  organization     Organization             @relation(fields: [organizationId], references: [id])
+  title            String
+  description      String
+  severity         OperationsIncidentSeverity
+  status           OperationsIncidentStatus
+  ownerId          String
+  priority         String
+  dueDate          DateTime
+  impactedProducts String[]
+  timeline         Json
+  rootCause        String?
+  resolution       String?
+  postmortem       String?
+  nextAction       String
+  activityHistory  Json
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+
+  @@map("operations_incidents")
+  @@index([organizationId, status])
+  @@index([organizationId, severity])
+}
+
+model OperationsAuditLog {
+  id             String                   @id @default(cuid())
+  auditId        String                   @unique
+  organizationId String
+  organization   Organization             @relation(fields: [organizationId], references: [id])
+  actorId        String
+  action         String
+  entityType     String
+  entityId       String?
+  command        OperationsCommandAction?
+  message        String
+  metadata       Json?
+  createdAt      DateTime                 @default(now())
+
+  @@map("operations_audit_logs")
+  @@index([organizationId, actorId])
+  @@index([organizationId, action])
+  @@index([organizationId, createdAt])
+}
+
+model OperationsHealthCheck {
+  id             String       @id @default(cuid())
+  checkId        String       @unique
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  service        String
+  region         String
+  status         String
+  latencyMs      Int?
+  evidence       Json
+  createdAt      DateTime     @default(now())
+
+  @@map("operations_health_checks")
+  @@index([organizationId, service])
+  @@index([organizationId, createdAt])
+}
+
+model OperationsAgentMetric {
+  id             String       @id @default(cuid())
+  metricId       String       @unique
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  agentId        String
+  agentName      String
+  version        String
+  status         String
+  health         String
+  activeRuns     Int
+  queuedTasks    Int
+  errorRate      Float
+  workloadScore  Int
+  region         String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("operations_agent_metrics")
+  @@index([organizationId, agentId])
+  @@index([organizationId, health])
+}
+
+model OperationsProductMetric {
+  id               String       @id @default(cuid())
+  metricId         String       @unique
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  product          String
+  activeUsers      Int
+  activeWorkspaces Int
+  apiHealth        String
+  queueHealth      String
+  errorRate        Float
+  buildStatus      String
+  deploymentStatus String
+  region           String
+  createdAt        DateTime     @default(now())
+
+  @@map("operations_product_metrics")
+  @@index([organizationId, product])
+  @@index([organizationId, createdAt])
+}
+
+model OperationsBusinessMetric {
+  id                String       @id @default(cuid())
+  metricId          String       @unique
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id])
+  revenue           Int
+  subscriptions     Int
+  usageEvents       Int
+  creditConsumption Int
+  aiUsage           Int
+  customerGrowth    Int
+  productAdoption   Json
+  churn             Int
+  mrr               Int
+  arr               Int
+  createdAt         DateTime     @default(now())
+
+  @@map("operations_business_metrics")
+  @@index([organizationId, createdAt])
+}
+
+model MaintenanceWindow {
+  id               String       @id @default(cuid())
+  windowId         String       @unique
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  title            String
+  ownerId          String
+  status           String
+  startsAt         DateTime
+  endsAt           DateTime
+  affectedServices String[]
+  priority         String
+  dueDate          DateTime
+  nextAction       String
+  activityHistory  Json
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@map("maintenance_windows")
+  @@index([organizationId, status])
+}
+
+model EmergencyAction {
+  id             String                  @id @default(cuid())
+  actionId       String                  @unique
+  organizationId String
+  organization   Organization            @relation(fields: [organizationId], references: [id])
+  actorId        String
+  action         OperationsCommandAction
+  reason         String
+  confirmed      Boolean
+  status         String
+  evidence       Json
+  createdAt      DateTime                @default(now())
+
+  @@map("emergency_actions")
+  @@index([organizationId, action])
+  @@index([organizationId, createdAt])
 }
 
 model OrganizationSettings {

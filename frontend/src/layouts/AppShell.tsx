@@ -13,6 +13,7 @@ const navItems = [
   { href: "/builder", label: "Builder" },
   { href: "/admin", label: "Admin" },
   { href: "/admin/agent", label: "Agent" },
+  { href: "/admin/operations", label: "Ops Center" },
   { href: "/founder/dashboard", label: "Founder" },
   { href: "/finance", label: "Finance" },
   { href: "/planning", label: "Planning" },

@@ -31,6 +31,7 @@ import { builderRouter } from "./modules/builder/builder.routes";
 import { settingsRouter } from "./modules/settings/settings.routes";
 import { securityRouter } from "./modules/security/security.routes";
 import { systemRouter } from "./modules/system/system.routes";
+import { operationsRouter } from "./modules/operations/operations.routes";
 import {
   candidatesAliasRouter,
   cashFlowAliasRouter,
@@ -93,6 +94,7 @@ apiRouter.use("/builder", builderRouter);
 apiRouter.use("/settings", settingsRouter);
 apiRouter.use("/security", securityRouter);
 apiRouter.use("/system", systemRouter);
+apiRouter.use("/admin/operations", operationsRouter);
 
 apiRouter.use("/organizations", organizationsAliasRouter);
 apiRouter.use("/users", usersAliasRouter);

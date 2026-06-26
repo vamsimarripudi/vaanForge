@@ -1541,6 +1541,150 @@ export interface StoredLaunchReadinessCheck {
   createdAt: string;
 }
 
+export type StoredOperationsIncidentSeverity = "SEV1" | "SEV2" | "SEV3" | "SEV4";
+export type StoredOperationsIncidentStatus = "open" | "investigating" | "mitigated" | "resolved" | "postmortem";
+export type StoredOperationsCommandAction =
+  | "pause_deployments"
+  | "pause_agent_generation"
+  | "emergency_stop"
+  | "resume_services"
+  | "maintenance_mode"
+  | "scheduled_maintenance"
+  | "restart_agent"
+  | "drain_agent"
+  | "enable_agent"
+  | "disable_agent";
+
+export interface StoredOperationsIncident {
+  id: string;
+  incidentId: string;
+  organizationId: string;
+  title: string;
+  description: string;
+  severity: StoredOperationsIncidentSeverity;
+  status: StoredOperationsIncidentStatus;
+  ownerId: string;
+  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  dueDate: string;
+  impactedProducts: string[];
+  timeline: Array<Record<string, unknown>>;
+  rootCause?: string;
+  resolution?: string;
+  postmortem?: string;
+  nextAction: string;
+  activityHistory: Array<Record<string, unknown>>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredOperationsAuditLog {
+  id: string;
+  auditId: string;
+  organizationId: string;
+  actorId: string;
+  action: string;
+  entityType: string;
+  entityId?: string;
+  command?: StoredOperationsCommandAction;
+  message: string;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface StoredOperationsHealthCheck {
+  id: string;
+  checkId: string;
+  organizationId: string;
+  service: string;
+  region: string;
+  status: "healthy" | "degraded" | "down";
+  latencyMs?: number;
+  evidence: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface StoredOperationsAgentMetric {
+  id: string;
+  metricId: string;
+  organizationId: string;
+  agentId: string;
+  agentName: string;
+  version: string;
+  status: "enabled" | "disabled" | "draining" | "restarting";
+  health: "healthy" | "degraded" | "down";
+  activeRuns: number;
+  queuedTasks: number;
+  errorRate: number;
+  workloadScore: number;
+  region: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredOperationsProductMetric {
+  id: string;
+  metricId: string;
+  organizationId: string;
+  product: "VidyaLuma" | "VMetron" | "VaanMeet" | "VFormix" | "VaanForge AI" | "Future KRAVIA";
+  activeUsers: number;
+  activeWorkspaces: number;
+  apiHealth: "healthy" | "degraded" | "down";
+  queueHealth: "healthy" | "degraded" | "down";
+  errorRate: number;
+  buildStatus: string;
+  deploymentStatus: string;
+  region: string;
+  createdAt: string;
+}
+
+export interface StoredOperationsBusinessMetric {
+  id: string;
+  metricId: string;
+  organizationId: string;
+  revenue: number;
+  subscriptions: number;
+  usageEvents: number;
+  creditConsumption: number;
+  aiUsage: number;
+  customerGrowth: number;
+  productAdoption: Record<string, number>;
+  churn: number;
+  mrr: number;
+  arr: number;
+  createdAt: string;
+}
+
+export interface StoredMaintenanceWindow {
+  id: string;
+  windowId: string;
+  organizationId: string;
+  title: string;
+  ownerId: string;
+  status: "scheduled" | "active" | "completed" | "cancelled";
+  startsAt: string;
+  endsAt: string;
+  affectedServices: string[];
+  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  dueDate: string;
+  nextAction: string;
+  activityHistory: Array<Record<string, unknown>>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredEmergencyAction {
+  id: string;
+  actionId: string;
+  organizationId: string;
+  actorId: string;
+  action: StoredOperationsCommandAction;
+  reason: string;
+  confirmed: boolean;
+  status: "accepted" | "rejected" | "completed";
+  evidence: Record<string, unknown>;
+  createdAt: string;
+}
+
 export interface StoredSettings {
   organizationId: string;
   themeMode: "light" | "dark" | "system";
@@ -1661,6 +1805,14 @@ export interface StoreState {
   dataExportRequests: StoredDataExportRequest[];
   dataDeleteRequests: StoredDataDeleteRequest[];
   launchReadinessChecks: StoredLaunchReadinessCheck[];
+  operationsIncidents: StoredOperationsIncident[];
+  operationsAuditLogs: StoredOperationsAuditLog[];
+  operationsHealthChecks: StoredOperationsHealthCheck[];
+  operationsAgentMetrics: StoredOperationsAgentMetric[];
+  operationsProductMetrics: StoredOperationsProductMetric[];
+  operationsBusinessMetrics: StoredOperationsBusinessMetric[];
+  maintenanceWindows: StoredMaintenanceWindow[];
+  emergencyActions: StoredEmergencyAction[];
   settings: StoredSettings[];
 }
 
@@ -1774,6 +1926,14 @@ export const store: StoreState = {
   dataExportRequests: [],
   dataDeleteRequests: [],
   launchReadinessChecks: [],
+  operationsIncidents: [],
+  operationsAuditLogs: [],
+  operationsHealthChecks: [],
+  operationsAgentMetrics: [],
+  operationsProductMetrics: [],
+  operationsBusinessMetrics: [],
+  maintenanceWindows: [],
+  emergencyActions: [],
   settings: []
 };
 
