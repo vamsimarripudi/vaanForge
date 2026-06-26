@@ -1,0 +1,2738 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SuiteType {
+  EDUCATION_SUITE
+  VMETRON_SUITE
+}
+
+enum ProductType {
+  VIDYALUMA
+  VAANMEET
+  VFORMIX
+  VMETRON
+  SUPPORT
+  CUSTOMER_PORTAL
+  CLIENT_PORTAL
+  BILLING
+  REPORTS
+  COMMUNICATION
+  PROMOTIONS
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+}
+
+enum VaanForgeRunStatus {
+  pending
+  analyzing
+  planned
+  failed
+  completed
+}
+
+enum VaanForgeOutputType {
+  product_requirement_document
+  architecture_plan
+  folder_structure
+  database_plan
+  api_plan
+  ui_screen_list
+  sprint_roadmap
+  codex_implementation_prompt
+}
+
+enum AgentExecutionStatus {
+  pending
+  preparing
+  generating
+  validating
+  repairing
+  completed
+  blocked
+  failed
+}
+
+enum AgentTaskStatus {
+  pending
+  preparing
+  generating
+  validating
+  repairing
+  completed
+  blocked
+  failed
+}
+
+enum AgentFileStatus {
+  planned
+  written
+  skipped
+  blocked
+}
+
+enum AgentValidationStatus {
+  passed
+  failed
+  skipped
+}
+
+enum AgentErrorStatus {
+  open
+  repaired
+  blocked
+}
+
+enum AgentRepairStatus {
+  attempted
+  succeeded
+  failed
+}
+
+enum AgentTemplateStatus {
+  draft
+  pending_review
+  published
+  unpublished
+  archived
+}
+
+enum AgentTemplateReleaseStatus {
+  draft
+  approved
+  rejected
+  released
+  rolled_back
+}
+
+enum AgentTemplateQualityStatus {
+  passed
+  failed
+  pending
+}
+
+enum VFormixAgentStatus {
+  pending
+  mapping
+  validating
+  template_matched
+  blueprint_generated
+  approval_required
+  coding_started
+  completed
+  failed
+  blocked
+}
+
+enum VFormixAgentConfigStatus {
+  draft
+  active
+  paused
+}
+
+enum VFormixAgentTriggerType {
+  submission
+  manual
+  approval
+  template_selection
+}
+
+enum VFormixAgentWebhookStatus {
+  accepted
+  rejected
+  failed
+}
+
+enum AgentLiveSessionStatus {
+  open
+  closed
+}
+
+enum AgentWorkspaceControlStatus {
+  accepted
+  rejected
+}
+
+enum AgentStepApprovalDecision {
+  approved
+  rejected
+}
+
+enum AgentTeamStatus {
+  created
+  assigned
+  in_progress
+  review_required
+  approved
+  handed_off
+  completed
+  blocked
+  failed
+}
+
+enum AgentRoleStatus {
+  active
+  inactive
+}
+
+enum AgentConflictStatus {
+  open
+  resolved
+}
+
+enum AgentReviewDecision {
+  approved
+  rejected
+  changes_requested
+}
+
+enum AgentFinalReviewDecision {
+  approved
+  rejected
+}
+
+enum AgentDeploymentStatus {
+  draft
+  preparing
+  ready
+  deploying
+  verifying
+  live
+  failed
+  rollback_required
+  rolled_back
+}
+
+enum AgentDeploymentTargetType {
+  AWS_EC2
+  S3_CLOUDFRONT
+  DOCKER_SERVER
+  VERCEL
+  VMNEXUS_CLOUD
+}
+
+enum AgentDeploymentCheckStatus {
+  passed
+  failed
+  blocked
+}
+
+enum AgentDeploymentLogLevel {
+  info
+  warning
+  error
+}
+
+enum AgentDeploymentEnvironment {
+  staging
+  production
+}
+
+enum AgentReleaseMigrationStatus {
+  pending
+  applied
+  failed
+}
+
+enum AgentReleaseBuildStatus {
+  pending
+  passed
+  failed
+}
+
+enum AgentRollbackStatus {
+  requested
+  completed
+  failed
+}
+
+enum AgentDeploymentHealthStatus {
+  healthy
+  unhealthy
+}
+
+enum AgentMemoryStatus {
+  pending_review
+  approved
+  rejected
+  archived
+}
+
+enum AgentMemoryTrust {
+  trusted
+  untrusted
+}
+
+enum AgentMemoryType {
+  project
+  user_preference
+  product
+  error_fix
+  template_usage
+  deployment
+  approval
+}
+
+enum AgentMemorySourceType {
+  project
+  error
+  fix
+  template
+  deployment
+  approval
+  manual
+}
+
+enum AgentKnowledgeType {
+  project_pattern
+  architecture
+  common_error
+  verified_fix
+  deployment_lesson
+  security_rule
+  design_rule
+}
+
+enum BuilderProjectStatus {
+  draft
+  requirements_submitted
+  blueprint_ready
+  blueprint_approved
+  blueprint_rejected
+  coding_started
+  change_requested
+  delivered
+  blocked
+  failed
+}
+
+enum BuilderRequirementStatus {
+  submitted
+  accepted
+  blocked
+}
+
+enum BuilderBlueprintStatus {
+  generated
+  approved
+  rejected
+  superseded
+}
+
+enum BuilderOutputStatus {
+  pending
+  in_progress
+  ready
+  failed
+}
+
+enum BuilderChangeRequestStatus {
+  requested
+  accepted
+  in_progress
+  completed
+  rejected
+}
+
+enum BuilderBillingPlanTier {
+  free_trial
+  starter
+  pro
+  business
+  enterprise
+  custom
+}
+
+enum BuilderBillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+enum CustomerSubscriptionStatus {
+  trialing
+  active
+  past_due
+  cancelled
+  expired
+}
+
+enum CustomerInvoiceStatus {
+  draft
+  issued
+  paid
+  failed
+  void
+}
+
+enum CustomerPaymentStatus {
+  created
+  paid
+  failed
+  refunded
+}
+
+enum CustomerUsageMetric {
+  agent_run
+  template_use
+  build_minute
+  ai_credit
+  storage_mb
+  deployment
+  team_member
+  regeneration
+}
+
+enum CustomerUsageEventStatus {
+  accepted
+  rejected
+  refunded
+}
+
+enum CustomerCreditTransactionType {
+  grant
+  deduct
+  refund
+  topup
+  adjustment
+}
+
+model User {
+  id             String        @id @default(cuid())
+  email          String        @unique
+  name           String
+  passwordHash   String
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  role           String        @default("Founder")
+  passwordResetTokens PasswordResetToken[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model PasswordResetToken {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Organization {
+  id            String                     @id @default(cuid())
+  name          String
+  suiteType     SuiteType
+  users         User[]
+  roles         Role[]
+  workspaces    Workspace[]
+  subscription  OrganizationSubscription?
+  subscriptions Subscription[]
+  entitlements  ProductEntitlement[]
+  usageRecords  UsageRecord[]
+  notifications Notification[]
+  revenues      Revenue[]
+  expenses      Expense[]
+  payments      Payment[]
+  invoices      Invoice[]
+  reportExports ReportExport[]
+  projects      Project[]
+  tasks         Task[]
+  clients       Client[]
+  deals         Deal[]
+  leads         Lead[]
+  customers     Customer[]
+  supportTickets SupportTicket[]
+  departments    Department[]
+  employees      Employee[]
+  candidates     Candidate[]
+  interviews     Interview[]
+  offers         Offer[]
+  approvals      Approval[]
+  agreements     Agreement[]
+  complianceItems ComplianceItem[]
+  governmentRegistrations GovernmentRegistration[]
+  documents      Document[]
+  creatorProfiles CreatorProfile[]
+  campaigns       Campaign[]
+  partners        Partner[]
+  announcements   Announcement[]
+  communications  Communication[]
+  automationRules AutomationRule[]
+  intelligenceSnapshots IntelligenceSnapshot[]
+  vaanForgeRuns VaanForgeAgentRun[]
+  vaanForgeOutputs VaanForgeOutput[]
+  vaanForgeAuditLogs VaanForgeAuditLog[]
+  agentExecutionRuns AgentExecutionRun[]
+  agentTasks AgentTask[]
+  agentFiles AgentFile[]
+  agentValidationRuns AgentValidationRun[]
+  agentErrors AgentError[]
+  agentRepairAttempts AgentRepairAttempt[]
+  agentCommits AgentCommit[]
+  agentActivityLogs AgentActivityLog[]
+  agentTemplates AgentTemplate[]
+  agentTemplateVersions AgentTemplateVersion[]
+  agentTemplateInputs AgentTemplateInput[]
+  agentTemplateFiles AgentTemplateFile[]
+  agentTemplateQualityChecks AgentTemplateQualityCheck[]
+  agentTemplateUsageLogs AgentTemplateUsageLog[]
+  agentTemplateReviews AgentTemplateReview[]
+  vformixAgentConfigs VFormixAgentConfig[]
+  vformixAgentFieldMappings VFormixAgentFieldMapping[]
+  vformixAgentTriggers VFormixAgentTrigger[]
+  vformixAgentSubmissionLinks VFormixAgentSubmissionLink[]
+  vformixAgentMappingErrors VFormixAgentMappingError[]
+  vformixAgentWebhookLogs VFormixAgentWebhookLog[]
+  agentLiveSessions AgentLiveSession[]
+  agentLiveEvents AgentLiveEvent[]
+  agentWorkspaceInstructions AgentWorkspaceInstruction[]
+  agentWorkspaceControls AgentWorkspaceControl[]
+  agentWorkspaceEvidence AgentWorkspaceEvidence[]
+  agentStepApprovals AgentStepApproval[]
+  agentRoles AgentRole[]
+  agentRoleConfigs AgentRoleConfig[]
+  agentAssignments AgentAssignment[]
+  agentHandoffs AgentHandoff[]
+  agentComments AgentComment[]
+  agentConflicts AgentConflict[]
+  agentDecisionLogs AgentDecisionLog[]
+  agentReviews AgentReview[]
+  agentFinalReviews AgentFinalReview[]
+  agentDeployments AgentDeployment[]
+  agentDeploymentTargets AgentDeploymentTarget[]
+  agentDeploymentChecks AgentDeploymentCheck[]
+  agentDeploymentLogs AgentDeploymentLog[]
+  agentDeploymentReleases AgentDeploymentRelease[]
+  agentDeploymentRollbacks AgentDeploymentRollback[]
+  agentDeploymentHealthChecks AgentDeploymentHealthCheck[]
+  agentMemoryEntries AgentMemoryEntry[]
+  agentMemorySources AgentMemorySource[]
+  agentMemoryReviews AgentMemoryReview[]
+  agentKnowledgeEntries AgentKnowledgeEntry[]
+  agentKnowledgeTags AgentKnowledgeTag[]
+  agentKnowledgeRetrievalLogs AgentKnowledgeRetrievalLog[]
+  agentErrorFixPatterns AgentErrorFixPattern[]
+  agentArchitecturePatterns AgentArchitecturePattern[]
+  builderProjects BuilderProject[]
+  builderProjectRequirements BuilderProjectRequirement[]
+  builderProjectBlueprints BuilderProjectBlueprint[]
+  builderProjectOutputs BuilderProjectOutput[]
+  builderProjectChangeRequests BuilderProjectChangeRequest[]
+  builderProjectActivityLogs BuilderProjectActivityLog[]
+  billingPlans BuilderBillingPlan[]
+  customerSubscriptions CustomerSubscription[]
+  customerInvoices CustomerInvoice[]
+  customerPayments CustomerPayment[]
+  customerUsageLimits CustomerUsageLimit[]
+  customerUsageEvents CustomerUsageEvent[]
+  customerCreditWallets CustomerCreditWallet[]
+  customerCreditTransactions CustomerCreditTransaction[]
+  razorpayWebhookEvents RazorpayWebhookEvent[]
+  launchWorkspaces LaunchWorkspace[]
+  workspaceMembers WorkspaceMember[]
+  workspaceInvites WorkspaceInvite[]
+  workspaceRoles WorkspaceRole[]
+  workspaceAuditLogs WorkspaceAuditLog[]
+  securityEvents SecurityEvent[]
+  reliabilityChecks ReliabilityCheck[]
+  complianceRecords ComplianceRecord[]
+  dataExportRequests DataExportRequest[]
+  dataDeleteRequests DataDeleteRequest[]
+  launchReadinessChecks LaunchReadinessCheck[]
+  settings        OrganizationSettings?
+  auditLogs     AuditLog[]
+  dailyNotes    DailyNote[]
+  createdAt     DateTime                   @default(now())
+  updatedAt     DateTime                   @updatedAt
+}
+
+model Workspace {
+  id              String       @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  suiteType       SuiteType
+  name            String
+  enabledProducts ProductType[]
+  status          String       @default("ACTIVE")
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+}
+
+model Product {
+  id          String      @id @default(cuid())
+  productType ProductType @unique
+  name        String
+  description String?
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Role {
+  id                String        @id @default(cuid())
+  organizationId    String?
+  organization      Organization? @relation(fields: [organizationId], references: [id])
+  name              String
+  dashboardView     String?
+  allowedModules    Json?
+  restrictedActions Json?
+  permissions       Permission[]
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@unique([organizationId, name])
+}
+
+model Permission {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  description String?
+  roles       Role[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Plan {
+  id               String      @id
+  suiteType        SuiteType
+  name             String
+  monthlyPrice     Int?
+  yearlyPrice      Int?
+  currency         String      @default("INR")
+  includedProducts ProductType[]
+  limits           Json
+  features         Json
+  isActive         Boolean     @default(true)
+}
+
+model OrganizationSubscription {
+  id             String             @id @default(cuid())
+  organizationId String             @unique
+  organization   Organization       @relation(fields: [organizationId], references: [id])
+  suiteType      SuiteType
+  planId         String
+  status         SubscriptionStatus
+  startedAt      DateTime           @default(now())
+  renewalDate    DateTime?
+  trialEndsAt    DateTime?
+}
+
+model Subscription {
+  id             String             @id @default(cuid())
+  organizationId String
+  organization   Organization       @relation(fields: [organizationId], references: [id])
+  planId         String
+  status         SubscriptionStatus
+  startedAt      DateTime           @default(now())
+  renewalDate    DateTime?
+  trialEndsAt    DateTime?
+  cancelledAt    DateTime?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+}
+
+model Payment {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  invoiceId      String?
+  invoice        Invoice?     @relation(fields: [invoiceId], references: [id])
+  provider       String
+  providerRef    String?
+  amount         Decimal
+  currency       String       @default("INR")
+  status         String
+  paidAt         DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Invoice {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  customerId     String?
+  customer       Customer?    @relation(fields: [customerId], references: [id])
+  clientId       String?
+  client         Client?      @relation(fields: [clientId], references: [id])
+  number         String
+  amount         Decimal
+  currency       String       @default("INR")
+  status         String
+  dueDate        DateTime?
+  paidAt         DateTime?
+  payments       Payment[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([organizationId, number])
+}
+
+model ProductEntitlement {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  productType    ProductType
+  enabled        Boolean      @default(false)
+  limits         Json
+  usage          Json
+
+  @@unique([organizationId, productType])
+}
+
+model UsageRecord {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  productType    ProductType
+  featureKey     String
+  usedCount      Int
+  limitCount     Int?
+  periodStart    DateTime
+  periodEnd      DateTime
+}
+
+model AuditLog {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  actorId        String
+  action         String
+  entityType     String
+  entityId       String?
+  metadata       Json?
+  createdAt      DateTime     @default(now())
+}
+
+model Notification {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  userId         String?
+  title          String
+  message        String
+  read           Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+}
+
+model Revenue {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  source         String
+  amount         Decimal
+  receivedAt     DateTime
+  product        String?
+  createdAt      DateTime     @default(now())
+}
+
+model Expense {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  category       String
+  amount         Decimal
+  spentAt        DateTime
+  vendor         String?
+  createdAt      DateTime     @default(now())
+}
+
+model GSTRecord {
+  id             String   @id @default(cuid())
+  organizationId String
+  revenueTotal   Decimal
+  expenseTotal   Decimal
+  gstPayable     Decimal
+  formula        String
+  periodStart    DateTime
+  periodEnd      DateTime
+  createdAt      DateTime @default(now())
+}
+
+model CashFlowRecord {
+  id             String   @id @default(cuid())
+  organizationId String
+  cashIn         Decimal
+  cashOut        Decimal
+  netCashFlow    Decimal
+  periodStart    DateTime
+  periodEnd      DateTime
+  createdAt      DateTime @default(now())
+}
+
+model PnLReport {
+  id                  String   @id @default(cuid())
+  organizationId      String
+  revenueTotal        Decimal
+  expenseTotal        Decimal
+  grossProfit         Decimal
+  profitMarginPercent Decimal
+  periodStart         DateTime
+  periodEnd           DateTime
+  createdAt           DateTime @default(now())
+}
+
+model ReportExport {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  reportType     String
+  format         String
+  status         String
+  fileName       String?
+  mimeType       String?
+  content        String?
+  storageProvider String?
+  storageKey      String?
+  storageUrl      String?
+  createdAt      DateTime     @default(now())
+}
+
+model Project {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  name           String
+  description    String?
+  clientId       String?
+  client         Client?      @relation(fields: [clientId], references: [id])
+  ownerId        String?
+  dueDate        DateTime?
+  tasks          Task[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Task {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  projectId      String?
+  project        Project?     @relation(fields: [projectId], references: [id])
+  title          String
+  description    String?
+  ownerId        String?
+  dueDate        DateTime?
+  priority       String
+  status         String
+  comments       Json?
+  attachments    Json?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Lead {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  name           String
+  company        String?
+  email          String?
+  phone          String?
+  source         String?
+  stage          String
+  expectedValue  Decimal?
+  deals          Deal[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Client {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  name           String
+  company        String?
+  email          String?
+  status         String
+  projects       Project[]
+  deals          Deal[]
+  invoices       Invoice[]
+  documents      Document[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Deal {
+  id              String       @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  clientId        String?
+  client          Client?      @relation(fields: [clientId], references: [id])
+  leadId          String?
+  lead            Lead?        @relation(fields: [leadId], references: [id])
+  title           String
+  stage           String
+  value           Decimal?
+  expectedCloseAt DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+}
+
+model Customer {
+  id             String          @id @default(cuid())
+  organizationId String
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  name           String
+  email          String?
+  activePlan     String?
+  renewalDate    DateTime?
+  invoices       Invoice[]
+  supportTickets SupportTicket[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model SupportTicket {
+  id             String          @id @default(cuid())
+  organizationId String
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  customerId     String?
+  customer       Customer?       @relation(fields: [customerId], references: [id])
+  subject        String
+  priority       String
+  status         String
+  messages       TicketMessage[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model TicketMessage {
+  id        String        @id @default(cuid())
+  ticketId  String
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id])
+  authorId  String?
+  message   String
+  internal  Boolean       @default(false)
+  createdAt DateTime      @default(now())
+}
+
+model Department {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  name           String
+  leadId         String?
+  employees      Employee[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Employee {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  departmentId   String?
+  department     Department?  @relation(fields: [departmentId], references: [id])
+  name           String
+  email          String
+  role           String
+  status         String
+  joinedAt       DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Candidate {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  name           String
+  email          String?
+  roleApplied    String
+  stage          String
+  source         String?
+  interviews     Interview[]
+  offers         Offer[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Interview {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  candidateId    String
+  candidate      Candidate    @relation(fields: [candidateId], references: [id])
+  round          String
+  scheduledAt    DateTime
+  interviewerId  String?
+  status         String
+  vaanMeetLink   String?
+  score          Int?
+  feedback       String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Approval {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  entityType     String
+  entityId       String?
+  title          String
+  status         String
+  requestedById  String?
+  approvedById   String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Offer {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  candidateId    String
+  candidate      Candidate    @relation(fields: [candidateId], references: [id])
+  title          String
+  status         String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Agreement {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  type           String
+  title          String
+  partyName      String?
+  status         String
+  expiresAt      DateTime?
+  disclaimer     String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model ComplianceItem {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  title          String
+  category       String
+  dueDate        DateTime
+  status         String
+  ownerId        String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model GovernmentRegistration {
+  id              String       @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  type            String
+  title           String
+  status          String
+  referenceNumber String?
+  dueDate         DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+}
+
+model Document {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  clientId       String?
+  client         Client?      @relation(fields: [clientId], references: [id])
+  title          String
+  folder         String?
+  tags           Json?
+  version        Int          @default(1)
+  expiresAt      DateTime?
+  storageKey     String?
+  mimeType       String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model CreatorProfile {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  name           String
+  niche          String?
+  payoutStatus   String?
+  campaigns      Campaign[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Campaign {
+  id             String          @id @default(cuid())
+  organizationId String
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  creatorId      String?
+  creator        CreatorProfile? @relation(fields: [creatorId], references: [id])
+  title          String
+  status         String
+  budget         Decimal?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model Partner {
+  id                  String       @id @default(cuid())
+  organizationId      String
+  organization        Organization @relation(fields: [organizationId], references: [id])
+  name                String
+  status              String
+  revenueSharePercent Decimal?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+}
+
+model Announcement {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  title          String
+  message        String
+  audience       String?
+  status         String       @default("DRAFT")
+  publishedAt    DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Communication {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  channel        String
+  title          String
+  message        String
+  audience       String?
+  createdAt      DateTime     @default(now())
+}
+
+model AutomationRule {
+  id               String       @id @default(cuid())
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  name             String
+  trigger          String
+  action           String
+  status           String
+  approvalRequired Boolean      @default(true)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+}
+
+model IntelligenceSnapshot {
+  id                String       @id @default(cuid())
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id])
+  reportExplanation String
+  riskSignals       Json
+  nextTasks         Json
+  disclaimer        String
+  placeholders      Int
+  createdAt         DateTime     @default(now())
+}
+
+model VaanForgeAgentRun {
+  id                String             @id @default(cuid())
+  runId             String             @unique
+  organizationId    String
+  organization      Organization       @relation(fields: [organizationId], references: [id])
+  ownerId           String
+  requestedById     String
+  source            String
+  status            VaanForgeRunStatus @default(pending)
+  priority          String
+  dueDate           DateTime
+  inputRequirements Json
+  errorMessage      String?
+  nextAction        String
+  activityHistory   Json
+  jobId             String?
+  provider          String?
+  outputs           VaanForgeOutput[]
+  auditLogs         VaanForgeAuditLog[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@index([organizationId, createdAt])
+  @@index([organizationId, status])
+  @@index([organizationId, ownerId])
+}
+
+model VaanForgeOutput {
+  id             String              @id @default(cuid())
+  runId          String
+  run            VaanForgeAgentRun   @relation(fields: [runId], references: [runId], onDelete: Cascade)
+  organizationId String
+  organization   Organization        @relation(fields: [organizationId], references: [id])
+  outputType     VaanForgeOutputType
+  title          String
+  format         String
+  content        String
+  metadata       Json?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  @@unique([runId, outputType])
+  @@index([organizationId, runId])
+}
+
+model VaanForgeAuditLog {
+  id             String             @id @default(cuid())
+  runId          String
+  run            VaanForgeAgentRun  @relation(fields: [runId], references: [runId], onDelete: Cascade)
+  organizationId String
+  organization   Organization       @relation(fields: [organizationId], references: [id])
+  actorId        String
+  step           String
+  status         VaanForgeRunStatus
+  message        String
+  metadata       Json?
+  createdAt      DateTime           @default(now())
+
+  @@index([organizationId, runId])
+  @@index([runId, createdAt])
+}
+
+model AgentExecutionRun {
+  id                String               @id @default(cuid())
+  executionId       String               @unique
+  phaseOneRunId     String
+  organizationId    String
+  organization      Organization         @relation(fields: [organizationId], references: [id])
+  ownerId           String
+  requestedById     String
+  status            AgentExecutionStatus @default(pending)
+  priority          String
+  dueDate           DateTime
+  approvedBlueprint Json
+  taskGraph         Json
+  validationSummary Json?
+  executionReport   Json?
+  errorMessage      String?
+  nextAction        String
+  activityHistory   Json
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  tasks             AgentTask[]
+  files             AgentFile[]
+  validationRuns    AgentValidationRun[]
+  errors            AgentError[]
+  repairAttempts    AgentRepairAttempt[]
+  commits           AgentCommit[]
+  activityLogs      AgentActivityLog[]
+
+  @@map("agent_execution_runs")
+  @@index([organizationId, createdAt])
+  @@index([organizationId, status])
+  @@index([organizationId, ownerId])
+}
+
+model AgentTask {
+  id             String          @id @default(cuid())
+  taskId         String          @unique
+  executionId    String
+  execution      AgentExecutionRun @relation(fields: [executionId], references: [executionId], onDelete: Cascade)
+  organizationId String
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  module         String
+  title          String
+  description    String
+  status         AgentTaskStatus @default(pending)
+  priority       String
+  ownerId        String
+  dueDate        DateTime
+  dependencies   Json
+  outputPaths    Json
+  nextAction     String
+  activityHistory Json
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@map("agent_tasks")
+  @@index([organizationId, executionId])
+  @@index([executionId, status])
+}
+
+model AgentFile {
+  id             String          @id @default(cuid())
+  fileId         String          @unique
+  executionId    String
+  execution      AgentExecutionRun @relation(fields: [executionId], references: [executionId], onDelete: Cascade)
+  taskId         String?
+  organizationId String
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  module         String
+  path           String
+  operation      String
+  status         AgentFileStatus @default(planned)
+  contentHash    String?
+  previousHash   String?
+  diffSummary    String?
+  humanReviewRequired Boolean    @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@map("agent_files")
+  @@unique([executionId, path])
+  @@index([organizationId, executionId])
+}
+
+model AgentValidationRun {
+  id             String                @id @default(cuid())
+  validationId   String                @unique
+  executionId    String
+  execution      AgentExecutionRun     @relation(fields: [executionId], references: [executionId], onDelete: Cascade)
+  organizationId String
+  organization   Organization          @relation(fields: [organizationId], references: [id])
+  checkName      String
+  command        String
+  status         AgentValidationStatus
+  exitCode       Int?
+  output         String
+  startedAt      DateTime
+  completedAt    DateTime
+
+  @@map("agent_validation_runs")
+  @@index([organizationId, executionId])
+}
+
+model AgentError {
+  id             String           @id @default(cuid())
+  errorId        String           @unique
+  executionId    String
+  execution      AgentExecutionRun @relation(fields: [executionId], references: [executionId], onDelete: Cascade)
+  organizationId String
+  organization   Organization     @relation(fields: [organizationId], references: [id])
+  validationId   String?
+  source         String
+  filePath       String?
+  line           Int?
+  reason         String
+  fixAttempt     String?
+  status         AgentErrorStatus @default(open)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@map("agent_errors")
+  @@index([organizationId, executionId])
+}
+
+model AgentRepairAttempt {
+  id             String             @id @default(cuid())
+  repairId       String             @unique
+  executionId    String
+  execution      AgentExecutionRun  @relation(fields: [executionId], references: [executionId], onDelete: Cascade)
+  organizationId String
+  organization   Organization      @relation(fields: [organizationId], references: [id])
+  errorId        String?
+  cycle          Int
+  strategy       String
+  status         AgentRepairStatus
+  notes          String
+  createdAt      DateTime           @default(now())
+
+  @@map("agent_repair_attempts")
+  @@index([organizationId, executionId])
+}
+
+model AgentCommit {
+  id             String          @id @default(cuid())
+  commitId       String          @unique
+  executionId    String
+  execution      AgentExecutionRun @relation(fields: [executionId], references: [executionId], onDelete: Cascade)
+  organizationId String
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  sha            String?
+  message        String
+  files          Json
+  status         String
+  createdAt      DateTime        @default(now())
+
+  @@map("agent_commits")
+  @@index([organizationId, executionId])
+}
+
+model AgentActivityLog {
+  id             String          @id @default(cuid())
+  activityId     String          @unique
+  executionId    String
+  execution      AgentExecutionRun @relation(fields: [executionId], references: [executionId], onDelete: Cascade)
+  organizationId String
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  actorId        String
+  step           String
+  status         AgentExecutionStatus
+  message        String
+  metadata       Json?
+  createdAt      DateTime        @default(now())
+
+  @@map("agent_activity_logs")
+  @@index([organizationId, executionId])
+  @@index([executionId, createdAt])
+}
+
+model AgentTemplate {
+  id              String              @id @default(cuid())
+  templateId      String              @unique
+  organizationId  String
+  organization    Organization        @relation(fields: [organizationId], references: [id])
+  name            String
+  slug            String
+  category        String
+  description     String
+  previewImage    String?
+  stack           Json
+  requiredInputs  Json
+  optionalInputs  Json
+  includedScreens Json
+  includedApis    Json
+  databaseModels  Json
+  designTokens    Json
+  securityRules   Json
+  validationRules Json
+  status          AgentTemplateStatus @default(draft)
+  version         String
+  createdBy       String
+  approvedBy      String?
+  ownerId         String
+  priority        String
+  dueDate         DateTime
+  nextAction      String
+  activityHistory Json
+  versions        AgentTemplateVersion[]
+  inputs          AgentTemplateInput[]
+  files           AgentTemplateFile[]
+  qualityChecks   AgentTemplateQualityCheck[]
+  usageLogs       AgentTemplateUsageLog[]
+  reviews         AgentTemplateReview[]
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@map("agent_templates")
+  @@unique([organizationId, slug])
+  @@index([organizationId, status])
+  @@index([organizationId, category])
+}
+
+model AgentTemplateVersion {
+  id             String                     @id @default(cuid())
+  versionId      String                     @unique
+  templateId     String
+  template       AgentTemplate              @relation(fields: [templateId], references: [templateId], onDelete: Cascade)
+  organizationId String
+  organization   Organization               @relation(fields: [organizationId], references: [id])
+  version        String
+  changelog      String
+  snapshot       Json
+  createdBy      String
+  approvedBy     String?
+  releaseStatus  AgentTemplateReleaseStatus @default(draft)
+  createdAt      DateTime                   @default(now())
+
+  @@map("agent_template_versions")
+  @@index([organizationId, templateId])
+}
+
+model AgentTemplateInput {
+  id             String        @id @default(cuid())
+  inputId        String        @unique
+  templateId     String
+  template       AgentTemplate @relation(fields: [templateId], references: [templateId], onDelete: Cascade)
+  organizationId String
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  key            String
+  label          String
+  inputType      String
+  required       Boolean       @default(true)
+  validation     Json?
+  createdAt      DateTime      @default(now())
+
+  @@map("agent_template_inputs")
+  @@unique([templateId, key])
+}
+
+model AgentTemplateFile {
+  id             String        @id @default(cuid())
+  fileId         String        @unique
+  templateId     String
+  template       AgentTemplate @relation(fields: [templateId], references: [templateId], onDelete: Cascade)
+  organizationId String
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  path           String
+  module         String
+  operation      String
+  content        String?
+  createdAt      DateTime      @default(now())
+
+  @@map("agent_template_files")
+  @@index([organizationId, templateId])
+}
+
+model AgentTemplateQualityCheck {
+  id             String                     @id @default(cuid())
+  checkId        String                     @unique
+  templateId     String
+  template       AgentTemplate              @relation(fields: [templateId], references: [templateId], onDelete: Cascade)
+  organizationId String
+  organization   Organization               @relation(fields: [organizationId], references: [id])
+  checkName      String
+  status         AgentTemplateQualityStatus
+  message        String
+  createdAt      DateTime                   @default(now())
+
+  @@map("agent_template_quality_checks")
+  @@index([organizationId, templateId])
+}
+
+model AgentTemplateUsageLog {
+  id             String        @id @default(cuid())
+  usageId        String        @unique
+  templateId     String
+  template       AgentTemplate @relation(fields: [templateId], references: [templateId], onDelete: Cascade)
+  organizationId String
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  actorId        String
+  runId          String?
+  inputValues    Json
+  status         String
+  createdAt      DateTime      @default(now())
+
+  @@map("agent_template_usage_logs")
+  @@index([organizationId, templateId])
+}
+
+model AgentTemplateReview {
+  id             String        @id @default(cuid())
+  reviewId       String        @unique
+  templateId     String
+  template       AgentTemplate @relation(fields: [templateId], references: [templateId], onDelete: Cascade)
+  organizationId String
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  reviewerId     String
+  decision       String
+  reason         String?
+  createdAt      DateTime      @default(now())
+
+  @@map("agent_template_reviews")
+  @@index([organizationId, templateId])
+}
+
+model VFormixAgentConfig {
+  id                String                    @id @default(cuid())
+  configId          String                    @unique
+  organizationId    String
+  organization      Organization              @relation(fields: [organizationId], references: [id])
+  formId            String
+  enabled           Boolean                   @default(false)
+  defaultTemplateId String?
+  ownerId           String
+  priority          String
+  dueDate           DateTime?
+  status            VFormixAgentConfigStatus  @default(draft)
+  nextAction        String
+  activityHistory   Json
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+
+  @@map("vformix_agent_configs")
+  @@unique([organizationId, formId])
+  @@index([organizationId, status])
+}
+
+model VFormixAgentFieldMapping {
+  id             String       @id @default(cuid())
+  mappingId      String       @unique
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  formId         String
+  formFieldKey   String
+  agentFieldPath String
+  required       Boolean      @default(false)
+  normalizer     String
+  fallbackValue  String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("vformix_agent_field_mappings")
+  @@index([organizationId, formId])
+  @@unique([organizationId, formId, formFieldKey, agentFieldPath])
+}
+
+model VFormixAgentTrigger {
+  id               String                  @id @default(cuid())
+  triggerId        String                  @unique
+  organizationId   String
+  organization     Organization            @relation(fields: [organizationId], references: [id])
+  formId           String
+  triggerType      VFormixAgentTriggerType
+  enabled          Boolean                 @default(false)
+  requiresApproval Boolean                 @default(true)
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+
+  @@map("vformix_agent_triggers")
+  @@index([organizationId, formId])
+  @@unique([organizationId, formId, triggerType])
+}
+
+model VFormixAgentSubmissionLink {
+  id                  String             @id @default(cuid())
+  linkId              String             @unique
+  organizationId      String
+  organization        Organization       @relation(fields: [organizationId], references: [id])
+  formId              String
+  submissionId        String
+  rawSubmission       Json
+  cleanedAgentInput   Json?
+  templateId          String?
+  templateMatchReason String?
+  runId               String?
+  executionId         String?
+  status              VFormixAgentStatus
+  errorMessage        String?
+  missingFields       String[]
+  ownerId             String
+  priority            String
+  dueDate             DateTime
+  nextAction          String
+  activityHistory     Json
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  @@map("vformix_agent_submission_links")
+  @@index([organizationId, formId])
+  @@index([organizationId, submissionId])
+}
+
+model VFormixAgentMappingError {
+  id             String       @id @default(cuid())
+  errorId        String       @unique
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  formId         String
+  submissionId   String
+  fieldKey       String
+  reason         String
+  nextAction     String
+  status         String
+  createdAt      DateTime     @default(now())
+
+  @@map("vformix_agent_mapping_errors")
+  @@index([organizationId, submissionId])
+}
+
+model VFormixAgentWebhookLog {
+  id             String                    @id @default(cuid())
+  webhookId      String                    @unique
+  organizationId String?
+  organization   Organization?             @relation(fields: [organizationId], references: [id])
+  formId         String?
+  submissionId   String?
+  eventType      String
+  status         VFormixAgentWebhookStatus
+  reason         String?
+  createdAt      DateTime                  @default(now())
+
+  @@map("vformix_agent_webhook_logs")
+  @@index([organizationId, formId])
+  @@index([submissionId])
+}
+
+model AgentLiveSession {
+  id             String                 @id @default(cuid())
+  sessionId      String                 @unique
+  runId          String
+  organizationId String
+  organization   Organization           @relation(fields: [organizationId], references: [id])
+  actorId        String
+  status         AgentLiveSessionStatus @default(open)
+  lastEventId    String?
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+
+  @@map("agent_live_sessions")
+  @@index([organizationId, runId])
+}
+
+model AgentLiveEvent {
+  id             String       @id @default(cuid())
+  eventId        String       @unique
+  runId          String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  eventType      String
+  payload        Json
+  createdAt      DateTime     @default(now())
+
+  @@map("agent_live_events")
+  @@index([organizationId, runId, createdAt])
+}
+
+model AgentWorkspaceInstruction {
+  id              String       @id @default(cuid())
+  instructionId   String       @unique
+  runId           String
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  actorId         String
+  instructionType String
+  content         String
+  applied         Boolean      @default(false)
+  createdAt       DateTime     @default(now())
+
+  @@map("agent_workspace_instructions")
+  @@index([organizationId, runId])
+}
+
+model AgentWorkspaceControl {
+  id             String                      @id @default(cuid())
+  controlId      String                      @unique
+  runId          String
+  organizationId String
+  organization   Organization                @relation(fields: [organizationId], references: [id])
+  actorId        String
+  action         String
+  reason         String?
+  status         AgentWorkspaceControlStatus @default(accepted)
+  createdAt      DateTime                    @default(now())
+
+  @@map("agent_workspace_controls")
+  @@index([organizationId, runId])
+}
+
+model AgentWorkspaceEvidence {
+  id             String       @id @default(cuid())
+  evidenceId     String       @unique
+  runId          String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  evidenceType   String
+  title          String
+  payload        Json
+  createdAt      DateTime     @default(now())
+
+  @@map("agent_workspace_evidence")
+  @@index([organizationId, runId])
+}
+
+model AgentStepApproval {
+  id             String                    @id @default(cuid())
+  approvalId     String                    @unique
+  runId          String
+  organizationId String
+  organization   Organization              @relation(fields: [organizationId], references: [id])
+  stepId         String
+  actorId        String
+  decision       AgentStepApprovalDecision
+  reason         String?
+  createdAt      DateTime                  @default(now())
+
+  @@map("agent_step_approvals")
+  @@index([organizationId, runId])
+}
+
+model AgentRole {
+  id               String            @id @default(cuid())
+  roleId           String            @unique
+  organizationId   String
+  organization     Organization      @relation(fields: [organizationId], references: [id])
+  name             String
+  slug             String
+  responsibilities String[]
+  requiredReview   Boolean           @default(false)
+  status           AgentRoleStatus   @default(active)
+  configs          AgentRoleConfig[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@map("agent_roles")
+  @@unique([organizationId, slug])
+  @@index([organizationId, status])
+}
+
+model AgentRoleConfig {
+  id             String       @id @default(cuid())
+  configId       String       @unique
+  roleId         String
+  role           AgentRole    @relation(fields: [roleId], references: [roleId], onDelete: Cascade)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  modelProvider  String
+  systemPrompt   String
+  tools          String[]
+  guardrails     String[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("agent_role_configs")
+  @@unique([organizationId, roleId])
+}
+
+model AgentAssignment {
+  id              String          @id @default(cuid())
+  assignmentId    String          @unique
+  runId           String
+  organizationId  String
+  organization    Organization    @relation(fields: [organizationId], references: [id])
+  roleId          String
+  ownerId         String
+  status          AgentTeamStatus
+  priority        String
+  dueDate         DateTime
+  scope           String
+  outputVersion   Int             @default(1)
+  output          Json?
+  nextAction      String
+  activityHistory Json
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@map("agent_assignments")
+  @@unique([organizationId, runId, roleId])
+  @@index([organizationId, runId])
+}
+
+model AgentHandoff {
+  id             String          @id @default(cuid())
+  handoffId      String          @unique
+  runId          String
+  organizationId String
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  fromRoleId     String
+  toRoleId       String
+  summary        String
+  evidence       Json
+  nextAction     String
+  status         AgentTeamStatus
+  createdAt      DateTime        @default(now())
+
+  @@map("agent_handoffs")
+  @@index([organizationId, runId])
+}
+
+model AgentComment {
+  id             String       @id @default(cuid())
+  commentId      String       @unique
+  runId          String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  roleId         String
+  authorId       String
+  message        String
+  visibility     String
+  createdAt      DateTime     @default(now())
+
+  @@map("agent_comments")
+  @@index([organizationId, runId])
+}
+
+model AgentConflict {
+  id              String              @id @default(cuid())
+  conflictId      String              @unique
+  runId           String
+  organizationId  String
+  organization    Organization        @relation(fields: [organizationId], references: [id])
+  raisedByRoleId  String
+  againstRoleId   String?
+  reason          String
+  resolution      String?
+  status          AgentConflictStatus
+  nextAction      String
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@map("agent_conflicts")
+  @@index([organizationId, runId])
+}
+
+model AgentDecisionLog {
+  id             String       @id @default(cuid())
+  decisionId     String       @unique
+  runId          String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  actorId        String
+  decision       String
+  rationale      String
+  createdAt      DateTime     @default(now())
+
+  @@map("agent_decision_logs")
+  @@index([organizationId, runId])
+}
+
+model AgentReview {
+  id             String              @id @default(cuid())
+  reviewId       String              @unique
+  runId          String
+  organizationId String
+  organization   Organization        @relation(fields: [organizationId], references: [id])
+  roleId         String
+  reviewerId     String
+  decision       AgentReviewDecision
+  findings       String[]
+  nextAction     String
+  createdAt      DateTime            @default(now())
+
+  @@map("agent_reviews")
+  @@index([organizationId, runId])
+}
+
+model AgentFinalReview {
+  id              String                   @id @default(cuid())
+  finalReviewId   String                   @unique
+  runId           String
+  organizationId  String
+  organization    Organization             @relation(fields: [organizationId], references: [id])
+  reviewerId      String
+  decision        AgentFinalReviewDecision
+  requiredReviews String[]
+  missingReviews  String[]
+  summary         String
+  nextAction      String
+  createdAt       DateTime                 @default(now())
+
+  @@map("agent_final_reviews")
+  @@index([organizationId, runId])
+}
+
+model AgentDeployment {
+  id                  String                     @id @default(cuid())
+  deploymentId        String                     @unique
+  runId               String
+  organizationId      String
+  organization        Organization               @relation(fields: [organizationId], references: [id])
+  ownerId             String
+  status              AgentDeploymentStatus
+  targetId            String
+  releaseId           String
+  environment         AgentDeploymentEnvironment
+  priority            String
+  dueDate             DateTime
+  confirmedProduction Boolean                    @default(false)
+  errorMessage        String?
+  nextAction          String
+  activityHistory     Json
+  createdAt           DateTime                   @default(now())
+  updatedAt           DateTime                   @updatedAt
+
+  @@map("agent_deployments")
+  @@index([organizationId, runId])
+  @@index([organizationId, status])
+}
+
+model AgentDeploymentTarget {
+  id              String                    @id @default(cuid())
+  targetId        String                    @unique
+  deploymentId    String
+  organizationId  String
+  organization    Organization              @relation(fields: [organizationId], references: [id])
+  targetType      AgentDeploymentTargetType
+  name            String
+  config          Json
+  requiredEnvVars String[]
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+
+  @@map("agent_deployment_targets")
+  @@index([organizationId, deploymentId])
+}
+
+model AgentDeploymentCheck {
+  id             String                       @id @default(cuid())
+  checkId        String                       @unique
+  deploymentId   String
+  organizationId String
+  organization   Organization                 @relation(fields: [organizationId], references: [id])
+  checkName      String
+  status         AgentDeploymentCheckStatus
+  reason         String?
+  evidence       Json
+  nextAction     String
+  createdAt      DateTime                     @default(now())
+
+  @@map("agent_deployment_checks")
+  @@index([organizationId, deploymentId])
+}
+
+model AgentDeploymentLog {
+  id             String                  @id @default(cuid())
+  logId          String                  @unique
+  deploymentId   String
+  organizationId String
+  organization   Organization            @relation(fields: [organizationId], references: [id])
+  level          AgentDeploymentLogLevel
+  message        String
+  evidence       Json?
+  createdAt      DateTime                @default(now())
+
+  @@map("agent_deployment_logs")
+  @@index([organizationId, deploymentId])
+}
+
+model AgentDeploymentRelease {
+  id               String                      @id @default(cuid())
+  releaseId        String                      @unique
+  deploymentId     String
+  organizationId   String
+  organization     Organization                @relation(fields: [organizationId], references: [id])
+  version          String
+  previousReleaseId String?
+  artifactVersion  String
+  migrationStatus  AgentReleaseMigrationStatus
+  buildStatus      AgentReleaseBuildStatus
+  rollbackMetadata Json
+  createdAt        DateTime                    @default(now())
+
+  @@map("agent_deployment_releases")
+  @@index([organizationId, deploymentId])
+}
+
+model AgentDeploymentRollback {
+  id             String              @id @default(cuid())
+  rollbackId     String              @unique
+  deploymentId   String
+  organizationId String
+  organization   Organization        @relation(fields: [organizationId], references: [id])
+  fromReleaseId  String
+  toReleaseId    String?
+  status         AgentRollbackStatus
+  reason         String
+  evidence       Json
+  createdAt      DateTime            @default(now())
+
+  @@map("agent_deployment_rollbacks")
+  @@index([organizationId, deploymentId])
+}
+
+model AgentDeploymentHealthCheck {
+  id             String                      @id @default(cuid())
+  healthCheckId  String                      @unique
+  deploymentId   String
+  organizationId String
+  organization   Organization                @relation(fields: [organizationId], references: [id])
+  url            String
+  status         AgentDeploymentHealthStatus
+  statusCode     Int?
+  responseTimeMs Int?
+  reason         String?
+  createdAt      DateTime                    @default(now())
+
+  @@map("agent_deployment_health_checks")
+  @@index([organizationId, deploymentId])
+}
+
+model AgentMemoryEntry {
+  id              String            @id @default(cuid())
+  memoryId        String            @unique
+  organizationId  String
+  organization    Organization      @relation(fields: [organizationId], references: [id])
+  title           String
+  memoryType      AgentMemoryType
+  content         String
+  summary         String
+  tags            String[]
+  confidenceScore Float
+  status          AgentMemoryStatus
+  trustLevel      AgentMemoryTrust
+  ownerId         String
+  priority        String
+  dueDate         DateTime
+  nextAction      String
+  activityHistory Json
+  retentionUntil  DateTime?
+  sources         AgentMemorySource[]
+  reviews         AgentMemoryReview[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@map("agent_memory_entries")
+  @@index([organizationId, status])
+  @@index([organizationId, memoryType])
+}
+
+model AgentMemorySource {
+  id             String                @id @default(cuid())
+  sourceId       String                @unique
+  memoryId       String
+  memory         AgentMemoryEntry       @relation(fields: [memoryId], references: [memoryId], onDelete: Cascade)
+  organizationId String
+  organization   Organization          @relation(fields: [organizationId], references: [id])
+  sourceType     AgentMemorySourceType
+  sourceRef      String
+  evidence       Json
+  createdAt      DateTime              @default(now())
+
+  @@map("agent_memory_sources")
+  @@index([organizationId, memoryId])
+}
+
+model AgentMemoryReview {
+  id             String           @id @default(cuid())
+  reviewId       String           @unique
+  memoryId       String
+  memory         AgentMemoryEntry  @relation(fields: [memoryId], references: [memoryId], onDelete: Cascade)
+  organizationId String
+  organization   Organization     @relation(fields: [organizationId], references: [id])
+  reviewerId     String
+  decision       AgentMemoryStatus
+  reason         String?
+  createdAt      DateTime         @default(now())
+
+  @@map("agent_memory_reviews")
+  @@index([organizationId, memoryId])
+}
+
+model AgentKnowledgeEntry {
+  id              String             @id @default(cuid())
+  entryId         String             @unique
+  organizationId  String
+  organization    Organization       @relation(fields: [organizationId], references: [id])
+  memoryId        String?
+  title           String
+  knowledgeType   AgentKnowledgeType
+  content         String
+  confidenceScore Float
+  trusted         Boolean            @default(false)
+  status          String
+  sourceRefs      String[]
+  tags            AgentKnowledgeTag[]
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@map("agent_knowledge_entries")
+  @@index([organizationId, status])
+  @@index([organizationId, knowledgeType])
+}
+
+model AgentKnowledgeTag {
+  id             String              @id @default(cuid())
+  tagId          String              @unique
+  entryId        String
+  entry          AgentKnowledgeEntry  @relation(fields: [entryId], references: [entryId], onDelete: Cascade)
+  organizationId String
+  organization   Organization        @relation(fields: [organizationId], references: [id])
+  tag            String
+  createdAt      DateTime            @default(now())
+
+  @@map("agent_knowledge_tags")
+  @@index([organizationId, tag])
+}
+
+model AgentKnowledgeRetrievalLog {
+  id               String       @id @default(cuid())
+  retrievalId      String       @unique
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  actorId          String
+  query            String
+  selectedEntryIds String[]
+  rationale        String
+  createdAt        DateTime     @default(now())
+
+  @@map("agent_knowledge_retrieval_logs")
+  @@index([organizationId, createdAt])
+}
+
+model AgentErrorFixPattern {
+  id              String       @id @default(cuid())
+  patternId       String       @unique
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  memoryId        String?
+  errorSignature  String
+  fixSummary      String
+  rejected        Boolean      @default(false)
+  confidenceScore Float
+  createdAt       DateTime     @default(now())
+
+  @@map("agent_error_fix_patterns")
+  @@index([organizationId, rejected])
+}
+
+model AgentArchitecturePattern {
+  id               String       @id @default(cuid())
+  patternId        String       @unique
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  memoryId         String?
+  architectureName String
+  applicability    String
+  securityNotes    String[]
+  confidenceScore  Float
+  createdAt        DateTime     @default(now())
+
+  @@map("agent_architecture_patterns")
+  @@index([organizationId])
+}
+
+model BuilderProject {
+  id              String               @id @default(cuid())
+  projectId       String               @unique
+  organizationId  String
+  organization    Organization         @relation(fields: [organizationId], references: [id])
+  customerId      String
+  ownerId         String
+  name            String
+  description     String
+  templateId      String?
+  agentRunId      String
+  executionId     String?
+  status          BuilderProjectStatus
+  priority        String
+  dueDate         DateTime
+  nextAction      String
+  activityHistory Json
+  requirements    BuilderProjectRequirement[]
+  blueprints      BuilderProjectBlueprint[]
+  outputs         BuilderProjectOutput[]
+  changeRequests  BuilderProjectChangeRequest[]
+  activityLogs    BuilderProjectActivityLog[]
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  @@map("builder_projects")
+  @@index([organizationId, customerId])
+  @@index([organizationId, status])
+  @@index([organizationId, agentRunId])
+}
+
+model BuilderProjectRequirement {
+  id              String                   @id @default(cuid())
+  requirementId   String                   @unique
+  projectId       String
+  project         BuilderProject           @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+  organizationId  String
+  organization    Organization             @relation(fields: [organizationId], references: [id])
+  customerId      String
+  rawInput        Json
+  normalizedInput Json
+  version         Int
+  status          BuilderRequirementStatus
+  missingFields   String[]
+  createdAt       DateTime                 @default(now())
+
+  @@map("builder_project_requirements")
+  @@unique([projectId, version])
+  @@index([organizationId, customerId])
+}
+
+model BuilderProjectBlueprint {
+  id              String                 @id @default(cuid())
+  blueprintId     String                 @unique
+  projectId       String
+  project         BuilderProject         @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+  organizationId  String
+  organization    Organization           @relation(fields: [organizationId], references: [id])
+  customerId      String
+  agentRunId      String
+  version         Int
+  status          BuilderBlueprintStatus
+  content         Json
+  rejectionReason String?
+  approvedAt      DateTime?
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+
+  @@map("builder_project_blueprints")
+  @@unique([projectId, version])
+  @@index([organizationId, customerId])
+  @@index([organizationId, agentRunId])
+}
+
+model BuilderProjectOutput {
+  id             String              @id @default(cuid())
+  outputId       String              @unique
+  projectId      String
+  project        BuilderProject      @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+  organizationId String
+  organization   Organization        @relation(fields: [organizationId], references: [id])
+  customerId     String
+  agentRunId     String
+  executionId    String?
+  outputType     String
+  title          String
+  content        String
+  status         BuilderOutputStatus
+  version        Int
+  deliveryDate   DateTime
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  @@map("builder_project_outputs")
+  @@index([organizationId, customerId])
+  @@index([projectId, version])
+}
+
+model BuilderProjectChangeRequest {
+  id              String                     @id @default(cuid())
+  changeRequestId String                     @unique
+  projectId       String
+  project         BuilderProject             @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+  organizationId  String
+  organization    Organization               @relation(fields: [organizationId], references: [id])
+  customerId      String
+  requestedById   String
+  summary         String
+  details         String
+  targetVersion   Int
+  status          BuilderChangeRequestStatus
+  agentTaskId     String?
+  nextAction      String
+  createdAt       DateTime                   @default(now())
+  updatedAt       DateTime                   @updatedAt
+
+  @@map("builder_project_change_requests")
+  @@index([organizationId, customerId])
+  @@index([projectId, status])
+}
+
+model BuilderProjectActivityLog {
+  id             String         @id @default(cuid())
+  activityId     String         @unique
+  projectId      String
+  project        BuilderProject @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+  organizationId String
+  organization   Organization   @relation(fields: [organizationId], references: [id])
+  actorId        String
+  action         String
+  status         String
+  message        String
+  metadata       Json?
+  createdAt      DateTime       @default(now())
+
+  @@map("builder_project_activity_logs")
+  @@index([organizationId, projectId])
+  @@index([organizationId, createdAt])
+}
+
+model BuilderBillingPlan {
+  id              String                 @id @default(cuid())
+  planId          String                 @unique
+  organizationId  String?
+  organization    Organization?          @relation(fields: [organizationId], references: [id])
+  tier            BuilderBillingPlanTier
+  name            String
+  description     String
+  monthlyPrice    Int
+  yearlyPrice     Int
+  currency        String                 @default("INR")
+  limits          Json
+  creditsIncluded Int
+  features        String[]
+  status          String
+  ownerId         String
+  priority        String
+  dueDate         DateTime
+  nextAction      String
+  activityHistory Json
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+
+  @@map("billing_plans")
+  @@index([organizationId, status])
+  @@index([tier])
+}
+
+model CustomerSubscription {
+  id                    String                     @id @default(cuid())
+  subscriptionId        String                     @unique
+  organizationId        String
+  organization          Organization               @relation(fields: [organizationId], references: [id])
+  customerId            String
+  planId                String
+  billingCycle          BuilderBillingCycle
+  status                CustomerSubscriptionStatus
+  razorpaySubscriptionId String?
+  currentPeriodStart    DateTime
+  currentPeriodEnd      DateTime
+  renewalDate           DateTime
+  cancelAtPeriodEnd     Boolean                    @default(false)
+  ownerId               String
+  priority              String
+  dueDate               DateTime
+  nextAction            String
+  activityHistory       Json
+  createdAt             DateTime                   @default(now())
+  updatedAt             DateTime                   @updatedAt
+
+  @@map("customer_subscriptions")
+  @@index([organizationId, customerId])
+  @@index([organizationId, status])
+}
+
+model CustomerInvoice {
+  id             String                @id @default(cuid())
+  invoiceId      String                @unique
+  organizationId String
+  organization   Organization          @relation(fields: [organizationId], references: [id])
+  customerId     String
+  subscriptionId String?
+  paymentId      String?
+  number         String
+  amount         Int
+  currency       String                @default("INR")
+  status         CustomerInvoiceStatus
+  dueDate        DateTime
+  paidAt         DateTime?
+  lineItems      Json
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  @@map("customer_invoices")
+  @@unique([organizationId, number])
+  @@index([organizationId, customerId])
+}
+
+model CustomerPayment {
+  id                String                @id @default(cuid())
+  paymentId         String                @unique
+  organizationId    String
+  organization      Organization          @relation(fields: [organizationId], references: [id])
+  customerId        String
+  subscriptionId    String?
+  invoiceId         String?
+  provider          String
+  providerPaymentId String?
+  providerOrderId   String?
+  amount            Int
+  currency          String                @default("INR")
+  status            CustomerPaymentStatus
+  failureReason     String?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  @@map("customer_payments")
+  @@index([organizationId, customerId])
+  @@index([providerPaymentId])
+}
+
+model CustomerUsageLimit {
+  id             String              @id @default(cuid())
+  limitId        String              @unique
+  organizationId String
+  organization   Organization        @relation(fields: [organizationId], references: [id])
+  customerId     String
+  planId         String
+  metric         CustomerUsageMetric
+  limitValue     Int
+  usedValue      Int
+  periodStart    DateTime
+  periodEnd      DateTime
+  adminOverride  Boolean             @default(false)
+  overrideReason String?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  @@map("customer_usage_limits")
+  @@unique([organizationId, customerId, metric])
+  @@index([organizationId, planId])
+}
+
+model CustomerUsageEvent {
+  id             String                   @id @default(cuid())
+  eventId        String                   @unique
+  organizationId String
+  organization   Organization             @relation(fields: [organizationId], references: [id])
+  customerId     String
+  subscriptionId String?
+  metric         CustomerUsageMetric
+  quantity       Int
+  source         String
+  sourceId       String?
+  status         CustomerUsageEventStatus
+  reason         String?
+  createdAt      DateTime                 @default(now())
+
+  @@map("customer_usage_events")
+  @@index([organizationId, customerId])
+  @@index([organizationId, metric])
+}
+
+model CustomerCreditWallet {
+  id             String                      @id @default(cuid())
+  walletId       String                      @unique
+  organizationId String
+  organization   Organization                @relation(fields: [organizationId], references: [id])
+  customerId     String
+  balance        Int
+  reserved       Int
+  lifetimeCredits Int
+  lifetimeDebits Int
+  transactions   CustomerCreditTransaction[]
+  createdAt      DateTime                    @default(now())
+  updatedAt      DateTime                    @updatedAt
+
+  @@map("customer_credit_wallets")
+  @@unique([organizationId, customerId])
+}
+
+model CustomerCreditTransaction {
+  id             String                        @id @default(cuid())
+  transactionId  String                        @unique
+  walletId       String
+  wallet         CustomerCreditWallet           @relation(fields: [walletId], references: [walletId], onDelete: Cascade)
+  organizationId String
+  organization   Organization                  @relation(fields: [organizationId], references: [id])
+  customerId     String
+  type           CustomerCreditTransactionType
+  amount         Int
+  balanceAfter   Int
+  source         String
+  sourceId       String?
+  reason         String
+  createdAt      DateTime                      @default(now())
+
+  @@map("customer_credit_transactions")
+  @@index([organizationId, customerId])
+}
+
+model RazorpayWebhookEvent {
+  id                String       @id @default(cuid())
+  webhookEventId    String       @unique
+  organizationId    String?
+  organization      Organization? @relation(fields: [organizationId], references: [id])
+  eventType         String
+  providerEventId   String       @unique
+  signatureVerified Boolean
+  processed         Boolean
+  payload           Json
+  createdAt         DateTime     @default(now())
+
+  @@map("razorpay_webhook_events")
+  @@index([organizationId, eventType])
+}
+
+model LaunchWorkspace {
+  id              String       @id @default(cuid())
+  workspaceId     String       @unique
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  name            String
+  domain          String?
+  ssoReady        Boolean
+  retentionDays   Int
+  ownerId         String
+  status          String
+  priority        String
+  dueDate         DateTime
+  nextAction      String
+  activityHistory Json
+  members         WorkspaceMember[]
+  invites         WorkspaceInvite[]
+  roles           WorkspaceRole[]
+  auditLogs       WorkspaceAuditLog[]
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@map("workspaces")
+  @@index([organizationId, status])
+}
+
+model WorkspaceRole {
+  id             String          @id @default(cuid())
+  roleId         String          @unique
+  workspaceId    String
+  workspace      LaunchWorkspace @relation(fields: [workspaceId], references: [workspaceId], onDelete: Cascade)
+  organizationId String
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  name           String
+  permissions    String[]
+  createdAt      DateTime        @default(now())
+
+  @@map("workspace_roles")
+  @@index([organizationId, workspaceId])
+}
+
+model WorkspaceMember {
+  id             String          @id @default(cuid())
+  memberId       String          @unique
+  workspaceId    String
+  workspace      LaunchWorkspace @relation(fields: [workspaceId], references: [workspaceId], onDelete: Cascade)
+  organizationId String
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  userId         String
+  email          String
+  roleId         String
+  status         String
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@map("workspace_members")
+  @@index([organizationId, workspaceId])
+}
+
+model WorkspaceInvite {
+  id             String          @id @default(cuid())
+  inviteId       String          @unique
+  workspaceId    String
+  workspace      LaunchWorkspace @relation(fields: [workspaceId], references: [workspaceId], onDelete: Cascade)
+  organizationId String
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  email          String
+  roleId         String
+  invitedById    String
+  status         String
+  expiresAt      DateTime
+  createdAt      DateTime        @default(now())
+
+  @@map("workspace_invites")
+  @@index([organizationId, workspaceId])
+}
+
+model WorkspaceAuditLog {
+  id             String          @id @default(cuid())
+  auditId        String          @unique
+  workspaceId    String
+  workspace      LaunchWorkspace @relation(fields: [workspaceId], references: [workspaceId], onDelete: Cascade)
+  organizationId String
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  actorId        String
+  action         String
+  message        String
+  metadata       Json?
+  createdAt      DateTime        @default(now())
+
+  @@map("workspace_audit_logs")
+  @@index([organizationId, workspaceId])
+}
+
+model SecurityEvent {
+  id             String       @id @default(cuid())
+  eventId        String       @unique
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  severity       String
+  category       String
+  message        String
+  evidence       Json
+  status         String
+  createdAt      DateTime     @default(now())
+
+  @@map("security_events")
+  @@index([organizationId, category])
+}
+
+model ReliabilityCheck {
+  id             String       @id @default(cuid())
+  checkId        String       @unique
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  checkName      String
+  status         String
+  evidence       Json
+  nextAction     String
+  createdAt      DateTime     @default(now())
+
+  @@map("reliability_checks")
+  @@index([organizationId, checkName])
+}
+
+model ComplianceRecord {
+  id             String       @id @default(cuid())
+  recordId       String       @unique
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  recordType     String
+  subjectId      String?
+  status         String
+  evidence       Json
+  createdAt      DateTime     @default(now())
+
+  @@map("compliance_records")
+  @@index([organizationId, recordType])
+}
+
+model DataExportRequest {
+  id              String       @id @default(cuid())
+  requestId       String       @unique
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  requestedById   String
+  status          String
+  exportScope     String[]
+  dueDate         DateTime
+  nextAction      String
+  activityHistory Json
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@map("data_export_requests")
+  @@index([organizationId, requestedById])
+}
+
+model DataDeleteRequest {
+  id              String       @id @default(cuid())
+  requestId       String       @unique
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  requestedById   String
+  status          String
+  reason          String
+  dueDate         DateTime
+  nextAction      String
+  activityHistory Json
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@map("data_delete_requests")
+  @@index([organizationId, requestedById])
+}
+
+model LaunchReadinessCheck {
+  id             String       @id @default(cuid())
+  checkId        String       @unique
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  category       String
+  status         String
+  evidence       Json
+  nextAction     String
+  createdAt      DateTime     @default(now())
+
+  @@map("launch_readiness_checks")
+  @@index([organizationId, category])
+}
+
+model OrganizationSettings {
+  id                String       @id @default(cuid())
+  organizationId    String       @unique
+  organization      Organization @relation(fields: [organizationId], references: [id])
+  themeMode         String       @default("system")
+  billingEmail      String?
+  notificationEmail Boolean      @default(true)
+  notificationSms   Boolean      @default(false)
+  apiKeysConfigured Boolean      @default(false)
+  updatedAt         DateTime     @updatedAt
+}
+
+model DailyNote {
+  id             String        @id @default(cuid())
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  noteDate       DateTime
+  planned        String
+  built          String
+  filesChanged   Json?
+  bugsFound      String?
+  decisionsMade  String?
+  pendingTasks   String?
+  nextDayPlan    String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}

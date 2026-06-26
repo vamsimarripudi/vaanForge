@@ -1,0 +1,1780 @@
+import type { CoreRole } from "@vmnexus/shared/roles";
+import type { BillingStatus, ProductEntitlement, SuiteType } from "@vmnexus/shared/types";
+import type { LeadStage, TicketPriority, TicketStatus, WorkPriority, WorkStatus } from "@vmnexus/shared/operations";
+import type { CandidateStage, EmployeeStatus, InterviewRound, InterviewStatus } from "@vmnexus/shared/hr";
+import type { AgreementType, ComplianceStatus, DocumentStatus, RegistrationType } from "@vmnexus/shared/legal";
+import type { AutomationAction, AutomationStatus, AutomationTrigger, CampaignStatus, MessageChannel, PartnerStatus } from "@vmnexus/shared/growth";
+
+export interface StoredUser {
+  id: string;
+  name: string;
+  email: string;
+  passwordHash: string;
+  role: CoreRole;
+  organizationId?: string;
+  createdAt: string;
+}
+
+export interface StoredPasswordResetToken {
+  id: string;
+  userId: string;
+  tokenHash: string;
+  expiresAt: string;
+  consumedAt?: string;
+  createdAt: string;
+}
+
+export interface StoredOrganization {
+  id: string;
+  name: string;
+  suiteType: SuiteType;
+  activePlan: string;
+  billingStatus: BillingStatus;
+  renewalDate?: string;
+  createdAt: string;
+}
+
+export interface StoredWorkspace {
+  id: string;
+  organizationId: string;
+  suiteType: SuiteType;
+  name: string;
+  enabledProducts: string[];
+  status: "ACTIVE" | "PAUSED";
+  createdAt: string;
+}
+
+export interface StoredNotification {
+  id: string;
+  organizationId: string;
+  userId?: string;
+  title: string;
+  message: string;
+  read: boolean;
+  createdAt: string;
+}
+
+export interface StoredRevenue {
+  id: string;
+  organizationId: string;
+  source: string;
+  amount: number;
+  receivedAt: string;
+  product?: string;
+  createdAt: string;
+}
+
+export interface StoredExpense {
+  id: string;
+  organizationId: string;
+  category: string;
+  amount: number;
+  spentAt: string;
+  vendor?: string;
+  createdAt: string;
+}
+
+export interface StoredReportExport {
+  id: string;
+  organizationId: string;
+  reportType: "PNL" | "GST" | "CASH_FLOW" | "SALES" | "HIRING" | "SUPPORT" | "COMPLIANCE" | "FOUNDER_MONTHLY" | "CA_EXPORT";
+  format: "PDF" | "EXCEL";
+  status: "QUEUED" | "READY" | "FAILED";
+  fileName: string;
+  mimeType: string;
+  content: string;
+  storageProvider?: string;
+  storageKey?: string;
+  storageUrl?: string;
+  createdAt: string;
+}
+
+export interface StoredProject {
+  id: string;
+  organizationId: string;
+  name: string;
+  description?: string;
+  ownerId?: string;
+  dueDate?: string;
+  createdAt: string;
+}
+
+export interface StoredTask {
+  id: string;
+  organizationId: string;
+  projectId?: string;
+  title: string;
+  description?: string;
+  ownerId?: string;
+  dueDate?: string;
+  priority: WorkPriority;
+  status: WorkStatus;
+  createdAt: string;
+}
+
+export interface StoredLead {
+  id: string;
+  organizationId: string;
+  name: string;
+  company?: string;
+  email?: string;
+  phone?: string;
+  source?: string;
+  stage: LeadStage;
+  expectedValue?: number;
+  createdAt: string;
+}
+
+export interface StoredCustomer {
+  id: string;
+  organizationId: string;
+  name: string;
+  email?: string;
+  activePlan?: string;
+  renewalDate?: string;
+  createdAt: string;
+}
+
+export interface StoredSupportTicket {
+  id: string;
+  organizationId: string;
+  customerId?: string;
+  subject: string;
+  priority: TicketPriority;
+  status: TicketStatus;
+  createdAt: string;
+}
+
+export interface StoredTicketMessage {
+  id: string;
+  ticketId: string;
+  authorId?: string;
+  message: string;
+  internal: boolean;
+  createdAt: string;
+}
+
+export interface StoredDepartment {
+  id: string;
+  organizationId: string;
+  name: string;
+  leadId?: string;
+  createdAt: string;
+}
+
+export interface StoredEmployee {
+  id: string;
+  organizationId: string;
+  departmentId?: string;
+  name: string;
+  email: string;
+  role: string;
+  status: EmployeeStatus;
+  joinedAt?: string;
+  createdAt: string;
+}
+
+export interface StoredCandidate {
+  id: string;
+  organizationId: string;
+  name: string;
+  email?: string;
+  roleApplied: string;
+  stage: CandidateStage;
+  source?: string;
+  createdAt: string;
+}
+
+export interface StoredInterview {
+  id: string;
+  organizationId: string;
+  candidateId: string;
+  round: InterviewRound;
+  scheduledAt: string;
+  interviewerId?: string;
+  status: InterviewStatus;
+  vaanMeetLink?: string;
+  score?: number;
+  feedback?: string;
+  createdAt: string;
+}
+
+export interface StoredOffer {
+  id: string;
+  organizationId: string;
+  candidateId: string;
+  title: string;
+  status: "DRAFT" | "SENT" | "ACCEPTED" | "DECLINED";
+  createdAt: string;
+}
+
+export interface StoredAgreement {
+  id: string;
+  organizationId: string;
+  type: AgreementType;
+  title: string;
+  partyName?: string;
+  status: DocumentStatus;
+  expiresAt?: string;
+  disclaimer: string;
+  createdAt: string;
+}
+
+export interface StoredComplianceItem {
+  id: string;
+  organizationId: string;
+  title: string;
+  category: string;
+  dueDate: string;
+  status: ComplianceStatus;
+  ownerId?: string;
+  createdAt: string;
+}
+
+export interface StoredGovernmentRegistration {
+  id: string;
+  organizationId: string;
+  type: RegistrationType;
+  title: string;
+  status: ComplianceStatus;
+  referenceNumber?: string;
+  dueDate?: string;
+  createdAt: string;
+}
+
+export interface StoredCreatorProfile {
+  id: string;
+  organizationId: string;
+  name: string;
+  niche?: string;
+  payoutStatus?: string;
+  createdAt: string;
+}
+
+export interface StoredCampaign {
+  id: string;
+  organizationId: string;
+  creatorId?: string;
+  title: string;
+  status: CampaignStatus;
+  budget?: number;
+  createdAt: string;
+}
+
+export interface StoredPartner {
+  id: string;
+  organizationId: string;
+  name: string;
+  status: PartnerStatus;
+  revenueSharePercent?: number;
+  createdAt: string;
+}
+
+export interface StoredCommunication {
+  id: string;
+  organizationId: string;
+  channel: MessageChannel;
+  title: string;
+  message: string;
+  audience?: string;
+  createdAt: string;
+}
+
+export interface StoredAutomationRule {
+  id: string;
+  organizationId: string;
+  name: string;
+  trigger: AutomationTrigger;
+  action: AutomationAction;
+  status: AutomationStatus;
+  approvalRequired: boolean;
+  createdAt: string;
+}
+
+export interface StoredIntelligenceSnapshot {
+  id: string;
+  organizationId: string;
+  reportExplanation: string;
+  riskSignals: string[];
+  nextTasks: string[];
+  disclaimer: string;
+  placeholders: number;
+  createdAt: string;
+}
+
+export type StoredVaanForgeRunStatus = "pending" | "analyzing" | "planned" | "failed" | "completed";
+export type StoredVaanForgeOutputType =
+  | "product_requirement_document"
+  | "architecture_plan"
+  | "folder_structure"
+  | "database_plan"
+  | "api_plan"
+  | "ui_screen_list"
+  | "sprint_roadmap"
+  | "codex_implementation_prompt";
+
+export interface StoredVaanForgeOutput {
+  id: string;
+  runId: string;
+  organizationId: string;
+  outputType: StoredVaanForgeOutputType;
+  title: string;
+  format: "markdown" | "json";
+  content: string;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredVaanForgeAuditLog {
+  id: string;
+  runId: string;
+  organizationId: string;
+  actorId: string;
+  step: string;
+  status: StoredVaanForgeRunStatus;
+  message: string;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface StoredVaanForgeAgentRun {
+  id: string;
+  runId: string;
+  organizationId: string;
+  ownerId: string;
+  requestedById: string;
+  source: string;
+  status: StoredVaanForgeRunStatus;
+  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  dueDate: string;
+  inputRequirements: Record<string, unknown>;
+  errorMessage?: string;
+  nextAction: string;
+  activityHistory: Array<Record<string, unknown>>;
+  jobId?: string;
+  provider?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type StoredAgentExecutionStatus = "pending" | "preparing" | "generating" | "validating" | "repairing" | "completed" | "blocked" | "failed";
+export type StoredAgentTaskStatus = "pending" | "preparing" | "generating" | "validating" | "repairing" | "completed" | "blocked" | "failed";
+export type StoredAgentFileStatus = "planned" | "written" | "skipped" | "blocked";
+export type StoredAgentValidationStatus = "passed" | "failed" | "skipped";
+export type StoredAgentErrorStatus = "open" | "repaired" | "blocked";
+export type StoredAgentRepairStatus = "attempted" | "succeeded" | "failed";
+
+export interface StoredAgentExecutionRun {
+  id: string;
+  executionId: string;
+  phaseOneRunId: string;
+  organizationId: string;
+  ownerId: string;
+  requestedById: string;
+  status: StoredAgentExecutionStatus;
+  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  dueDate: string;
+  approvedBlueprint: Record<string, unknown>;
+  taskGraph: Record<string, unknown>;
+  validationSummary?: Record<string, unknown>;
+  executionReport?: Record<string, unknown>;
+  errorMessage?: string;
+  nextAction: string;
+  activityHistory: Array<Record<string, unknown>>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredAgentTask {
+  id: string;
+  taskId: string;
+  executionId: string;
+  organizationId: string;
+  module: string;
+  title: string;
+  description: string;
+  status: StoredAgentTaskStatus;
+  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  ownerId: string;
+  dueDate: string;
+  dependencies: string[];
+  outputPaths: string[];
+  nextAction: string;
+  activityHistory: Array<Record<string, unknown>>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredAgentFile {
+  id: string;
+  fileId: string;
+  executionId: string;
+  taskId?: string;
+  organizationId: string;
+  module: string;
+  path: string;
+  operation: "create" | "update" | "skip";
+  status: StoredAgentFileStatus;
+  contentHash?: string;
+  previousHash?: string;
+  diffSummary?: string;
+  humanReviewRequired: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredAgentValidationRun {
+  id: string;
+  validationId: string;
+  executionId: string;
+  organizationId: string;
+  checkName: "lint" | "type-check" | "tests" | "build";
+  command: string;
+  status: StoredAgentValidationStatus;
+  exitCode?: number;
+  output: string;
+  startedAt: string;
+  completedAt: string;
+}
+
+export interface StoredAgentError {
+  id: string;
+  errorId: string;
+  executionId: string;
+  organizationId: string;
+  validationId?: string;
+  source: string;
+  filePath?: string;
+  line?: number;
+  reason: string;
+  fixAttempt?: string;
+  status: StoredAgentErrorStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredAgentRepairAttempt {
+  id: string;
+  repairId: string;
+  executionId: string;
+  organizationId: string;
+  errorId?: string;
+  cycle: number;
+  strategy: string;
+  status: StoredAgentRepairStatus;
+  notes: string;
+  createdAt: string;
+}
+
+export interface StoredAgentCommit {
+  id: string;
+  commitId: string;
+  executionId: string;
+  organizationId: string;
+  sha?: string;
+  message: string;
+  files: string[];
+  status: "created" | "skipped" | "failed";
+  createdAt: string;
+}
+
+export interface StoredAgentActivityLog {
+  id: string;
+  activityId: string;
+  executionId: string;
+  organizationId: string;
+  actorId: string;
+  step: string;
+  status: StoredAgentExecutionStatus;
+  message: string;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+}
+
+export type StoredAgentTemplateStatus = "draft" | "pending_review" | "published" | "unpublished" | "archived";
+export type StoredAgentTemplateReleaseStatus = "draft" | "approved" | "rejected" | "released" | "rolled_back";
+export type StoredAgentTemplateQualityStatus = "passed" | "failed" | "pending";
+
+export interface StoredAgentTemplate {
+  id: string;
+  templateId: string;
+  organizationId: string;
+  name: string;
+  slug: string;
+  category: string;
+  description: string;
+  previewImage?: string;
+  stack: string[];
+  requiredInputs: Array<Record<string, unknown>>;
+  optionalInputs: Array<Record<string, unknown>>;
+  includedScreens: string[];
+  includedApis: string[];
+  databaseModels: string[];
+  designTokens: string[];
+  securityRules: string[];
+  validationRules: string[];
+  status: StoredAgentTemplateStatus;
+  version: string;
+  createdBy: string;
+  approvedBy?: string;
+  ownerId: string;
+  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  dueDate: string;
+  nextAction: string;
+  activityHistory: Array<Record<string, unknown>>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredAgentTemplateVersion {
+  id: string;
+  versionId: string;
+  templateId: string;
+  organizationId: string;
+  version: string;
+  changelog: string;
+  snapshot: Record<string, unknown>;
+  createdBy: string;
+  approvedBy?: string;
+  releaseStatus: StoredAgentTemplateReleaseStatus;
+  createdAt: string;
+}
+
+export interface StoredAgentTemplateInput {
+  id: string;
+  inputId: string;
+  templateId: string;
+  organizationId: string;
+  key: string;
+  label: string;
+  inputType: string;
+  required: boolean;
+  validation?: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface StoredAgentTemplateFile {
+  id: string;
+  fileId: string;
+  templateId: string;
+  organizationId: string;
+  path: string;
+  module: string;
+  operation: string;
+  content?: string;
+  createdAt: string;
+}
+
+export interface StoredAgentTemplateQualityCheck {
+  id: string;
+  checkId: string;
+  templateId: string;
+  organizationId: string;
+  checkName: string;
+  status: StoredAgentTemplateQualityStatus;
+  message: string;
+  createdAt: string;
+}
+
+export interface StoredAgentTemplateUsageLog {
+  id: string;
+  usageId: string;
+  templateId: string;
+  organizationId: string;
+  actorId: string;
+  runId?: string;
+  inputValues: Record<string, unknown>;
+  status: string;
+  createdAt: string;
+}
+
+export interface StoredAgentTemplateReview {
+  id: string;
+  reviewId: string;
+  templateId: string;
+  organizationId: string;
+  reviewerId: string;
+  decision: string;
+  reason?: string;
+  createdAt: string;
+}
+
+export type StoredVFormixAgentStatus =
+  | "pending"
+  | "mapping"
+  | "validating"
+  | "template_matched"
+  | "blueprint_generated"
+  | "approval_required"
+  | "coding_started"
+  | "completed"
+  | "failed"
+  | "blocked";
+
+export interface StoredVFormixAgentConfig {
+  id: string;
+  configId: string;
+  organizationId: string;
+  formId: string;
+  enabled: boolean;
+  defaultTemplateId?: string;
+  ownerId: string;
+  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  dueDate?: string;
+  status: "draft" | "active" | "paused";
+  nextAction: string;
+  activityHistory: Array<Record<string, unknown>>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredVFormixAgentFieldMapping {
+  id: string;
+  mappingId: string;
+  organizationId: string;
+  formId: string;
+  formFieldKey: string;
+  agentFieldPath: string;
+  required: boolean;
+  normalizer: "text" | "slug" | "list" | "date" | "priority";
+  fallbackValue?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredVFormixAgentTrigger {
+  id: string;
+  triggerId: string;
+  organizationId: string;
+  formId: string;
+  triggerType: "submission" | "manual" | "approval" | "template_selection";
+  enabled: boolean;
+  requiresApproval: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredVFormixAgentSubmissionLink {
+  id: string;
+  linkId: string;
+  organizationId: string;
+  formId: string;
+  submissionId: string;
+  rawSubmission: Record<string, unknown>;
+  cleanedAgentInput?: Record<string, unknown>;
+  templateId?: string;
+  templateMatchReason?: string;
+  runId?: string;
+  executionId?: string;
+  status: StoredVFormixAgentStatus;
+  errorMessage?: string;
+  missingFields: string[];
+  ownerId: string;
+  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  dueDate: string;
+  nextAction: string;
+  activityHistory: Array<Record<string, unknown>>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredVFormixAgentMappingError {
+  id: string;
+  errorId: string;
+  organizationId: string;
+  formId: string;
+  submissionId: string;
+  fieldKey: string;
+  reason: string;
+  nextAction: string;
+  status: "open" | "resolved";
+  createdAt: string;
+}
+
+export interface StoredVFormixAgentWebhookLog {
+  id: string;
+  webhookId: string;
+  organizationId?: string;
+  formId?: string;
+  submissionId?: string;
+  eventType: string;
+  status: "accepted" | "rejected" | "failed";
+  reason?: string;
+  createdAt: string;
+}
+
+export type StoredAgentLiveEventType =
+  | "agent.run.started"
+  | "agent.run.updated"
+  | "agent.task.started"
+  | "agent.task.progress"
+  | "agent.task.completed"
+  | "agent.task.failed"
+  | "agent.validation.started"
+  | "agent.validation.completed"
+  | "agent.validation.failed"
+  | "agent.repair.started"
+  | "agent.repair.completed"
+  | "agent.approval.required"
+  | "agent.run.completed"
+  | "agent.run.failed"
+  | "agent.run.blocked";
+
+export interface StoredAgentLiveSession {
+  id: string;
+  sessionId: string;
+  runId: string;
+  organizationId: string;
+  actorId: string;
+  status: "open" | "closed";
+  lastEventId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredAgentLiveEvent {
+  id: string;
+  eventId: string;
+  runId: string;
+  organizationId: string;
+  eventType: StoredAgentLiveEventType;
+  payload: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface StoredAgentWorkspaceInstruction {
+  id: string;
+  instructionId: string;
+  runId: string;
+  organizationId: string;
+  actorId: string;
+  instructionType: "extra" | "constraint" | "design" | "backend" | "security" | "deadline_priority";
+  content: string;
+  applied: boolean;
+  createdAt: string;
+}
+
+export interface StoredAgentWorkspaceControl {
+  id: string;
+  controlId: string;
+  runId: string;
+  organizationId: string;
+  actorId: string;
+  action: "pause" | "resume" | "stop" | "approve-step" | "reject-step" | "regenerate" | "manual-review";
+  reason?: string;
+  status: "accepted" | "rejected";
+  createdAt: string;
+}
+
+export interface StoredAgentWorkspaceEvidence {
+  id: string;
+  evidenceId: string;
+  runId: string;
+  organizationId: string;
+  evidenceType: "files" | "diff" | "validation" | "error" | "repair" | "build" | "final";
+  title: string;
+  payload: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface StoredAgentStepApproval {
+  id: string;
+  approvalId: string;
+  runId: string;
+  organizationId: string;
+  stepId: string;
+  actorId: string;
+  decision: "approved" | "rejected";
+  reason?: string;
+  createdAt: string;
+}
+
+export type StoredAgentTeamStatus = "created" | "assigned" | "in_progress" | "review_required" | "approved" | "handed_off" | "completed" | "blocked" | "failed";
+
+export interface StoredAgentRole {
+  id: string;
+  roleId: string;
+  organizationId: string;
+  name: string;
+  slug: string;
+  responsibilities: string[];
+  requiredReview: boolean;
+  status: "active" | "inactive";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredAgentRoleConfig {
+  id: string;
+  configId: string;
+  roleId: string;
+  organizationId: string;
+  modelProvider: string;
+  systemPrompt: string;
+  tools: string[];
+  guardrails: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredAgentAssignment {
+  id: string;
+  assignmentId: string;
+  runId: string;
+  organizationId: string;
+  roleId: string;
+  ownerId: string;
+  status: StoredAgentTeamStatus;
+  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  dueDate: string;
+  scope: string;
+  outputVersion: number;
+  output?: Record<string, unknown>;
+  nextAction: string;
+  activityHistory: Array<Record<string, unknown>>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredAgentHandoff {
+  id: string;
+  handoffId: string;
+  runId: string;
+  organizationId: string;
+  fromRoleId: string;
+  toRoleId: string;
+  summary: string;
+  evidence: Record<string, unknown>;
+  nextAction: string;
+  status: StoredAgentTeamStatus;
+  createdAt: string;
+}
+
+export interface StoredAgentComment {
+  id: string;
+  commentId: string;
+  runId: string;
+  organizationId: string;
+  roleId: string;
+  authorId: string;
+  message: string;
+  visibility: "team" | "admin";
+  createdAt: string;
+}
+
+export interface StoredAgentConflict {
+  id: string;
+  conflictId: string;
+  runId: string;
+  organizationId: string;
+  raisedByRoleId: string;
+  againstRoleId?: string;
+  reason: string;
+  resolution?: string;
+  status: "open" | "resolved";
+  nextAction: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredAgentDecisionLog {
+  id: string;
+  decisionId: string;
+  runId: string;
+  organizationId: string;
+  actorId: string;
+  decision: string;
+  rationale: string;
+  createdAt: string;
+}
+
+export interface StoredAgentReview {
+  id: string;
+  reviewId: string;
+  runId: string;
+  organizationId: string;
+  roleId: string;
+  reviewerId: string;
+  decision: "approved" | "rejected" | "changes_requested";
+  findings: string[];
+  nextAction: string;
+  createdAt: string;
+}
+
+export interface StoredAgentFinalReview {
+  id: string;
+  finalReviewId: string;
+  runId: string;
+  organizationId: string;
+  reviewerId: string;
+  decision: "approved" | "rejected";
+  requiredReviews: string[];
+  missingReviews: string[];
+  summary: string;
+  nextAction: string;
+  createdAt: string;
+}
+
+export type StoredAgentDeploymentStatus = "draft" | "preparing" | "ready" | "deploying" | "verifying" | "live" | "failed" | "rollback_required" | "rolled_back";
+export type StoredAgentDeploymentTargetType = "AWS_EC2" | "S3_CLOUDFRONT" | "DOCKER_SERVER" | "VERCEL" | "VMNEXUS_CLOUD";
+export type StoredAgentDeploymentCheckStatus = "passed" | "failed" | "blocked";
+
+export interface StoredAgentDeployment {
+  id: string;
+  deploymentId: string;
+  runId: string;
+  organizationId: string;
+  ownerId: string;
+  status: StoredAgentDeploymentStatus;
+  targetId: string;
+  releaseId: string;
+  environment: "staging" | "production";
+  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  dueDate: string;
+  confirmedProduction: boolean;
+  errorMessage?: string;
+  nextAction: string;
+  activityHistory: Array<Record<string, unknown>>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredAgentDeploymentTarget {
+  id: string;
+  targetId: string;
+  deploymentId: string;
+  organizationId: string;
+  targetType: StoredAgentDeploymentTargetType;
+  name: string;
+  config: Record<string, unknown>;
+  requiredEnvVars: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredAgentDeploymentCheck {
+  id: string;
+  checkId: string;
+  deploymentId: string;
+  organizationId: string;
+  checkName: string;
+  status: StoredAgentDeploymentCheckStatus;
+  reason?: string;
+  evidence: Record<string, unknown>;
+  nextAction: string;
+  createdAt: string;
+}
+
+export interface StoredAgentDeploymentLog {
+  id: string;
+  logId: string;
+  deploymentId: string;
+  organizationId: string;
+  level: "info" | "warning" | "error";
+  message: string;
+  evidence?: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface StoredAgentDeploymentRelease {
+  id: string;
+  releaseId: string;
+  deploymentId: string;
+  organizationId: string;
+  version: string;
+  previousReleaseId?: string;
+  artifactVersion: string;
+  migrationStatus: "pending" | "applied" | "failed";
+  buildStatus: "pending" | "passed" | "failed";
+  rollbackMetadata: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface StoredAgentDeploymentRollback {
+  id: string;
+  rollbackId: string;
+  deploymentId: string;
+  organizationId: string;
+  fromReleaseId: string;
+  toReleaseId?: string;
+  status: "requested" | "completed" | "failed";
+  reason: string;
+  evidence: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface StoredAgentDeploymentHealthCheck {
+  id: string;
+  healthCheckId: string;
+  deploymentId: string;
+  organizationId: string;
+  url: string;
+  status: "healthy" | "unhealthy";
+  statusCode?: number;
+  responseTimeMs?: number;
+  reason?: string;
+  createdAt: string;
+}
+
+export type StoredAgentMemoryStatus = "pending_review" | "approved" | "rejected" | "archived";
+export type StoredAgentMemoryTrust = "trusted" | "untrusted";
+export type StoredAgentKnowledgeType = "project_pattern" | "architecture" | "common_error" | "verified_fix" | "deployment_lesson" | "security_rule" | "design_rule";
+
+export interface StoredAgentMemoryEntry {
+  id: string;
+  memoryId: string;
+  organizationId: string;
+  title: string;
+  memoryType: "project" | "user_preference" | "product" | "error_fix" | "template_usage" | "deployment" | "approval";
+  content: string;
+  summary: string;
+  tags: string[];
+  confidenceScore: number;
+  status: StoredAgentMemoryStatus;
+  trustLevel: StoredAgentMemoryTrust;
+  ownerId: string;
+  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  dueDate: string;
+  nextAction: string;
+  activityHistory: Array<Record<string, unknown>>;
+  retentionUntil?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredAgentMemorySource {
+  id: string;
+  sourceId: string;
+  memoryId: string;
+  organizationId: string;
+  sourceType: "project" | "error" | "fix" | "template" | "deployment" | "approval" | "manual";
+  sourceRef: string;
+  evidence: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface StoredAgentMemoryReview {
+  id: string;
+  reviewId: string;
+  memoryId: string;
+  organizationId: string;
+  reviewerId: string;
+  decision: "approved" | "rejected" | "archived";
+  reason?: string;
+  createdAt: string;
+}
+
+export interface StoredAgentKnowledgeEntry {
+  id: string;
+  entryId: string;
+  organizationId: string;
+  memoryId?: string;
+  title: string;
+  knowledgeType: StoredAgentKnowledgeType;
+  content: string;
+  confidenceScore: number;
+  trusted: boolean;
+  status: "active" | "archived";
+  sourceRefs: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredAgentKnowledgeTag {
+  id: string;
+  tagId: string;
+  entryId: string;
+  organizationId: string;
+  tag: string;
+  createdAt: string;
+}
+
+export interface StoredAgentKnowledgeRetrievalLog {
+  id: string;
+  retrievalId: string;
+  organizationId: string;
+  actorId: string;
+  query: string;
+  selectedEntryIds: string[];
+  rationale: string;
+  createdAt: string;
+}
+
+export interface StoredAgentErrorFixPattern {
+  id: string;
+  patternId: string;
+  organizationId: string;
+  memoryId?: string;
+  errorSignature: string;
+  fixSummary: string;
+  rejected: boolean;
+  confidenceScore: number;
+  createdAt: string;
+}
+
+export interface StoredAgentArchitecturePattern {
+  id: string;
+  patternId: string;
+  organizationId: string;
+  memoryId?: string;
+  architectureName: string;
+  applicability: string;
+  securityNotes: string[];
+  confidenceScore: number;
+  createdAt: string;
+}
+
+export type StoredBuilderProjectStatus =
+  | "draft"
+  | "requirements_submitted"
+  | "blueprint_ready"
+  | "blueprint_approved"
+  | "blueprint_rejected"
+  | "coding_started"
+  | "change_requested"
+  | "delivered"
+  | "blocked"
+  | "failed";
+
+export type StoredBuilderBlueprintStatus = "generated" | "approved" | "rejected" | "superseded";
+export type StoredBuilderOutputStatus = "pending" | "in_progress" | "ready" | "failed";
+export type StoredBuilderChangeRequestStatus = "requested" | "accepted" | "in_progress" | "completed" | "rejected";
+
+export interface StoredBuilderProject {
+  id: string;
+  projectId: string;
+  organizationId: string;
+  customerId: string;
+  ownerId: string;
+  name: string;
+  description: string;
+  templateId?: string;
+  agentRunId: string;
+  executionId?: string;
+  status: StoredBuilderProjectStatus;
+  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  dueDate: string;
+  nextAction: string;
+  activityHistory: Array<Record<string, unknown>>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredBuilderProjectRequirement {
+  id: string;
+  requirementId: string;
+  projectId: string;
+  organizationId: string;
+  customerId: string;
+  rawInput: Record<string, unknown>;
+  normalizedInput: Record<string, unknown>;
+  version: number;
+  status: "submitted" | "accepted" | "blocked";
+  missingFields: string[];
+  createdAt: string;
+}
+
+export interface StoredBuilderProjectBlueprint {
+  id: string;
+  blueprintId: string;
+  projectId: string;
+  organizationId: string;
+  customerId: string;
+  agentRunId: string;
+  version: number;
+  status: StoredBuilderBlueprintStatus;
+  content: Record<string, unknown>;
+  rejectionReason?: string;
+  approvedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredBuilderProjectOutput {
+  id: string;
+  outputId: string;
+  projectId: string;
+  organizationId: string;
+  customerId: string;
+  agentRunId: string;
+  executionId?: string;
+  outputType: string;
+  title: string;
+  content: string;
+  status: StoredBuilderOutputStatus;
+  version: number;
+  deliveryDate: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredBuilderProjectChangeRequest {
+  id: string;
+  changeRequestId: string;
+  projectId: string;
+  organizationId: string;
+  customerId: string;
+  requestedById: string;
+  summary: string;
+  details: string;
+  targetVersion: number;
+  status: StoredBuilderChangeRequestStatus;
+  agentTaskId?: string;
+  nextAction: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredBuilderProjectActivityLog {
+  id: string;
+  activityId: string;
+  projectId: string;
+  organizationId: string;
+  actorId: string;
+  action: string;
+  status: StoredBuilderProjectStatus | StoredBuilderChangeRequestStatus | StoredBuilderBlueprintStatus;
+  message: string;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+}
+
+export type StoredBuilderBillingPlanTier = "free_trial" | "starter" | "pro" | "business" | "enterprise" | "custom";
+export type StoredBuilderBillingCycle = "MONTHLY" | "YEARLY";
+export type StoredCustomerSubscriptionStatus = "trialing" | "active" | "past_due" | "cancelled" | "expired";
+export type StoredCustomerInvoiceStatus = "draft" | "issued" | "paid" | "failed" | "void";
+export type StoredCustomerPaymentStatus = "created" | "paid" | "failed" | "refunded";
+export type StoredUsageEventType = "agent_run" | "template_use" | "build_minute" | "ai_credit" | "storage_mb" | "deployment" | "team_member" | "regeneration";
+export type StoredCreditTransactionType = "grant" | "deduct" | "refund" | "topup" | "adjustment";
+
+export interface StoredBillingPlan {
+  id: string;
+  planId: string;
+  organizationId?: string;
+  tier: StoredBuilderBillingPlanTier;
+  name: string;
+  description: string;
+  monthlyPrice: number;
+  yearlyPrice: number;
+  currency: "INR";
+  limits: Record<string, number>;
+  creditsIncluded: number;
+  features: string[];
+  status: "active" | "archived";
+  ownerId: string;
+  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  dueDate: string;
+  nextAction: string;
+  activityHistory: Array<Record<string, unknown>>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredCustomerSubscription {
+  id: string;
+  subscriptionId: string;
+  organizationId: string;
+  customerId: string;
+  planId: string;
+  billingCycle: StoredBuilderBillingCycle;
+  status: StoredCustomerSubscriptionStatus;
+  razorpaySubscriptionId?: string;
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  renewalDate: string;
+  cancelAtPeriodEnd: boolean;
+  ownerId: string;
+  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  dueDate: string;
+  nextAction: string;
+  activityHistory: Array<Record<string, unknown>>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredCustomerInvoice {
+  id: string;
+  invoiceId: string;
+  organizationId: string;
+  customerId: string;
+  subscriptionId?: string;
+  paymentId?: string;
+  number: string;
+  amount: number;
+  currency: "INR";
+  status: StoredCustomerInvoiceStatus;
+  dueDate: string;
+  paidAt?: string;
+  lineItems: Array<Record<string, unknown>>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredCustomerPayment {
+  id: string;
+  paymentId: string;
+  organizationId: string;
+  customerId: string;
+  subscriptionId?: string;
+  invoiceId?: string;
+  provider: "razorpay" | "local";
+  providerPaymentId?: string;
+  providerOrderId?: string;
+  amount: number;
+  currency: "INR";
+  status: StoredCustomerPaymentStatus;
+  failureReason?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredCustomerUsageLimit {
+  id: string;
+  limitId: string;
+  organizationId: string;
+  customerId: string;
+  planId: string;
+  metric: StoredUsageEventType;
+  limitValue: number;
+  usedValue: number;
+  periodStart: string;
+  periodEnd: string;
+  adminOverride: boolean;
+  overrideReason?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredCustomerUsageEvent {
+  id: string;
+  eventId: string;
+  organizationId: string;
+  customerId: string;
+  subscriptionId?: string;
+  metric: StoredUsageEventType;
+  quantity: number;
+  source: string;
+  sourceId?: string;
+  status: "accepted" | "rejected" | "refunded";
+  reason?: string;
+  createdAt: string;
+}
+
+export interface StoredCustomerCreditWallet {
+  id: string;
+  walletId: string;
+  organizationId: string;
+  customerId: string;
+  balance: number;
+  reserved: number;
+  lifetimeCredits: number;
+  lifetimeDebits: number;
+  updatedAt: string;
+  createdAt: string;
+}
+
+export interface StoredCustomerCreditTransaction {
+  id: string;
+  transactionId: string;
+  walletId: string;
+  organizationId: string;
+  customerId: string;
+  type: StoredCreditTransactionType;
+  amount: number;
+  balanceAfter: number;
+  source: string;
+  sourceId?: string;
+  reason: string;
+  createdAt: string;
+}
+
+export interface StoredRazorpayWebhookEvent {
+  id: string;
+  webhookEventId: string;
+  organizationId?: string;
+  eventType: string;
+  providerEventId: string;
+  signatureVerified: boolean;
+  processed: boolean;
+  payload: Record<string, unknown>;
+  createdAt: string;
+}
+
+export type StoredEnterpriseStatus = "active" | "pending" | "disabled" | "passed" | "failed" | "open" | "completed" | "rejected";
+
+export interface StoredEnterpriseWorkspace {
+  id: string;
+  workspaceId: string;
+  organizationId: string;
+  name: string;
+  domain?: string;
+  ssoReady: boolean;
+  retentionDays: number;
+  ownerId: string;
+  status: StoredEnterpriseStatus;
+  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  dueDate: string;
+  nextAction: string;
+  activityHistory: Array<Record<string, unknown>>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredWorkspaceRole {
+  id: string;
+  roleId: string;
+  workspaceId: string;
+  organizationId: string;
+  name: string;
+  permissions: string[];
+  createdAt: string;
+}
+
+export interface StoredWorkspaceMember {
+  id: string;
+  memberId: string;
+  workspaceId: string;
+  organizationId: string;
+  userId: string;
+  email: string;
+  roleId: string;
+  status: StoredEnterpriseStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredWorkspaceInvite {
+  id: string;
+  inviteId: string;
+  workspaceId: string;
+  organizationId: string;
+  email: string;
+  roleId: string;
+  invitedById: string;
+  status: StoredEnterpriseStatus;
+  expiresAt: string;
+  createdAt: string;
+}
+
+export interface StoredWorkspaceAuditLog {
+  id: string;
+  auditId: string;
+  workspaceId: string;
+  organizationId: string;
+  actorId: string;
+  action: string;
+  message: string;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface StoredSecurityEvent {
+  id: string;
+  eventId: string;
+  organizationId: string;
+  severity: "low" | "medium" | "high" | "critical";
+  category: string;
+  message: string;
+  evidence: Record<string, unknown>;
+  status: StoredEnterpriseStatus;
+  createdAt: string;
+}
+
+export interface StoredReliabilityCheck {
+  id: string;
+  checkId: string;
+  organizationId: string;
+  checkName: string;
+  status: "passed" | "failed";
+  evidence: Record<string, unknown>;
+  nextAction: string;
+  createdAt: string;
+}
+
+export interface StoredComplianceRecord {
+  id: string;
+  recordId: string;
+  organizationId: string;
+  recordType: "privacy" | "terms" | "retention" | "consent" | "billing" | "export" | "delete";
+  subjectId?: string;
+  status: StoredEnterpriseStatus;
+  evidence: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface StoredDataExportRequest {
+  id: string;
+  requestId: string;
+  organizationId: string;
+  requestedById: string;
+  status: StoredEnterpriseStatus;
+  exportScope: string[];
+  dueDate: string;
+  nextAction: string;
+  activityHistory: Array<Record<string, unknown>>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredDataDeleteRequest {
+  id: string;
+  requestId: string;
+  organizationId: string;
+  requestedById: string;
+  status: StoredEnterpriseStatus;
+  reason: string;
+  dueDate: string;
+  nextAction: string;
+  activityHistory: Array<Record<string, unknown>>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredLaunchReadinessCheck {
+  id: string;
+  checkId: string;
+  organizationId: string;
+  category: "security" | "reliability" | "billing" | "deployment" | "compliance" | "support";
+  status: "passed" | "failed";
+  evidence: Record<string, unknown>;
+  nextAction: string;
+  createdAt: string;
+}
+
+export interface StoredSettings {
+  organizationId: string;
+  themeMode: "light" | "dark" | "system";
+  billingEmail?: string;
+  notificationEmail: boolean;
+  notificationSms: boolean;
+  apiKeysConfigured: boolean;
+  updatedAt: string;
+}
+
+export interface StoreState {
+  users: StoredUser[];
+  passwordResetTokens: StoredPasswordResetToken[];
+  organizations: StoredOrganization[];
+  workspaces: StoredWorkspace[];
+  entitlements: Array<ProductEntitlement & { organizationId: string }>;
+  notifications: StoredNotification[];
+  revenues: StoredRevenue[];
+  expenses: StoredExpense[];
+  reportExports: StoredReportExport[];
+  projects: StoredProject[];
+  tasks: StoredTask[];
+  leads: StoredLead[];
+  customers: StoredCustomer[];
+  supportTickets: StoredSupportTicket[];
+  ticketMessages: StoredTicketMessage[];
+  departments: StoredDepartment[];
+  employees: StoredEmployee[];
+  candidates: StoredCandidate[];
+  interviews: StoredInterview[];
+  offers: StoredOffer[];
+  agreements: StoredAgreement[];
+  complianceItems: StoredComplianceItem[];
+  governmentRegistrations: StoredGovernmentRegistration[];
+  creatorProfiles: StoredCreatorProfile[];
+  campaigns: StoredCampaign[];
+  partners: StoredPartner[];
+  communications: StoredCommunication[];
+  automationRules: StoredAutomationRule[];
+  intelligenceSnapshots: StoredIntelligenceSnapshot[];
+  vaanForgeRuns: StoredVaanForgeAgentRun[];
+  vaanForgeOutputs: StoredVaanForgeOutput[];
+  vaanForgeAuditLogs: StoredVaanForgeAuditLog[];
+  agentExecutionRuns: StoredAgentExecutionRun[];
+  agentTasks: StoredAgentTask[];
+  agentFiles: StoredAgentFile[];
+  agentValidationRuns: StoredAgentValidationRun[];
+  agentErrors: StoredAgentError[];
+  agentRepairAttempts: StoredAgentRepairAttempt[];
+  agentCommits: StoredAgentCommit[];
+  agentActivityLogs: StoredAgentActivityLog[];
+  agentTemplates: StoredAgentTemplate[];
+  agentTemplateVersions: StoredAgentTemplateVersion[];
+  agentTemplateInputs: StoredAgentTemplateInput[];
+  agentTemplateFiles: StoredAgentTemplateFile[];
+  agentTemplateQualityChecks: StoredAgentTemplateQualityCheck[];
+  agentTemplateUsageLogs: StoredAgentTemplateUsageLog[];
+  agentTemplateReviews: StoredAgentTemplateReview[];
+  vformixAgentConfigs: StoredVFormixAgentConfig[];
+  vformixAgentFieldMappings: StoredVFormixAgentFieldMapping[];
+  vformixAgentTriggers: StoredVFormixAgentTrigger[];
+  vformixAgentSubmissionLinks: StoredVFormixAgentSubmissionLink[];
+  vformixAgentMappingErrors: StoredVFormixAgentMappingError[];
+  vformixAgentWebhookLogs: StoredVFormixAgentWebhookLog[];
+  agentLiveSessions: StoredAgentLiveSession[];
+  agentLiveEvents: StoredAgentLiveEvent[];
+  agentWorkspaceInstructions: StoredAgentWorkspaceInstruction[];
+  agentWorkspaceControls: StoredAgentWorkspaceControl[];
+  agentWorkspaceEvidence: StoredAgentWorkspaceEvidence[];
+  agentStepApprovals: StoredAgentStepApproval[];
+  agentRoles: StoredAgentRole[];
+  agentRoleConfigs: StoredAgentRoleConfig[];
+  agentAssignments: StoredAgentAssignment[];
+  agentHandoffs: StoredAgentHandoff[];
+  agentComments: StoredAgentComment[];
+  agentConflicts: StoredAgentConflict[];
+  agentDecisionLogs: StoredAgentDecisionLog[];
+  agentReviews: StoredAgentReview[];
+  agentFinalReviews: StoredAgentFinalReview[];
+  agentDeployments: StoredAgentDeployment[];
+  agentDeploymentTargets: StoredAgentDeploymentTarget[];
+  agentDeploymentChecks: StoredAgentDeploymentCheck[];
+  agentDeploymentLogs: StoredAgentDeploymentLog[];
+  agentDeploymentReleases: StoredAgentDeploymentRelease[];
+  agentDeploymentRollbacks: StoredAgentDeploymentRollback[];
+  agentDeploymentHealthChecks: StoredAgentDeploymentHealthCheck[];
+  agentMemoryEntries: StoredAgentMemoryEntry[];
+  agentMemorySources: StoredAgentMemorySource[];
+  agentMemoryReviews: StoredAgentMemoryReview[];
+  agentKnowledgeEntries: StoredAgentKnowledgeEntry[];
+  agentKnowledgeTags: StoredAgentKnowledgeTag[];
+  agentKnowledgeRetrievalLogs: StoredAgentKnowledgeRetrievalLog[];
+  agentErrorFixPatterns: StoredAgentErrorFixPattern[];
+  agentArchitecturePatterns: StoredAgentArchitecturePattern[];
+  builderProjects: StoredBuilderProject[];
+  builderProjectRequirements: StoredBuilderProjectRequirement[];
+  builderProjectBlueprints: StoredBuilderProjectBlueprint[];
+  builderProjectOutputs: StoredBuilderProjectOutput[];
+  builderProjectChangeRequests: StoredBuilderProjectChangeRequest[];
+  builderProjectActivityLogs: StoredBuilderProjectActivityLog[];
+  billingPlans: StoredBillingPlan[];
+  customerSubscriptions: StoredCustomerSubscription[];
+  customerInvoices: StoredCustomerInvoice[];
+  customerPayments: StoredCustomerPayment[];
+  customerUsageLimits: StoredCustomerUsageLimit[];
+  customerUsageEvents: StoredCustomerUsageEvent[];
+  customerCreditWallets: StoredCustomerCreditWallet[];
+  customerCreditTransactions: StoredCustomerCreditTransaction[];
+  razorpayWebhookEvents: StoredRazorpayWebhookEvent[];
+  enterpriseWorkspaces: StoredEnterpriseWorkspace[];
+  workspaceMembers: StoredWorkspaceMember[];
+  workspaceInvites: StoredWorkspaceInvite[];
+  workspaceRoles: StoredWorkspaceRole[];
+  workspaceAuditLogs: StoredWorkspaceAuditLog[];
+  securityEvents: StoredSecurityEvent[];
+  reliabilityChecks: StoredReliabilityCheck[];
+  complianceRecords: StoredComplianceRecord[];
+  dataExportRequests: StoredDataExportRequest[];
+  dataDeleteRequests: StoredDataDeleteRequest[];
+  launchReadinessChecks: StoredLaunchReadinessCheck[];
+  settings: StoredSettings[];
+}
+
+export const store: StoreState = {
+  users: [],
+  passwordResetTokens: [],
+  organizations: [],
+  workspaces: [],
+  entitlements: [],
+  notifications: [],
+  revenues: [],
+  expenses: [],
+  reportExports: [],
+  projects: [],
+  tasks: [],
+  leads: [],
+  customers: [],
+  supportTickets: [],
+  ticketMessages: [],
+  departments: [],
+  employees: [],
+  candidates: [],
+  interviews: [],
+  offers: [],
+  agreements: [],
+  complianceItems: [],
+  governmentRegistrations: [],
+  creatorProfiles: [],
+  campaigns: [],
+  partners: [],
+  communications: [],
+  automationRules: [],
+  intelligenceSnapshots: [],
+  vaanForgeRuns: [],
+  vaanForgeOutputs: [],
+  vaanForgeAuditLogs: [],
+  agentExecutionRuns: [],
+  agentTasks: [],
+  agentFiles: [],
+  agentValidationRuns: [],
+  agentErrors: [],
+  agentRepairAttempts: [],
+  agentCommits: [],
+  agentActivityLogs: [],
+  agentTemplates: [],
+  agentTemplateVersions: [],
+  agentTemplateInputs: [],
+  agentTemplateFiles: [],
+  agentTemplateQualityChecks: [],
+  agentTemplateUsageLogs: [],
+  agentTemplateReviews: [],
+  vformixAgentConfigs: [],
+  vformixAgentFieldMappings: [],
+  vformixAgentTriggers: [],
+  vformixAgentSubmissionLinks: [],
+  vformixAgentMappingErrors: [],
+  vformixAgentWebhookLogs: [],
+  agentLiveSessions: [],
+  agentLiveEvents: [],
+  agentWorkspaceInstructions: [],
+  agentWorkspaceControls: [],
+  agentWorkspaceEvidence: [],
+  agentStepApprovals: [],
+  agentRoles: [],
+  agentRoleConfigs: [],
+  agentAssignments: [],
+  agentHandoffs: [],
+  agentComments: [],
+  agentConflicts: [],
+  agentDecisionLogs: [],
+  agentReviews: [],
+  agentFinalReviews: [],
+  agentDeployments: [],
+  agentDeploymentTargets: [],
+  agentDeploymentChecks: [],
+  agentDeploymentLogs: [],
+  agentDeploymentReleases: [],
+  agentDeploymentRollbacks: [],
+  agentDeploymentHealthChecks: [],
+  agentMemoryEntries: [],
+  agentMemorySources: [],
+  agentMemoryReviews: [],
+  agentKnowledgeEntries: [],
+  agentKnowledgeTags: [],
+  agentKnowledgeRetrievalLogs: [],
+  agentErrorFixPatterns: [],
+  agentArchitecturePatterns: [],
+  builderProjects: [],
+  builderProjectRequirements: [],
+  builderProjectBlueprints: [],
+  builderProjectOutputs: [],
+  builderProjectChangeRequests: [],
+  builderProjectActivityLogs: [],
+  billingPlans: [],
+  customerSubscriptions: [],
+  customerInvoices: [],
+  customerPayments: [],
+  customerUsageLimits: [],
+  customerUsageEvents: [],
+  customerCreditWallets: [],
+  customerCreditTransactions: [],
+  razorpayWebhookEvents: [],
+  enterpriseWorkspaces: [],
+  workspaceMembers: [],
+  workspaceInvites: [],
+  workspaceRoles: [],
+  workspaceAuditLogs: [],
+  securityEvents: [],
+  reliabilityChecks: [],
+  complianceRecords: [],
+  dataExportRequests: [],
+  dataDeleteRequests: [],
+  launchReadinessChecks: [],
+  settings: []
+};
+
+export const createId = (prefix: string) => `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;

@@ -1,0 +1,34 @@
+{
+  "name": "vm-nexus-ecosystem-os",
+  "version": "0.1.0",
+  "private": true,
+  "description": "VM Nexus Ecosystem OS for Education Suite and VMetron Suite.",
+  "workspaces": [
+    "frontend",
+    "backend",
+    "shared",
+    "design-system"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace frontend",
+    "dev:frontend": "npm run dev --workspace frontend",
+    "dev:backend": "npm run dev --workspace backend",
+    "build": "npm run build --workspace frontend && npm run build --workspace backend",
+    "typecheck": "npm run typecheck --workspace frontend && npm run typecheck --workspace backend",
+    "lint": "npm run lint --workspace frontend",
+    "test": "npm run test --workspace backend",
+    "test:e2e": "node scripts/qa-route-smoke.js && node scripts/qa-ui-interactions.js && npm run test:api --workspace backend && node scripts/qa-onboarding-contract.js && node scripts/qa-state-contract.js && node scripts/qa-api-security.js && node scripts/qa-api-route-catalog.js && node scripts/qa-frontend-structure-contract.js && node scripts/qa-backend-structure-contract.js && node scripts/qa-docs-requirements-contract.js && node scripts/qa-build-quality-contract.js && node scripts/qa-final-goal-contract.js && node scripts/qa-roles-contract.js && node scripts/qa-csrf-security.js && node scripts/qa-ci-contract.js && node scripts/qa-env-contract.js && node scripts/qa-database-contract.js && node scripts/qa-seed-contract.js && node scripts/qa-provider-readiness.js && node scripts/qa-production-readiness-contract.js && node scripts/qa-file-upload-contract.js && node scripts/qa-jobs-contract.js && node scripts/qa-realtime-contract.js && node scripts/qa-vaanis-architecture-contract.js && node scripts/qa-commercial-suite-contract.js && node scripts/qa-audit-contract.js && node scripts/qa-phase-contract.js && node scripts/qa-domain-contract.js && node scripts/qa-pricing-contract.js && node scripts/qa-dependency-contract.js && node scripts/qa-documentation-contract.js && node scripts/qa-infrastructure-contract.js",
+    "launch:readiness": "npm run readiness:check --workspace backend",
+    "db:migrate:deploy": "npm run prisma:migrate:deploy --workspace backend",
+    "seed:demo": "npm run seed:demo --workspace backend",
+    "phase:status": "node scripts/phase-status.js"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "effect": "^3.21.0",
+    "es-abstract": "^1.24.0",
+    "eslint": "^9.20.0"
+  }
+}

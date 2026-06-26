@@ -1,0 +1,29 @@
+# Launch Checklist
+
+- [x] Confirm placeholder domain strategy.
+- [x] Document placeholder secrets.
+- [x] Document production PostgreSQL requirement.
+- [x] Add explicit persistence mode and readiness endpoint.
+- [x] Add command-line production readiness gate.
+- [x] Add first repository-backed module migration pattern.
+- [x] Add repository-backed finance persistence pattern.
+- [x] Add repository-backed tasks persistence pattern.
+- [x] Add repository-backed CRM and customer persistence pattern.
+- [x] Add repository-backed support persistence pattern.
+- [x] Add repository-backed HR and interview persistence pattern.
+- [x] Add repository-backed legal, compliance, and registration persistence pattern.
+- [x] Add repository-backed creators and partners persistence pattern.
+- [x] Add repository-backed communication and automation persistence pattern.
+- [x] Add repository-backed auth persistence pattern.
+- [x] Add repository-backed intelligence snapshot persistence pattern.
+- [x] Add repository-backed workspace and organization activation persistence pattern.
+- [x] Document Redis or Vaanis adapter requirement.
+- [x] Document realtime provider or VM-owned engine requirement.
+- [x] Complete authentication foundation.
+- [x] Complete role permissions foundation.
+- [x] Add Razorpay integration placeholders.
+- [x] Add email and SMS provider placeholders.
+- [x] Run unit, API, build, and route smoke checks.
+- [x] Complete scaffold security review.
+- [x] Add legal review disclaimers.
+- [x] Prepare founder approval checklist.
