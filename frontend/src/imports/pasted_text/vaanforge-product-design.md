@@ -165,11 +165,11 @@ Pricing UX Inside Product:
 This should be a product pricing/settings screen, not a public pricing landing page.
 
 Plans:
-- Free: ₹0, 1 Project Free Forever
-- Creator: ₹999/month
-- Professional: ₹2,999/month, Most Popular
-- Studio: ₹7,999/month
-- Business: ₹19,999/month
+- Free: backend-priced Free plan, 1 Project Free Forever
+- Creator: backend-priced Creator plan
+- Professional: backend-priced Professional plan, Most Popular
+- Studio: backend-priced Studio plan
+- Business: backend-priced Business plan
 - Enterprise: Custom
 
 Pricing screen should include:

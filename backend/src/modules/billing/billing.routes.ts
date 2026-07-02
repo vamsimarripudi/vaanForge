@@ -2,10 +2,11 @@ import { Router } from "express";
 import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 import { requirePermission } from "../../guards/permission.guard";
+import { sendError, zodFieldErrors } from "../../http/error-response";
 import { authMiddleware } from "../../middlewares/auth.middleware";
 import { store } from "../../database/in-memory-store";
 import { auditService } from "../audit/audit.service";
-import { billingService, builderBillingPlanSchema, creditTopupSchema, planChangeSchema, planFeatureFlagsPatchSchema, subscribeSchema } from "./billing.service";
+import { billingService, builderBillingPlanSchema, checkoutSessionSchema, creditTopupSchema, planChangeSchema, planFeatureFlagsPatchSchema, subscribeSchema } from "./billing.service";
 
 export const billingRouter = Router();
 export const builderBillingRouter = Router();
@@ -124,6 +125,9 @@ agentBillingAdminRouter.patch("/plans/:planId/feature-flags", authMiddleware, re
 agentBillingAdminRouter.get("/plans/:planId/usage-policies", authMiddleware, requirePermission("billing:manage"), (request, response) => {
   response.json({ data: billingService.usagePolicies(request.session?.organizationId, String(request.params.planId)) });
 });
+agentBillingAdminRouter.get("/plans/:planId/price-history", authMiddleware, requirePermission("billing:manage"), (request, response) => {
+  response.json({ data: billingService.priceHistory(request.session?.organizationId, String(request.params.planId)) });
+});
 agentBillingAdminRouter.get("/usage", authMiddleware, requirePermission("billing:manage"), (request, response) => {
   const organizationId = request.session?.organizationId;
   if (!organizationId) return response.status(400).json({ error: "Billing workspace is required" });
@@ -156,6 +160,51 @@ billingWebhookRouter.post("/razorpay", verifyRazorpayWebhookSignature, (request,
 
 billingRouter.get("/plans", (_request, response) => {
   response.json({ data: billingService.plans(undefined) });
+});
+
+billingRouter.get("/checkout/session", authMiddleware, (request, response) => {
+  const organizationId = request.session?.organizationId;
+  const actorId = request.session?.userId;
+  if (!organizationId || !actorId) return sendError(response, request, 400, { code: "VALIDATION_ERROR", message: "Billing workspace is required.", recoverable: true, nextAction: "select_workspace" });
+  response.json({
+    data: {
+      paymentProvider: { provider: "razorpay", configured: false, status: "requires_plan_selection", nextAction: "select_plan" },
+      plans: billingService.plans(organizationId),
+      usage: billingService.usage(organizationId, actorId)
+    }
+  });
+});
+
+billingRouter.post("/checkout/session", authMiddleware, requirePermission("billing:manage"), async (request, response) => {
+  const organizationId = request.session?.organizationId;
+  const actorId = request.session?.userId;
+  const parsed = checkoutSessionSchema.safeParse(request.body || {});
+  if (!organizationId || !actorId) return sendError(response, request, 400, { code: "VALIDATION_ERROR", message: "Billing workspace is required.", recoverable: true, nextAction: "select_workspace" });
+  if (!parsed.success) return sendError(response, request, 400, { code: "VALIDATION_ERROR", message: "Please correct the checkout details.", fieldErrors: zodFieldErrors(parsed.error), recoverable: true, nextAction: "fix_fields" });
+  try {
+    const session = await billingService.createCheckoutSession({ organizationId, customerId: actorId, actorId, ...parsed.data });
+    response.status(session.checkout.status === "PROVIDER_NOT_CONFIGURED" ? 202 : 201).json({ data: session });
+  } catch (error) {
+    sendError(response, request, 400, { code: "VALIDATION_ERROR", message: error instanceof Error ? error.message : "Checkout session could not be created.", recoverable: true, nextAction: "fix_fields" });
+  }
+});
+
+billingRouter.post("/checkout/confirm", authMiddleware, requirePermission("billing:manage"), (request, response) => {
+  const organizationId = request.session?.organizationId;
+  const actorId = request.session?.userId;
+  const parsed = z.object({ checkoutSessionId: z.string().min(2), providerPaymentId: z.string().optional() }).safeParse(request.body || {});
+  if (!organizationId || !actorId) return sendError(response, request, 400, { code: "VALIDATION_ERROR", message: "Billing workspace is required.", recoverable: true, nextAction: "select_workspace" });
+  if (!parsed.success) return sendError(response, request, 400, { code: "VALIDATION_ERROR", message: "Please correct the checkout confirmation.", fieldErrors: zodFieldErrors(parsed.error), recoverable: true, nextAction: "fix_fields" });
+  response.json({ data: billingService.confirmCheckout({ organizationId, customerId: actorId, actorId, ...parsed.data }) });
+});
+
+billingRouter.get("/payments/:paymentId", authMiddleware, (request, response) => {
+  const organizationId = request.session?.organizationId;
+  const actorId = request.session?.userId;
+  if (!organizationId || !actorId) return sendError(response, request, 400, { code: "VALIDATION_ERROR", message: "Billing workspace is required.", recoverable: true, nextAction: "select_workspace" });
+  const payment = billingService.payment(organizationId, actorId, String(request.params.paymentId));
+  if (!payment) return sendError(response, request, 404, { code: "NOT_FOUND", message: "Payment was not found.", recoverable: true, nextAction: "check_identifier" });
+  response.json({ data: payment });
 });
 
 billingRouter.post("/subscribe", authMiddleware, requirePermission("billing:manage"), async (request, response) => {
@@ -357,6 +406,9 @@ billingRouter.patch("/admin/agent/plans/:planId/feature-flags", authMiddleware, 
 });
 billingRouter.get("/admin/agent/plans/:planId/usage-policies", authMiddleware, requirePermission("billing:manage"), (request, response) => {
   response.json({ data: billingService.usagePolicies(request.session?.organizationId, String(request.params.planId)) });
+});
+billingRouter.get("/admin/agent/plans/:planId/price-history", authMiddleware, requirePermission("billing:manage"), (request, response) => {
+  response.json({ data: billingService.priceHistory(request.session?.organizationId, String(request.params.planId)) });
 });
 
 billingRouter.get("/admin/agent/usage", authMiddleware, requirePermission("billing:manage"), (request, response) => {

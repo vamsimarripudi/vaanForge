@@ -62,7 +62,7 @@ export function buildErrorResponse(request: Request, input: SafeErrorInput): Saf
       recoverable: input.recoverable ?? input.code !== "INTERNAL_ERROR",
       nextAction: input.nextAction ?? defaultNextAction[input.code]
     },
-    requestId: request.requestId || request.header("x-request-id") || "req_unknown"
+    requestId: request.requestId || request.header?.("x-request-id") || "req_unknown"
   };
 }
 

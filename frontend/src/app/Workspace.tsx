@@ -505,10 +505,22 @@ type BillingUsage = {
   events: unknown[];
 };
 
+type CheckoutSessionSummary = {
+  paymentProvider: { provider: string; configured: boolean; status: string; nextAction: string };
+  plans: BillingPlan[];
+  usage: BillingUsage;
+};
+
 function formatMoney(amount: number, currency: string, cycle: "monthly" | "annual") {
   if (amount === 0) return "Free";
   const normalized = cycle === "annual" ? amount / 100 / 12 : amount / 100;
   return new Intl.NumberFormat("en-IN", { style: "currency", currency, maximumFractionDigits: 0 }).format(normalized);
+}
+
+function formatLimit(metric: string, value: number) {
+  if (value >= 1000000) return "Unlimited";
+  if (metric === "storage_mb") return value >= 1024 * 1024 ? `${Math.round(value / 1024 / 1024)} TB` : `${Math.round(value / 1024)} GB`;
+  return new Intl.NumberFormat("en-IN").format(value);
 }
 
 function metricLabel(metric: string) {
@@ -519,6 +531,7 @@ function PricingView() {
   const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
   const [plans, setPlans] = useState<BillingPlan[]>([]);
   const [usage, setUsage] = useState<BillingUsage | null>(null);
+  const [checkout, setCheckout] = useState<CheckoutSessionSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -528,12 +541,14 @@ function PricingView() {
     setError(null);
     Promise.all([
       apiClient<BillingPlan[]>("/billing/builder/plans"),
-      apiClient<BillingUsage>("/billing/builder/usage")
+      apiClient<BillingUsage>("/billing/builder/usage"),
+      apiClient<CheckoutSessionSummary>("/billing/checkout/session").catch(() => null)
     ])
-      .then(([loadedPlans, loadedUsage]) => {
+      .then(([loadedPlans, loadedUsage, checkoutSummary]) => {
         if (!alive) return;
         setPlans(loadedPlans.filter((plan) => plan.status === "active"));
         setUsage(loadedUsage);
+        setCheckout(checkoutSummary);
       })
       .catch((err: unknown) => {
         if (!alive) return;
@@ -546,14 +561,16 @@ function PricingView() {
   }, []);
 
   const professionalPlan = plans.find((plan) => plan.tier === "pro" || plan.name === "Professional");
+  const currentPlanId = usage?.limits[0]?.metric ? usage.limits.find(Boolean) && checkout?.usage?.limits?.[0]?.metric ? undefined : undefined : undefined;
+  const matrixMetrics = ["agent_run", "team_member", "ai_credit", "storage_mb", "deployment", "template_use"];
 
   return (
     <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
       <div className="w-full lg:w-80 shrink-0 border-b lg:border-b-0 lg:border-r border-border p-5 flex flex-col gap-5 overflow-y-auto">
         <div>
-          <h2 className="text-base font-semibold text-foreground">Plan and usage</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">Loaded from the VaanForge billing API. Limits are enforced server-side.</p>
-          <p className="text-xs text-muted-foreground mt-2">Supported plans: Free, Creator, Professional, Studio, Business, Enterprise.</p>
+          <h2 className="text-base font-semibold text-foreground">Pricing and usage</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">Loaded from the VaanForge billing API with server-side limits, GST-ready checkout, and real usage events.</p>
+          <p className="text-xs text-muted-foreground mt-2">Plans: Free, Creator, Professional, Studio, Business, Enterprise.</p>
         </div>
 
         {loading && (
@@ -597,16 +614,21 @@ function PricingView() {
         )}
 
         <div className="bg-card border border-border rounded-xl p-4 mt-auto">
-          <div className="text-xs font-medium text-foreground mb-2">Billing controls</div>
-          <p className="text-xs text-muted-foreground">Checkout, subscriptions, credits, invoices, and refunds are handled by backend APIs with Razorpay signature verification and audit logs.</p>
+          <div className="text-xs font-medium text-foreground mb-2">Checkout readiness</div>
+          <p className="text-xs text-muted-foreground">
+            {checkout?.paymentProvider.configured
+              ? "Razorpay is configured. Checkout can create provider sessions after terms acceptance."
+              : "Payment provider setup is required before paid checkout can complete."}
+          </p>
+          <div className="mt-3 rounded-lg bg-muted px-3 py-2 text-xs font-mono text-muted-foreground">{checkout?.paymentProvider.status || "loading"}</div>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
           <div>
-            <h2 className="text-sm font-semibold text-foreground">Available plans</h2>
-            <p className="text-xs text-muted-foreground mt-1">Professional is highlighted as the recommended plan for production builds.</p>
+            <h2 className="text-sm font-semibold text-foreground">Choose a VaanForge plan</h2>
+            <p className="text-xs text-muted-foreground mt-1">Free includes 1 Project Free Forever. Yearly billing gives 2 months free.</p>
           </div>
           <div className="flex items-center bg-muted rounded-lg p-0.5 w-max">
             {(["monthly", "annual"] as const).map((cycle) => (
@@ -635,32 +657,112 @@ function PricingView() {
         )}
 
         {!loading && !error && plans.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-            {plans.map((plan) => {
-              const popular = plan.planId === professionalPlan?.planId;
-              const amount = billing === "annual" ? plan.yearlyPrice : plan.monthlyPrice;
-              return (
-                <div key={plan.planId} className={`bg-card border rounded-xl p-4 relative ${popular ? "border-primary" : "border-border"}`}>
-                  {popular && <div className="absolute -top-2.5 left-4 text-xs px-2.5 py-0.5 rounded-full bg-primary text-primary-foreground font-medium">Most Popular</div>}
-                  <div className="text-sm font-semibold text-foreground">{plan.name}</div>
-                  <p className="mt-1 min-h-10 text-xs text-muted-foreground">{plan.description}</p>
-                  <div className="flex items-baseline gap-1 mt-3 mb-3">
-                    <span className="text-xl font-bold text-foreground">{plan.name === "Enterprise" ? "Custom" : formatMoney(amount, plan.currency, billing)}</span>
-                    {plan.name !== "Enterprise" && amount > 0 && <span className="text-xs text-muted-foreground">/mo</span>}
+          <div className="space-y-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+              {plans.map((plan) => {
+                const popular = plan.planId === professionalPlan?.planId;
+                const amount = billing === "annual" ? plan.yearlyPrice : plan.monthlyPrice;
+                const monthlyEquivalent = formatMoney(amount, plan.currency, billing);
+                const isCurrent = currentPlanId === plan.planId;
+                return (
+                  <div key={plan.planId} className={`bg-card border rounded-2xl p-4 relative ${popular ? "border-primary shadow-sm" : "border-border"}`}>
+                    {popular && <div className="absolute -top-2.5 left-4 text-xs px-2.5 py-0.5 rounded-full bg-primary text-primary-foreground font-medium">Most Popular</div>}
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="text-sm font-semibold text-foreground">{plan.name}</div>
+                        <p className="mt-1 min-h-10 text-xs text-muted-foreground">{plan.name === "Free" ? "1 Project Free Forever." : plan.description}</p>
+                      </div>
+                      {isCurrent && <span className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">Current</span>}
+                    </div>
+                    <div className="flex items-baseline gap-1 mt-3 mb-3">
+                      <span className="text-xl font-bold text-foreground">{plan.name === "Enterprise" ? "Custom" : monthlyEquivalent}</span>
+                      {plan.name !== "Enterprise" && amount > 0 && <span className="text-xs text-muted-foreground">/mo</span>}
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 mb-4">
+                      {["agent_run", "team_member", "ai_credit", "storage_mb"].map((metric) => (
+                        <div key={metric} className="rounded-lg bg-muted px-2.5 py-2">
+                          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{metricLabel(metric)}</div>
+                          <div className="mt-0.5 text-xs font-medium text-foreground">{formatLimit(metric, plan.limits[metric] || 0)}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <ul className="space-y-1 mb-4">
+                      {plan.features.slice(0, 5).map((feature) => (
+                        <li key={feature} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <CheckCircle2 size={10} className="text-primary shrink-0" />{feature}
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="mb-3 text-xs text-muted-foreground">{plan.name === "Enterprise" ? "Custom procurement, security review, and dedicated rollout." : "Locked premium features unlock automatically after backend subscription update."}</p>
+                    <button disabled={isCurrent} className={`w-full text-xs py-2 rounded-lg font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${plan.name === "Enterprise" ? "border border-border text-foreground hover:bg-muted" : "bg-primary text-primary-foreground hover:opacity-90"}`}>
+                      {isCurrent ? "Current plan" : plan.name === "Enterprise" ? "Contact sales" : "Upgrade"}
+                    </button>
                   </div>
-                  <ul className="space-y-1 mb-4">
-                    {plan.features.slice(0, 6).map((feature) => (
-                      <li key={feature} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <CheckCircle2 size={10} className="text-primary shrink-0" />{feature}
-                      </li>
-                    ))}
-                  </ul>
-                  <button className={`w-full text-xs py-2 rounded-lg font-medium transition-colors ${plan.name === "Enterprise" ? "border border-border text-foreground hover:bg-muted" : "bg-primary text-primary-foreground hover:opacity-90"}`}>
-                    {plan.name === "Enterprise" ? "Contact sales" : "Choose plan"}
-                  </button>
+                );
+              })}
+            </div>
+
+            <div className="rounded-2xl border border-border bg-card p-4">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground">Compare limits</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Feature access and limits are read from the billing API, then enforced server-side before protected actions.</p>
                 </div>
-              );
-            })}
+                <div className="text-xs text-muted-foreground">GST applies at checkout. Yearly billing equals 10 months.</div>
+              </div>
+              <div className="mt-4 overflow-x-auto">
+                <table className="w-full min-w-[720px] text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-border text-muted-foreground">
+                      <th className="py-2 pr-3 font-medium">Limit</th>
+                      {plans.map((plan) => <th key={plan.planId} className="py-2 px-3 font-medium">{plan.name}</th>)}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {matrixMetrics.map((metric) => (
+                      <tr key={metric} className="border-b border-border/70">
+                        <td className="py-2 pr-3 font-medium text-foreground">{metricLabel(metric)}</td>
+                        {plans.map((plan) => <td key={plan.planId} className="py-2 px-3 text-muted-foreground">{formatLimit(metric, plan.limits[metric] || 0)}</td>)}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="grid gap-3 lg:grid-cols-3">
+              <div className="rounded-2xl border border-border bg-card p-4">
+                <h3 className="text-sm font-semibold text-foreground">AI credits</h3>
+                <p className="mt-2 text-xs text-muted-foreground">Credits are deducted by backend usage policies for agent runs, templates, deployments, build minutes, and regenerations.</p>
+              </div>
+              <div className="rounded-2xl border border-border bg-card p-4">
+                <h3 className="text-sm font-semibold text-foreground">Policies</h3>
+                <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                  {["Refund policy", "Terms", "Privacy", "Plan limits"].map((item) => <span key={item} className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">{item}</span>)}
+                </div>
+              </div>
+              <div className="rounded-2xl border border-border bg-card p-4">
+                <h3 className="text-sm font-semibold text-foreground">Enterprise</h3>
+                <p className="mt-2 text-xs text-muted-foreground">Need procurement, security review, custom limits, or dedicated rollout? Contact sales from the Enterprise plan.</p>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-border bg-card p-4">
+              <h3 className="text-sm font-semibold text-foreground">FAQ</h3>
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                {[
+                  ["Can I stay free?", "Yes. Free includes one active project forever."],
+                  ["What happens at a limit?", "The backend blocks the action and returns a plan-limit response with an upgrade path."],
+                  ["Are payments live?", checkout?.paymentProvider.configured ? "Yes. Provider checkout can be created." : "Not yet. Checkout shows provider setup required instead of fake success."],
+                  ["Can plans change?", "Billing admins can update plan metadata and price history is tracked."]
+                ].map(([q, a]) => (
+                  <div key={q} className="rounded-xl bg-muted p-3">
+                    <div className="text-xs font-medium text-foreground">{q}</div>
+                    <p className="mt-1 text-xs text-muted-foreground">{a}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
       </div>

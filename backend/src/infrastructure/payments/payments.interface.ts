@@ -14,12 +14,24 @@ export type CheckoutSession = {
   checkoutId: string;
   amount: number;
   currency: "INR";
-  status: "CREATED";
+  status: "CREATED" | "PROVIDER_NOT_CONFIGURED";
   checkoutUrl: string;
   providerOrderId?: string;
   providerSubscriptionId?: string;
+  message?: string;
+  nextAction?: string;
 };
 
-export interface PaymentsProvider {
+export interface PaymentProvider {
   createCheckout(input: CheckoutInput): Promise<CheckoutSession>;
 }
+
+export interface SubscriptionProvider {
+  createCheckout(input: CheckoutInput): Promise<CheckoutSession>;
+}
+
+export interface InvoiceProvider {
+  createCheckout(input: CheckoutInput): Promise<CheckoutSession>;
+}
+
+export type PaymentsProvider = PaymentProvider;

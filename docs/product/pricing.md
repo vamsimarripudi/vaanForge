@@ -1,15 +1,20 @@
-# VaanForge Pricing
+# Pricing
 
-Pricing and limits are backend-owned. The frontend must not hardcode entitlement decisions.
+VaanForge pricing is backend-driven. The frontend must never define prices or plan limits.
 
-| Plan | Price | Projects | Users | AI Credits | Storage | Deployments |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Free | ₹0 | 1 active | 1 | 500/month | 1 GB | 5/month |
-| Creator | ₹999/month | 10 | 1 | 5,000/month | 10 GB | configured |
-| Professional | ₹2,999/month | 50 | 5 | 25,000/month | 100 GB | configured |
-| Studio | ₹7,999/month | 250 | 25 | 100,000/month | 500 GB | configured |
-| Business | ₹19,999/month | unlimited | 100 | 500,000/month | 2 TB | configured |
-| Enterprise | Custom | contract | contract | contract | contract | contract |
+## Plans
 
-When a limit is exceeded, VaanForge blocks safely, shows the current plan, shows the required plan, provides an upgrade action, and logs a usage event.
+- Free: 1 Project Free Forever.
+- Creator: individual builders moving beyond the free project.
+- Professional: most popular plan for production builds.
+- Studio: agencies and teams shipping multiple projects.
+- Business: companies operating VaanForge at scale.
+- Enterprise: custom procurement, security review, and rollout.
 
+## UX Rules
+
+- Show monthly/yearly toggle.
+- Yearly billing shows 2 months free.
+- Show GST note and policy links.
+- Disable the current plan CTA.
+- Explain locked features through plan-limit responses, not fake urgency.

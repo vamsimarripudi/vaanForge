@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import type { StoredUsageEventType } from "../../database/in-memory-store";
+import { buildErrorResponse } from "../../http/error-response";
 import { billingService } from "./billing.service";
 
 type UsageLimitOptions = {
@@ -22,11 +23,23 @@ export function requireUsageLimit(options: UsageLimitOptions) {
     const credits = typeof options.credits === "function" ? options.credits(request) : options.credits;
     const result = billingService.canConsume({ organizationId, customerId, metric: options.metric, quantity, credits });
     if (!result.allowed) {
+      // Usage limit blocked this action with a structured PLAN_LIMIT_REACHED response.
       response.status(402).json({
-        error: "Usage limit blocked this action",
-        reason: result.reason,
-        metric: options.metric,
-        nextAction: "Upgrade the plan, top up credits, reduce requested usage, or ask an admin for an override."
+        ...buildErrorResponse(request, {
+          code: "PLAN_LIMIT_REACHED",
+          message: result.reason || "Plan limit reached.",
+          recoverable: true,
+          nextAction: "upgrade_plan"
+        }),
+        planLimit: {
+          metric: options.metric,
+          currentPlan: result.currentPlan ? { planId: result.currentPlan.planId, name: result.currentPlan.name } : undefined,
+          requiredPlan: result.requiredPlan ? { planId: result.requiredPlan.planId, name: result.requiredPlan.name } : undefined,
+          usedAmount: result.usedAmount,
+          requestedAmount: result.requestedAmount ?? quantity,
+          limitAmount: result.limitAmount,
+          upgradeUrl: result.upgradeUrl || "/pricing"
+        }
       });
       return;
     }

@@ -50,6 +50,18 @@ export const creditTopupSchema = z.object({
   paymentReference: z.string().min(2).optional()
 });
 
+export const checkoutSessionSchema = z.object({
+  planId: z.string().min(2),
+  billingCycle: z.enum(["MONTHLY", "YEARLY"]).default("MONTHLY"),
+  billingDetails: z.object({
+    name: z.string().min(2).max(120),
+    email: z.string().email(),
+    gstin: z.string().min(5).max(32).optional(),
+    address: z.string().min(5).max(500).optional()
+  }).optional(),
+  termsAccepted: z.boolean().default(false)
+});
+
 export const usageCheckSchema = z.object({
   metric: z.enum(["agent_run", "template_use", "build_minute", "ai_credit", "storage_mb", "deployment", "team_member", "regeneration"]),
   quantity: z.number().int().min(1),
@@ -97,6 +109,11 @@ export class BillingService {
   plans(organizationId?: string, includeArchived = false) {
     this.ensurePlans();
     return store.billingPlans.filter((item) => (!item.organizationId || item.organizationId === organizationId) && (includeArchived || item.status === "active"));
+  }
+
+  priceHistory(organizationId: string | undefined, planId?: string) {
+    this.ensurePlans();
+    return store.billingPlanPriceHistory.filter((item) => (!item.organizationId || item.organizationId === organizationId) && (!planId || item.planId === planId)).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 
   featureFlags(organizationId: string | undefined, planId: string) {
@@ -154,13 +171,70 @@ export class BillingService {
     this.ensurePlans();
     const plan = store.billingPlans.find((item) => item.planId === planId && (!item.organizationId || item.organizationId === organizationId));
     if (!plan) return undefined;
+    const previousMonthlyPrice = plan.monthlyPrice;
+    const previousYearlyPrice = plan.yearlyPrice;
     Object.assign(plan, patch, {
       updatedAt: new Date().toISOString(),
       nextAction: "Review active subscriptions for limit or price impact.",
       activityHistory: [...plan.activityHistory, { at: new Date().toISOString(), status: plan.status, message: "Billing plan updated." }]
     });
+    if (patch.monthlyPrice !== undefined || patch.yearlyPrice !== undefined) {
+      this.recordPriceHistory(plan, actorId, "Plan pricing updated by billing admin.", previousMonthlyPrice, previousYearlyPrice);
+    }
     this.audit(actorId, organizationId, "BillingPlan", planId, "PLAN_UPDATED", { patch });
     return plan;
+  }
+
+  async createCheckoutSession(input: { organizationId: string; customerId: string; actorId: string; planId: string; billingCycle: StoredBuilderBillingCycle; billingDetails?: Record<string, unknown>; termsAccepted: boolean }) {
+    this.ensurePlans();
+    if (!input.termsAccepted) throw new Error("Terms acceptance is required before checkout.");
+    const plan = store.billingPlans.find((item) => item.planId === input.planId && item.status === "active");
+    if (!plan) throw new Error("Billing plan not found.");
+    const amount = input.billingCycle === "YEARLY" ? plan.yearlyPrice : plan.monthlyPrice;
+    const subtotal = Math.round(amount / 1.18);
+    const gstAmount = Math.max(0, amount - subtotal);
+    const idempotencyKey = this.idempotencyKey(input.organizationId, input.customerId, plan.planId, input.billingCycle, "checkout_session");
+    const checkout = amount > 0
+      ? await paymentsService.createCustomerCheckout({ organizationId: input.organizationId, customerId: input.customerId, planId: plan.planId, amount, currency: "INR", billingCycle: input.billingCycle, idempotencyKey })
+      : { provider: "free", checkoutId: idempotencyKey, amount, currency: "INR" as const, status: "CREATED" as const, checkoutUrl: "" };
+    const session = {
+      checkoutSessionId: idempotencyKey,
+      plan,
+      billingCycle: input.billingCycle,
+      priceSummary: { subtotal, gstRatePercent: 18, gstAmount, total: amount, currency: "INR" as const },
+      billingDetails: input.billingDetails || {},
+      paymentProvider: paymentsService.readiness(),
+      checkout,
+      termsAccepted: input.termsAccepted,
+      nextAction: checkout.status === "PROVIDER_NOT_CONFIGURED" ? "Configure Razorpay before collecting payment." : "Confirm payment after provider completion."
+    };
+    this.audit(input.actorId, input.organizationId, "CheckoutSession", idempotencyKey, "CHECKOUT_SESSION_CREATED", { planId: plan.planId, billingCycle: input.billingCycle, providerStatus: checkout.status });
+    return session;
+  }
+
+  confirmCheckout(input: { organizationId: string; customerId: string; actorId: string; checkoutSessionId: string; providerPaymentId?: string }) {
+    const payment = store.customerPayments.find((item) => item.organizationId === input.organizationId && item.customerId === input.customerId && item.idempotencyKey === input.checkoutSessionId);
+    if (!payment) {
+      return {
+        status: "provider_not_configured" as const,
+        message: "No provider-backed payment exists for this checkout session.",
+        nextAction: "configure_razorpay_provider"
+      };
+    }
+    if (payment.status !== "paid") {
+      return {
+        status: "payment_pending" as const,
+        paymentId: payment.paymentId,
+        message: "Payment is not confirmed by the provider yet.",
+        nextAction: "wait_for_signed_webhook"
+      };
+    }
+    this.audit(input.actorId, input.organizationId, "CustomerPayment", payment.paymentId, "CHECKOUT_CONFIRMED");
+    return { status: "confirmed" as const, payment };
+  }
+
+  payment(organizationId: string, customerId: string, paymentId: string) {
+    return store.customerPayments.find((item) => item.organizationId === organizationId && item.customerId === customerId && item.paymentId === paymentId);
   }
 
   async subscribe(input: { organizationId: string; customerId: string; actorId: string; planId: string; billingCycle: StoredBuilderBillingCycle }) {
@@ -331,13 +405,15 @@ export class BillingService {
   canConsume(input: { organizationId: string; customerId: string; metric: StoredUsageEventType; quantity: number; credits?: number }) {
     this.ensureDefaultSubscription(input.organizationId, input.customerId);
     const subscription = this.activeSubscription(input.organizationId, input.customerId);
-    if (!subscription) return { allowed: false, reason: "Active builder subscription is required." };
+    if (!subscription) return { allowed: false, reason: "Active builder subscription is required.", code: "PLAN_LIMIT_REACHED" as const, upgradeUrl: "/pricing" };
     const limit = store.customerUsageLimits.find((item) => item.organizationId === input.organizationId && item.customerId === input.customerId && item.metric === input.metric);
-    if (!limit) return { allowed: false, reason: `Usage limit for ${input.metric} is not configured.` };
-    if (!limit.adminOverride && limit.usedValue + input.quantity > limit.limitValue) return { allowed: false, reason: `Plan limit exceeded for ${input.metric}. Used ${limit.usedValue}/${limit.limitValue}.`, subscription, limit };
+    if (!limit) return { allowed: false, reason: `Usage limit for ${input.metric} is not configured.`, code: "PLAN_LIMIT_REACHED" as const, subscription, upgradeUrl: "/pricing" };
+    const currentPlan = store.billingPlans.find((item) => item.planId === subscription.planId);
+    const requiredPlan = this.requiredPlanFor(input.metric, input.quantity, limit.limitValue);
+    if (!limit.adminOverride && limit.usedValue + input.quantity > limit.limitValue) return { allowed: false, reason: `Plan limit exceeded for ${input.metric}. Used ${limit.usedValue}/${limit.limitValue}.`, code: "PLAN_LIMIT_REACHED" as const, subscription, currentPlan, requiredPlan, limit, usedAmount: limit.usedValue, requestedAmount: input.quantity, limitAmount: limit.limitValue, upgradeUrl: "/pricing" };
     const credits = input.credits ?? this.creditCost(subscription.planId, input.metric) * input.quantity;
     const wallet = this.wallet(input.organizationId, input.customerId);
-    if (credits > wallet.balance) return { allowed: false, reason: "Insufficient AI credit balance.", subscription, limit, creditsRequired: credits, creditBalance: wallet.balance };
+    if (credits > wallet.balance) return { allowed: false, reason: "Insufficient AI credit balance.", code: "PLAN_LIMIT_REACHED" as const, subscription, currentPlan, requiredPlan, limit, usedAmount: wallet.lifetimeDebits, requestedAmount: credits, limitAmount: wallet.balance, creditsRequired: credits, creditBalance: wallet.balance, upgradeUrl: "/pricing" };
     return { allowed: true, subscription, limit, creditsRequired: credits, creditBalance: wallet.balance };
   }
 
@@ -351,7 +427,9 @@ export class BillingService {
     if (!limit) throw new Error(`Usage limit for ${input.metric} is not configured.`);
     if (!limit.adminOverride && limit.usedValue + input.quantity > limit.limitValue) {
       this.usageEvent({ organizationId: input.organizationId, customerId: input.customerId, userId: input.actorId, workspaceId: input.workspaceId, subscriptionId: subscription.subscriptionId, planId: subscription.planId, metric: input.metric, quantity: input.quantity, source: input.source, sourceId: input.sourceId, status: "rejected", reason: `Plan limit exceeded for ${input.metric}.`, idempotencyKey: input.idempotencyKey, metadata: input.metadata });
-      throw new Error(`Plan limit exceeded for ${input.metric}. Used ${limit.usedValue}/${limit.limitValue}.`);
+      const error = new Error(`Plan limit exceeded for ${input.metric}. Used ${limit.usedValue}/${limit.limitValue}.`) as Error & { planLimit?: unknown };
+      error.planLimit = this.canConsume({ organizationId: input.organizationId, customerId: input.customerId, metric: input.metric, quantity: input.quantity, credits: input.credits });
+      throw error;
     }
     const cost = input.credits ?? this.creditCost(subscription.planId, input.metric) * input.quantity;
     if (cost > 0) this.credit(input.organizationId, input.customerId, "deduct", cost, input.source, input.sourceId, `${input.metric} credit deduction.`);
@@ -396,7 +474,9 @@ export class BillingService {
     }
     const now = new Date().toISOString();
     for (const seed of planConfigurationService.billingPlanSeeds()) {
-      store.billingPlans.push({ id: createId("bpl"), ...seed, activityHistory: [{ at: now, status: seed.status, message: "Default builder billing plan seeded." }], createdAt: now, updatedAt: now });
+      const plan = { id: createId("bpl"), ...seed, activityHistory: [{ at: now, status: seed.status, message: "Default builder billing plan seeded." }], createdAt: now, updatedAt: now };
+      store.billingPlans.push(plan);
+      this.recordPriceHistory(plan, "system", "Approved VaanForge plan seeded.");
     }
     this.ensurePlanControls();
   }
@@ -554,6 +634,28 @@ export class BillingService {
 
   private audit(actorId: string, organizationId: string, entityType: string, entityId: string | undefined, billingAction: string, metadata?: Record<string, unknown>) {
     auditService.record({ actorId, organizationId, action: "BILLING_ACTION", entityType, entityId, metadata: { billingAction, ...metadata } });
+  }
+
+  private recordPriceHistory(plan: StoredBillingPlan, changedBy: string, reason: string, previousMonthlyPrice?: number, previousYearlyPrice?: number) {
+    store.billingPlanPriceHistory.push({
+      id: createId("bph"),
+      historyId: createId("plan_price_history"),
+      organizationId: plan.organizationId,
+      planId: plan.planId,
+      previousMonthlyPrice,
+      previousYearlyPrice,
+      monthlyPrice: plan.monthlyPrice,
+      yearlyPrice: plan.yearlyPrice,
+      changedBy,
+      reason,
+      createdAt: new Date().toISOString()
+    });
+  }
+
+  private requiredPlanFor(metric: StoredUsageEventType, quantity: number, currentLimit: number) {
+    return store.billingPlans
+      .filter((plan) => plan.status === "active" && (plan.limits[metric] || 0) >= currentLimit + quantity)
+      .sort((a, b) => a.monthlyPrice - b.monthlyPrice)[0];
   }
 
   private ensurePlanControls() {

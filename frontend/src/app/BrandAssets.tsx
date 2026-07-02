@@ -1524,14 +1524,14 @@ function CollateralTab() {
                 <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto auto", gap: 0, background: "#f5f7fa", padding: "6px 12px", borderBottom: "1px solid #e8ecf2" }}>
                   {["Description", "Qty", "Rate", "Amount"].map(h => <div key={h} style={{ fontSize: 8, fontFamily: F.mono, color: "#5c6878", textTransform: "uppercase", letterSpacing: "0.08em", textAlign: h === "Description" ? "left" : "right" }}>{h}</div>)}
                 </div>
-                {[["Professional Plan — Jun 2025", "1", "₹2,999", "₹2,999"], ["CGST @ 9%", "", "", "₹269.91"], ["SGST @ 9%", "", "", "₹269.91"]].map((row, i) => (
+                {[["Backend-priced plan", "1", "API", "API"], ["CGST @ 9%", "", "", "API"], ["SGST @ 9%", "", "", "API"]].map((row, i) => (
                   <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr auto auto auto", gap: 0, padding: "5px 12px", borderBottom: i < 2 ? "1px solid #e8ecf2" : "none", background: "#fff" }}>
                     {row.map((cell, j) => <div key={j} style={{ fontSize: 8, fontFamily: F.body, color: j === 0 ? "#0d1117" : "#5c6878", textAlign: j === 0 ? "left" : "right" }}>{cell}</div>)}
                   </div>
                 ))}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 0, padding: "6px 12px", background: "#007a5e" }}>
                   <div style={{ fontSize: 9, fontFamily: F.display, color: "#fff", fontWeight: 600 }}>Total (INR)</div>
-                  <div style={{ fontSize: 9, fontFamily: F.mono, color: "#fff", fontWeight: 700 }}>₹3,538.82</div>
+                  <div style={{ fontSize: 9, fontFamily: F.mono, color: "#fff", fontWeight: 700 }}>API total</div>
                 </div>
               </div>
             </Paper>

@@ -2184,6 +2184,20 @@ export interface StoredBillingPlan {
   updatedAt: string;
 }
 
+export interface StoredBillingPlanPriceHistory {
+  id: string;
+  historyId: string;
+  organizationId?: string;
+  planId: string;
+  previousMonthlyPrice?: number;
+  previousYearlyPrice?: number;
+  monthlyPrice: number;
+  yearlyPrice: number;
+  changedBy: string;
+  reason: string;
+  createdAt: string;
+}
+
 export interface StoredPlanFeatureFlag {
   id: string;
   flagId: string;
@@ -3817,6 +3831,7 @@ export interface StoreState {
   factoryActivityLogs: StoredFactoryActivityLog[];
   factoryAuditLogs: StoredFactoryAuditLog[];
   billingPlans: StoredBillingPlan[];
+  billingPlanPriceHistory: StoredBillingPlanPriceHistory[];
   planFeatureFlags: StoredPlanFeatureFlag[];
   planUsagePolicies: StoredPlanUsagePolicy[];
   customerSubscriptions: StoredCustomerSubscription[];
@@ -4069,6 +4084,7 @@ export const store: StoreState = {
   factoryActivityLogs: [],
   factoryAuditLogs: [],
   billingPlans: [],
+  billingPlanPriceHistory: [],
   planFeatureFlags: [],
   planUsagePolicies: [],
   customerSubscriptions: [],
