@@ -19,6 +19,7 @@ Current QA coverage:
 - Phase status gate for the 48-phase tracker.
 - Route smoke coverage through `scripts/qa-route-smoke.js`, including the PDF-required public website, Business Planning OS, Client Portal, Promotions & Marketing OS, Education Suite, VMetron Suite, shared billing, reports, account, settings, support, and admin routes.
 - UI interaction coverage through `scripts/qa-ui-interactions.js`, including suite dashboard live summaries, protected notifications, pricing plan catalog visibility, pricing entitlement/trial/checkout, finance entry/export, operations project/task lists and task lifecycle, CRM lead/customer lists and lead stage updates, Customer Portal OS, support ticket/message visibility and lifecycle, support SLA/escalation/knowledge-base operations, HR Team OS operations, HR candidate stage, hiring, interview scoring, legal agreement list/status, compliance item status, registration status, creator profile and campaign lists, Creator Portal OS, Reports OS, Automation OS, Intelligence OS, Settings OS, partner, communication, automation record lists, intelligence latest snapshot visibility, audit visibility, and settings workflows.
+- UI finalization coverage through scripts/qa-ui-finalization-contract.js, including backend-driven workspace projects, backend-driven agent runs, simplified navigation, reduced-motion support, focus visibility, and required UI/UX documentation.
 - Onboarding product-flow coverage through `scripts/qa-onboarding-contract.js`.
 - Module loading/empty/error/success state coverage through `scripts/qa-state-contract.js`.
 - API auth/permission coverage through `scripts/qa-api-security.js`.
@@ -54,3 +55,4 @@ Future QA:
 
 - Add browser-driven interaction tests for visual form submissions and protected flows after a browser runner is installed.
 - Add database-backed integration tests after Prisma persistence is wired.
+

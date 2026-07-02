@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion as rawMotion } from "framer-motion";
 import {
   LayoutDashboard, FolderOpen, Cpu, Hammer, ShieldCheck,
@@ -7,14 +7,14 @@ import {
   CheckCircle2, FileText, GitBranch, Code2, Database, Shield, Lock,
   Box, KeyRound, Webhook, BarChart3, Store, ClipboardCheck,
   MessageSquare, Cloud,
-  Send, Sparkles, Menu, X,
+  Send, Sparkles, Menu, X, AlertTriangle,
 } from "lucide-react";
 import type { PageProps } from "./App";
 import { apiClient } from "../services/apiClient";
 
 const motion = rawMotion as any;
 
-// â”€â”€ Logo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Logo
 const Mark = ({ size = 20, className = "" }: { size?: number; className?: string }) => (
   <svg width={size} height={size} viewBox="0 0 32 32" fill="none" aria-hidden className={className}>
     <path d="M5 5L16 26L27 5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -24,7 +24,7 @@ const Mark = ({ size = 20, className = "" }: { size?: number; className?: string
   </svg>
 );
 
-// â”€â”€ Greeting helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Greeting helpers
 const QUESTIONS = [
   "What would you like to build today?",
   "What are your plans for today?",
@@ -43,7 +43,7 @@ function getGreeting() {
   return "Good evening";
 }
 
-// â”€â”€ Theme Toggle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Theme toggle
 function ThemeToggle({ dark, toggleTheme }: { dark: boolean; toggleTheme: () => void }) {
   const [open, setOpen] = useState(false);
   const Icon = dark ? Moon : Sun;
@@ -66,21 +66,14 @@ function ThemeToggle({ dark, toggleTheme }: { dark: boolean; toggleTheme: () => 
   );
 }
 
-// â”€â”€ Top Nav â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Top nav
 const NAV = [
   { id: "workspace", label: "Workspace", icon: LayoutDashboard },
-  { id: "onboarding", label: "Onboarding", icon: ClipboardCheck },
   { id: "projects",  label: "Projects",  icon: FolderOpen },
   { id: "factory",   label: "Factory",   icon: Cpu },
-  { id: "builds",    label: "Builds",    icon: Hammer },
-  { id: "validations", label: "Validations", icon: ShieldCheck },
   { id: "deployments", label: "Deployments", icon: Rocket },
   { id: "pricing",   label: "Pricing",   icon: CreditCard },
-  { id: "product-health", label: "Health", icon: ShieldCheck },
-  { id: "notifications", label: "Alerts", icon: Bell },
-  { id: "automation", label: "Automation", icon: GitBranch },
-  { id: "admin-monitoring", label: "Monitoring", icon: BarChart3 },
-  { id: "feedback", label: "Feedback", icon: MessageSquare },
+  { id: "support", label: "Support", icon: MessageSquare },
   { id: "settings",  label: "Settings",  icon: Settings },
 ];
 
@@ -103,7 +96,7 @@ function TopNav({ route, navigate, dark, toggleTheme, onMobileMenu }: TopNavProp
         </span>
       </button>
 
-      {/* Center nav â€” desktop */}
+      {/* Center nav - desktop */}
       <nav className="hidden lg:flex items-center gap-0.5 flex-1 overflow-x-auto ml-3">
         {NAV.map(({ id, label, icon: Icon }) => (
           <button key={id} onClick={() => navigate(id)}
@@ -131,21 +124,8 @@ function TopNav({ route, navigate, dark, toggleTheme, onMobileMenu }: TopNavProp
   );
 }
 
-// â”€â”€ Sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const HISTORY = {
-  Today: [
-    { id: 1, title: "EcommerceAPI v1", project: "EcommerceAPI", status: "approval", time: "12m" },
-    { id: 2, title: "Auth scaffold", project: "AuthService", status: "complete", time: "2h" },
-  ],
-  Yesterday: [
-    { id: 3, title: "MobileApp backend", project: "MobileAPI", status: "building", time: "1d" },
-    { id: 4, title: "Data pipeline v2", project: "DataPipeline", status: "complete", time: "1d" },
-  ],
-  "Last 7 days": [
-    { id: 5, title: "User auth API", project: "UserAuth", status: "complete", time: "3d" },
-    { id: 6, title: "File upload svc", project: "FileService", status: "complete", time: "5d" },
-  ],
-};
+// Sidebar
+const HISTORY: Record<string, Array<{ id: number; title: string; project: string; status: string; time: string }>> = {};
 
 const SBADGE: Record<string, string> = {
   approval: "text-amber-500 bg-amber-500/10",
@@ -178,6 +158,12 @@ function Sidebar({ open, onToggle, activeChat, setActiveChat, navigate }: Sideba
           </div>
 
           <div className="flex-1 overflow-y-auto py-1.5 px-1.5 space-y-3">
+            {Object.keys(HISTORY).length === 0 && (
+              <div className="mx-2 mt-3 rounded-xl border border-border bg-card/70 p-3">
+                <div className="text-xs font-semibold text-foreground">No project chats yet</div>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">Create a project and VaanForge will keep the conversation history here.</p>
+              </div>
+            )}
             {Object.entries(HISTORY).map(([group, items]) => (
               <div key={group}>
                 <div className="text-xs text-muted-foreground px-2 py-1 uppercase tracking-widest font-medium" style={{ fontSize: 9 }}>{group}</div>
@@ -202,8 +188,8 @@ function Sidebar({ open, onToggle, activeChat, setActiveChat, navigate }: Sideba
             <button onClick={() => navigate("profile")} className="w-full text-left flex items-center gap-2 rounded-xl border border-border bg-card/70 p-2 hover:border-primary/30 transition-colors">
               <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-semibold text-xs">AV</div>
               <div className="min-w-0 flex-1">
-                <div className="text-xs font-semibold text-foreground truncate">Arjun Varma</div>
-                <div className="text-xs text-muted-foreground truncate" style={{ fontSize: 10 }}>Professional workspace</div>
+                <div className="text-xs font-semibold text-foreground truncate">Account</div>
+                <div className="text-xs text-muted-foreground truncate" style={{ fontSize: 10 }}>Workspace profile</div>
               </div>
               <span onClick={(event) => { event.stopPropagation(); navigate("settings"); }} className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted" aria-label="Profile settings" role="button" tabIndex={0}>
                 <Settings size={12} />
@@ -223,7 +209,7 @@ function Sidebar({ open, onToggle, activeChat, setActiveChat, navigate }: Sideba
             </button>
           ))}
           <div className="mt-auto pb-2 flex flex-col items-center gap-2">
-            <button onClick={() => navigate("profile")} className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs font-semibold">AV</button>
+            <button onClick={() => navigate("profile")} className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs font-semibold">VF</button>
             <button onClick={() => navigate("settings")} className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-muted"><Settings size={12} /></button>
           </div>
         </div>
@@ -249,6 +235,12 @@ function MobileDrawer({ open, onClose, activeChat, setActiveChat, navigate }: { 
           </div>
         </div>
         <div className="flex-1 overflow-y-auto p-2 space-y-3">
+          {Object.keys(HISTORY).length === 0 && (
+            <div className="rounded-xl border border-border bg-card/70 p-3">
+              <div className="text-xs font-semibold text-foreground">No project chats yet</div>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">Start a project to create your first saved conversation.</p>
+            </div>
+          )}
           {Object.entries(HISTORY).map(([group, items]) => (
             <div key={group}>
               <div className="text-xs text-muted-foreground px-2 py-1 uppercase tracking-widest" style={{ fontSize: 9 }}>{group}</div>
@@ -270,8 +262,8 @@ function MobileDrawer({ open, onClose, activeChat, setActiveChat, navigate }: { 
           <button onClick={() => { navigate("profile"); onClose(); }} className="w-full text-left flex items-center gap-2 rounded-xl border border-border bg-card/70 p-2 hover:border-primary/30 transition-colors">
             <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-semibold text-xs">AV</div>
             <div className="min-w-0 flex-1">
-              <div className="text-xs font-semibold text-foreground truncate">Arjun Varma</div>
-              <div className="text-xs text-muted-foreground truncate" style={{ fontSize: 10 }}>Professional workspace</div>
+              <div className="text-xs font-semibold text-foreground truncate">Account</div>
+              <div className="text-xs text-muted-foreground truncate" style={{ fontSize: 10 }}>Workspace profile</div>
             </div>
             <span onClick={(event) => { event.stopPropagation(); navigate("settings"); onClose(); }} className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted" aria-label="Profile settings" role="button" tabIndex={0}>
               <Settings size={12} />
@@ -282,7 +274,7 @@ function MobileDrawer({ open, onClose, activeChat, setActiveChat, navigate }: { 
     </div>
   );
 }
-// â”€â”€ Workspace Dashboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Workspace dashboard
 function WorkspaceDashboard() {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
@@ -305,7 +297,7 @@ function WorkspaceDashboard() {
             <div>
               <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-1">{dateStr}</p>
               <h1 className="text-xl sm:text-2xl font-semibold text-foreground tracking-tight">
-                {greeting}, <span className="text-primary">Arjun</span>
+                {greeting}, <span className="text-primary">there</span>
               </h1>
             </div>
             <div className="inline-flex w-fit items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground">
@@ -371,109 +363,162 @@ function WorkspaceDashboard() {
     </div>
   );
 }
-// â”€â”€ Projects View â€” fixed grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function StateBlock({ icon: Icon, title, description, action, spinning = false }: { icon: React.ElementType; title: string; description: string; action?: string; spinning?: boolean }) {
+  return (
+    <div className="rounded-2xl border border-border bg-card p-8 text-center">
+      <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+        <Icon size={18} className={spinning ? "animate-spin" : ""} />
+      </div>
+      <h2 className="mt-4 text-base font-semibold text-foreground">{title}</h2>
+      <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">{description}</p>
+      {action && <button className="mt-5 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90">{action}</button>}
+    </div>
+  );
+}
+// Projects view - fixed grid
 function ProjectsView() {
-  const projects = [
-    { name: "EcommerceAPI", desc: "REST API for e-commerce platform", status: "approval", modules: 16, plan: "Pro", updated: "12m ago" },
-    { name: "AuthService",  desc: "JWT-based authentication service", status: "complete",  modules: 8,  plan: "Pro", updated: "2h ago" },
-    { name: "MobileAPI",    desc: "Backend for React Native app",      status: "building",  modules: 12, plan: "Pro", updated: "1d ago" },
-    { name: "DataPipeline", desc: "ETL pipeline with PostgreSQL",       status: "complete",  modules: 6,  plan: "Pro", updated: "1d ago" },
-    { name: "Notifications",desc: "Push notification microservice",      status: "complete",  modules: 5,  plan: "Pro", updated: "3d ago" },
-    { name: "SearchService",desc: "Full-text search with Elasticsearch", status: "complete",  modules: 7,  plan: "Pro", updated: "5d ago" },
-  ];
+  const [projects, setProjects] = useState<Array<Record<string, any>>>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    setLoading(true);
+    apiClient<Array<Record<string, any>>>("/builder/projects")
+      .then((data) => {
+        if (alive) setProjects(Array.isArray(data) ? data : []);
+      })
+      .catch((err: unknown) => {
+        if (alive) setError(err instanceof Error ? err.message : "Projects could not be loaded.");
+      })
+      .finally(() => {
+        if (alive) setLoading(false);
+      });
+    return () => { alive = false; };
+  }, []);
+
   return (
     <div className="flex-1 overflow-hidden flex flex-col">
-      {/* Fixed header */}
       <div className="shrink-0 px-6 py-4 border-b border-border flex items-center gap-4">
         <div>
           <h1 className="text-lg font-semibold text-foreground">Projects</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">{projects.length} projects Â· Professional plan</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{loading ? "Loading backend projects" : `${projects.length} projects`}</p>
         </div>
         <div className="ml-auto flex items-center gap-2">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-lg">
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-muted rounded-lg">
             <Search size={12} className="text-muted-foreground" />
-            <input className="text-xs bg-transparent outline-none text-foreground placeholder:text-muted-foreground w-28" placeholder="Search projectsâ€¦" />
+            <input className="text-xs bg-transparent outline-none text-foreground placeholder:text-muted-foreground w-28" placeholder="Search projects..." />
           </div>
           <button className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-primary text-primary-foreground font-medium hover:opacity-90">
             <Plus size={13} /> New Project
           </button>
         </div>
       </div>
-      {/* Scrollable grid */}
       <div className="flex-1 overflow-y-auto p-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-          {projects.map(p => (
-            <div key={p.name} className="bg-card border border-border rounded-xl p-5 hover:border-primary/30 hover:shadow-sm transition-all cursor-pointer group">
-              <div className="flex items-start justify-between mb-3">
-                <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <FolderOpen size={16} className="text-primary" />
-                </div>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${SBADGE[p.status]}`}>{p.status}</span>
-              </div>
-              <div className="font-semibold text-foreground text-sm">{p.name}</div>
-              <div className="text-xs text-muted-foreground mt-1 leading-relaxed">{p.desc}</div>
-              <div className="flex items-center gap-2 mt-4 text-xs text-muted-foreground border-t border-border pt-3">
-                <span>{p.modules} modules</span>
-                <span>Â·</span><span>{p.plan}</span>
-                <span className="ml-auto">{p.updated}</span>
-              </div>
-            </div>
-          ))}
-          {/* New project card */}
-          <button className="border-2 border-dashed border-border rounded-xl p-5 flex flex-col items-center justify-center gap-2 hover:border-primary/40 hover:bg-primary/5 transition-colors group">
+        {loading && <StateBlock icon={Loader2} title="Loading projects" description="Fetching your workspace projects." spinning />}
+        {!loading && error && <StateBlock icon={AlertTriangle} title="Projects need sign in" description={error} action="Go to login" />}
+        {!loading && !error && projects.length === 0 && (
+          <div className="rounded-2xl border border-border bg-card p-8 text-center">
             <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-              <Plus size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
+              <FolderOpen size={18} className="text-muted-foreground" />
             </div>
-            <span className="text-xs font-medium text-muted-foreground group-hover:text-primary transition-colors">New Project</span>
-          </button>
-        </div>
+            <h2 className="mt-4 text-base font-semibold text-foreground">Create your first project</h2>
+            <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">Start with one idea. VaanForge will guide requirements, blueprint approval, build, QA, and release.</p>
+            <button className="mt-5 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90">
+              <Plus size={14} /> New project
+            </button>
+          </div>
+        )}
+        {!loading && !error && projects.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            {projects.map((p) => {
+              const name = String(p.name || p.title || p.projectId || "Untitled project");
+              const status = String(p.status || "active");
+              return (
+                <div key={String(p.projectId || p.id || name)} className="bg-card border border-border rounded-xl p-5 hover:border-primary/30 hover:shadow-sm transition-all cursor-pointer group">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <FolderOpen size={16} className="text-primary" />
+                    </div>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${SBADGE[status] || "text-muted-foreground bg-muted"}`}>{status}</span>
+                  </div>
+                  <div className="font-semibold text-foreground text-sm">{name}</div>
+                  <div className="text-xs text-muted-foreground mt-1 leading-relaxed">{String(p.description || p.businessGoal || "No description yet.")}</div>
+                  <div className="flex items-center gap-2 mt-4 text-xs text-muted-foreground border-t border-border pt-3">
+                    <span>{String(p.productType || "software")}</span>
+                    <span className="ml-auto">{p.updatedAt ? new Date(String(p.updatedAt)).toLocaleDateString("en-IN") : "New"}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-// â”€â”€ Builds View â€” fixed header table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const BUILDS = [
-  { id: "VF-0847", project: "EcommerceAPI", status: "pending",  trigger: "Blueprint approved",  time: "Waiting", dur: "â€”" },
-  { id: "VF-0846", project: "AuthService",  status: "complete", trigger: "Manual",              time: "2h ago",  dur: "2m 12s" },
-  { id: "VF-0845", project: "MobileAPI",    status: "building", trigger: "Requirement update",  time: "1d ago",  dur: "Runningâ€¦" },
-  { id: "VF-0844", project: "DataPipeline", status: "complete", trigger: "Blueprint approved",  time: "1d ago",  dur: "4m 38s" },
-  { id: "VF-0843", project: "Notifications",status: "complete", trigger: "Manual",              time: "3d ago",  dur: "1m 44s" },
-  { id: "VF-0842", project: "SearchService",status: "complete", trigger: "Blueprint approved",  time: "5d ago",  dur: "6m 02s" },
-];
-
+// Builds View - backend-backed agent run list
 function BuildsView() {
+  const [runs, setRuns] = useState<Array<Record<string, any>>>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    setLoading(true);
+    apiClient<unknown>("/agents/runs")
+      .then((data) => {
+        const payload = data as { runs?: Array<Record<string, any>>; items?: Array<Record<string, any>> };
+        const records = Array.isArray(data) ? data : payload.runs || payload.items || [];
+        if (alive) setRuns(records);
+      })
+      .catch((err: unknown) => {
+        if (alive) setError(err instanceof Error ? err.message : "Agent runs could not be loaded.");
+      })
+      .finally(() => {
+        if (alive) setLoading(false);
+      });
+    return () => { alive = false; };
+  }, []);
+
   return (
     <div className="flex-1 overflow-hidden flex flex-col">
       <div className="shrink-0 px-6 py-4 border-b border-border flex items-center gap-4">
         <div>
           <h1 className="text-lg font-semibold text-foreground">Builds</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">Build history across all projects</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{loading ? "Loading backend runs" : `${runs.length} agent runs`}</p>
         </div>
       </div>
-      <div className="flex-1 overflow-hidden flex flex-col mx-6 my-5">
-        <div className="bg-card border border-border rounded-xl overflow-hidden flex flex-col h-full">
-          {/* Fixed table header */}
-          <div className="shrink-0 grid border-b border-border bg-muted/40" style={{ gridTemplateColumns: "110px 1fr 1fr 100px 90px 90px" }}>
-            {["Build ID", "Project", "Trigger", "Status", "Duration", "Time"].map(h => (
-              <div key={h} className="px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-widest">{h}</div>
-            ))}
+      <div className="flex-1 overflow-y-auto p-6">
+        {loading && <StateBlock icon={Loader2} title="Loading agent runs" description="Fetching build and agent execution state from the backend." spinning />}
+        {!loading && error && <StateBlock icon={AlertTriangle} title="Build runs unavailable" description={error} action="Retry" />}
+        {!loading && !error && runs.length === 0 && <StateBlock icon={Hammer} title="No builds yet" description="Approved blueprints and agent runs will appear here after a project build starts." action="Open factory" />}
+        {!loading && !error && runs.length > 0 && (
+          <div className="grid gap-3">
+            {runs.map((run) => {
+              const id = String(run.runId || run.id || run.agentRunId || "run");
+              const project = String(run.projectName || run.project || run.projectId || "Project");
+              const status = String(run.status || "queued");
+              const trigger = String(run.trigger || run.reason || run.currentTask || "Agent execution");
+              return (
+                <article key={id} className="rounded-2xl border border-border bg-card p-4 transition-colors hover:border-primary/30">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                      <div className="font-mono text-xs text-primary">{id}</div>
+                      <h2 className="mt-1 truncate text-sm font-semibold text-foreground">{project}</h2>
+                      <p className="mt-1 text-xs text-muted-foreground">{trigger}</p>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span className={`rounded-full px-2 py-0.5 font-medium ${SBADGE[status] || "bg-muted text-muted-foreground"}`}>{status}</span>
+                      <span>{run.updatedAt ? new Date(String(run.updatedAt)).toLocaleDateString("en-IN") : "No update yet"}</span>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
           </div>
-          {/* Scrollable rows */}
-          <div className="flex-1 overflow-y-auto">
-            {BUILDS.map((b, i) => (
-              <div key={b.id} className={`grid hover:bg-muted/30 cursor-pointer transition-colors ${i < BUILDS.length - 1 ? "border-b border-border" : ""}`}
-                style={{ gridTemplateColumns: "110px 1fr 1fr 100px 90px 90px" }}>
-                <div className="px-4 py-3 font-mono text-xs text-primary">{b.id}</div>
-                <div className="px-4 py-3 text-xs text-foreground">{b.project}</div>
-                <div className="px-4 py-3 text-xs text-muted-foreground">{b.trigger}</div>
-                <div className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${SBADGE[b.status]}`}>{b.status}</span></div>
-                <div className="px-4 py-3 text-xs text-muted-foreground font-mono">{b.dur}</div>
-                <div className="px-4 py-3 text-xs text-muted-foreground">{b.time}</div>
-              </div>
-            ))}
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
@@ -769,12 +814,12 @@ function PricingView() {
     </div>
   );
 }
-// Settings View â€” fixed TOC + scrollable content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Settings view - fixed TOC + scrollable content
 function ProfileView({ navigate }: { navigate: (route: string) => void }) {
   const details = [
     ["Role", "Owner"],
-    ["Workspace", "Professional workspace"],
-    ["Plan", "Professional"],
+    ["Workspace", "Workspace profile"],
+    ["Plan", "Loaded from billing"],
     ["Region", "India"],
   ];
   const access = [
@@ -790,7 +835,7 @@ function ProfileView({ navigate }: { navigate: (route: string) => void }) {
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-mono uppercase tracking-widest text-primary">Profile</p>
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">Arjun Varma</h1>
+            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">Account profile</h1>
             <p className="mt-1 text-sm text-muted-foreground">Manage identity, workspace access, security, and billing context.</p>
           </div>
           <div className="flex gap-2">
@@ -802,10 +847,10 @@ function ProfileView({ navigate }: { navigate: (route: string) => void }) {
         <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
           <section className="rounded-2xl border border-border bg-card p-5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-xl font-semibold text-primary">AV</div>
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-xl font-semibold text-primary">VF</div>
               <div className="min-w-0 flex-1">
                 <h2 className="text-base font-semibold text-foreground">Account identity</h2>
-                <p className="mt-1 text-sm text-muted-foreground">arjun@vaanforge.local</p>
+                <p className="mt-1 text-sm text-muted-foreground">Profile details load from the account API.</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">Verified email</span>
                   <span className="rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground">MFA ready</span>
@@ -926,7 +971,7 @@ function SettingsView() {
                 <h2 className="text-base font-semibold text-foreground">API Keys</h2>
                 <button className="text-xs px-2.5 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground flex items-center gap-1"><Plus size={11} /> New Key</button>
               </div>
-              {[["Production Key", "vf_live_â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢", "Jun 1, 2025"], ["Development Key", "vf_test_â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢", "May 15, 2025"]].map(([n, k, d]) => (
+              {[["Production Key", "vf_live_••••••••••••••••••••••••••••••••", "Jun 1, 2025"], ["Development Key", "vf_test_••••••••••••••••••••••••••••••••", "May 15, 2025"]].map(([n, k, d]) => (
                 <div key={n} className="bg-card border border-border rounded-xl p-4 flex items-center justify-between">
                   <div>
                     <div className="text-xs font-medium text-foreground">{n}</div>
@@ -978,7 +1023,7 @@ function SettingsView() {
   );
 }
 
-// â”€â”€ Placeholder for Factory / Validations / Deployments â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Placeholder for factory, validations, and deployments
 function PlaceholderView({ title, icon: Icon }: { title: string; icon: React.ElementType }) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center p-12">
@@ -994,7 +1039,7 @@ function PlaceholderView({ title, icon: Icon }: { title: string; icon: React.Ele
   );
 }
 
-// â”€â”€ Root WorkspaceApp â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Root WorkspaceApp
 type SurfacePageConfig = {
   eyebrow: string;
   title: string;
@@ -1229,7 +1274,7 @@ export function WorkspaceApp({ route, navigate, dark, toggleTheme }: PageProps) 
   };
 
   return (
-    /* Fixed full-viewport shell â€” no page scroll */
+    /* Fixed full-viewport shell - no page scroll */
     <div className="h-screen overflow-hidden flex flex-col bg-background text-foreground">
       <TopNav route={route} navigate={navigate} dark={dark} toggleTheme={toggleTheme} onMobileMenu={() => setMobileOpen(true)} />
 
@@ -1242,7 +1287,7 @@ export function WorkspaceApp({ route, navigate, dark, toggleTheme }: PageProps) 
         {/* Mobile sidebar drawer */}
         <MobileDrawer open={mobileOpen} onClose={() => setMobileOpen(false)} activeChat={activeChat} setActiveChat={setActiveChat} navigate={navigate} />
 
-        {/* Main content â€” takes remaining space, no outer scroll */}
+        {/* Main content - takes remaining space, no outer scroll */}
         <div className="flex-1 overflow-hidden flex flex-col">
           {content()}
           <ProductFooter navigate={navigate} />
@@ -1251,6 +1296,11 @@ export function WorkspaceApp({ route, navigate, dark, toggleTheme }: PageProps) 
     </div>
   );
 }
+
+
+
+
+
 
 
 

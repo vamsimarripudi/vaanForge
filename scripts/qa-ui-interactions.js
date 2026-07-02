@@ -21,7 +21,7 @@ const contracts = [
   {
     name: "profile and settings navigation",
     source: workspaceSource,
-    requires: ["ProfileView", "Arjun Varma", "Professional workspace", "navigate(\"profile\")", "navigate(\"settings\")"]
+    requires: ["ProfileView", "Account", "Workspace profile", "navigate(\"profile\")", "navigate(\"settings\")"]
   },
   {
     name: "project workflow surfaces",
@@ -91,3 +91,4 @@ if (failures.length) {
 }
 
 console.log(`UI interaction contract check passed for ${contracts.length} VaanForge flows.`);
+
