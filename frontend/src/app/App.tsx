@@ -29,6 +29,9 @@ const APP_ROUTES = new Set([
   "admin-engineering-environments", "admin-engineering-database",
   "admin-engineering-analytics", "admin-engineering-governance",
   "admin-engineering-admin-tools",
+  "admin-intelligence", "admin-intelligence-health", "admin-intelligence-self-heal",
+  "admin-intelligence-predictions", "admin-intelligence-recommendations",
+  "admin-intelligence-inspections", "admin-intelligence-reports",
   "feedback", "feedback-feature-requests", "feedback-bug-reports", "feedback-roadmap",
   "profile", "project-detail", "project-chat", "project-intake",
   "project-questions", "project-blueprint", "project-design",
@@ -176,6 +179,13 @@ function routeFromPath(pathname: string) {
   if (clean === "admin/engineering/analytics") return "admin-engineering-analytics";
   if (clean === "admin/engineering/governance") return "admin-engineering-governance";
   if (clean === "admin/engineering/admin-tools") return "admin-engineering-admin-tools";
+  if (clean === "admin/intelligence") return "admin-intelligence";
+  if (clean === "admin/intelligence/health") return "admin-intelligence-health";
+  if (clean === "admin/intelligence/self-heal") return "admin-intelligence-self-heal";
+  if (clean === "admin/intelligence/predictions") return "admin-intelligence-predictions";
+  if (clean === "admin/intelligence/recommendations") return "admin-intelligence-recommendations";
+  if (clean === "admin/intelligence/inspections") return "admin-intelligence-inspections";
+  if (clean === "admin/intelligence/reports") return "admin-intelligence-reports";
   if (clean === "feedback") return "feedback";
   if (clean === "feedback/feature-requests") return "feedback-feature-requests";
   if (clean === "feedback/bug-reports") return "feedback-bug-reports";
@@ -287,6 +297,13 @@ function pathFromRoute(route: string) {
     "admin-engineering-analytics": "/admin/engineering/analytics",
     "admin-engineering-governance": "/admin/engineering/governance",
     "admin-engineering-admin-tools": "/admin/engineering/admin-tools",
+    "admin-intelligence": "/admin/intelligence",
+    "admin-intelligence-health": "/admin/intelligence/health",
+    "admin-intelligence-self-heal": "/admin/intelligence/self-heal",
+    "admin-intelligence-predictions": "/admin/intelligence/predictions",
+    "admin-intelligence-recommendations": "/admin/intelligence/recommendations",
+    "admin-intelligence-inspections": "/admin/intelligence/inspections",
+    "admin-intelligence-reports": "/admin/intelligence/reports",
     feedback: "/feedback",
     "feedback-feature-requests": "/feedback/feature-requests",
     "feedback-bug-reports": "/feedback/bug-reports",

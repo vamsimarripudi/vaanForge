@@ -567,6 +567,146 @@ export interface StoredFeatureFlag {
   updatedAt: string;
 }
 
+export interface StoredHealthScore {
+  id: string;
+  scoreId: string;
+  organizationId: string;
+  subjectType: "workspace" | "project" | "deployment" | "agent" | "billing" | "marketplace" | "support" | "developer" | "security" | "infrastructure";
+  subjectId: string;
+  score: number;
+  reason: string;
+  evidence: Record<string, unknown>;
+  trend: "improving" | "stable" | "declining";
+  recommendedAction: string;
+  ownerId: string;
+  createdAt: string;
+}
+
+export interface StoredHealthScoreHistory {
+  id: string;
+  historyId: string;
+  scoreId: string;
+  organizationId: string;
+  score: number;
+  trend: "improving" | "stable" | "declining";
+  createdAt: string;
+}
+
+export interface StoredRepairAction {
+  id: string;
+  repairId: string;
+  organizationId: string;
+  issueType: "failed_job" | "queue_backlog" | "retry_safe_failure" | "disconnected_worker" | "missing_provider_credentials" | "broken_webhook" | "failed_deployment" | "expired_api_key" | "failed_email";
+  targetType: string;
+  targetId: string;
+  safeToAutoRepair: boolean;
+  status: "detected" | "approval_required" | "repaired" | "failed" | "skipped";
+  evidence: Record<string, unknown>;
+  timeline: Array<Record<string, unknown>>;
+  nextAction: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredRepairAttempt {
+  id: string;
+  attemptId: string;
+  repairId: string;
+  organizationId: string;
+  status: "attempted" | "succeeded" | "failed";
+  action: string;
+  evidence: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface StoredPrediction {
+  id: string;
+  predictionId: string;
+  organizationId: string;
+  predictionType: "low_credits" | "storage_exhaustion" | "subscription_renewal_risk" | "customer_churn" | "deployment_risk" | "infrastructure_overload" | "provider_outage_impact" | "queue_saturation" | "database_growth" | "project_completion_delay";
+  subjectId: string;
+  riskLevel: "low" | "medium" | "high" | "critical";
+  confidence: number;
+  horizonDays: number;
+  reason: string;
+  evidence: Record<string, unknown>;
+  recommendedAction: string;
+  createdAt: string;
+}
+
+export interface StoredRecommendation {
+  id: string;
+  recommendationId: string;
+  organizationId: string;
+  recommendationType: "upgrade_plan" | "optimize_storage" | "archive_unused_projects" | "rotate_api_keys" | "invite_team" | "enable_mfa" | "review_security_settings" | "generate_documentation" | "improve_onboarding" | "reduce_ai_costs";
+  subjectId: string;
+  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  reason: string;
+  evidence: Record<string, unknown>;
+  status: "open" | "accepted" | "dismissed" | "completed";
+  ownerId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredWorkspaceQuality {
+  id: string;
+  qualityId: string;
+  organizationId: string;
+  workspaceId: string;
+  readinessScore: number;
+  checks: Record<string, unknown>;
+  recommendedAction: string;
+  createdAt: string;
+}
+
+export interface StoredProjectQuality {
+  id: string;
+  qualityId: string;
+  organizationId: string;
+  projectId: string;
+  qualityScore: number;
+  checks: Record<string, unknown>;
+  recommendedAction: string;
+  createdAt: string;
+}
+
+export interface StoredInspectionRun {
+  id: string;
+  inspectionId: string;
+  organizationId: string;
+  cadence: "daily" | "weekly" | "monthly";
+  status: "running" | "completed" | "failed";
+  startedAt: string;
+  completedAt?: string;
+  createdBy: string;
+}
+
+export interface StoredInspectionResult {
+  id: string;
+  resultId: string;
+  inspectionId: string;
+  organizationId: string;
+  checkType: "unused_api_keys" | "unused_workspaces" | "inactive_users" | "expired_webhooks" | "large_files" | "storage_growth" | "failed_jobs" | "security_warnings" | "missing_documentation" | "open_critical_bugs";
+  status: "passed" | "warning" | "failed";
+  evidence: Record<string, unknown>;
+  recommendedAction: string;
+  createdAt: string;
+}
+
+export interface StoredIntelligenceReport {
+  id: string;
+  reportId: string;
+  organizationId: string;
+  reportType: "executive" | "engineering" | "workspace" | "project" | "billing" | "security" | "infrastructure" | "customer_success" | "marketplace" | "support";
+  format: "PDF" | "CSV" | "EXCEL";
+  status: "READY" | "FAILED";
+  content: string;
+  generatedBy: string;
+  createdAt: string;
+}
+
 export interface StoredSupportTicket {
   id: string;
   organizationId: string;
@@ -3530,6 +3670,17 @@ export interface StoreState {
   databaseMetrics: StoredDatabaseMetric[];
   engineeringReports: StoredEngineeringReport[];
   featureFlags: StoredFeatureFlag[];
+  healthScores: StoredHealthScore[];
+  healthScoreHistory: StoredHealthScoreHistory[];
+  repairActions: StoredRepairAction[];
+  repairAttempts: StoredRepairAttempt[];
+  predictions: StoredPrediction[];
+  recommendations: StoredRecommendation[];
+  workspaceQuality: StoredWorkspaceQuality[];
+  projectQuality: StoredProjectQuality[];
+  inspectionRuns: StoredInspectionRun[];
+  inspectionResults: StoredInspectionResult[];
+  intelligenceReports: StoredIntelligenceReport[];
   supportTickets: StoredSupportTicket[];
   ticketMessages: StoredTicketMessage[];
   supportAttachments: StoredSupportAttachment[];
@@ -3769,6 +3920,17 @@ export const store: StoreState = {
   databaseMetrics: [],
   engineeringReports: [],
   featureFlags: [],
+  healthScores: [],
+  healthScoreHistory: [],
+  repairActions: [],
+  repairAttempts: [],
+  predictions: [],
+  recommendations: [],
+  workspaceQuality: [],
+  projectQuality: [],
+  inspectionRuns: [],
+  inspectionResults: [],
+  intelligenceReports: [],
   supportTickets: [],
   ticketMessages: [],
   supportAttachments: [],
