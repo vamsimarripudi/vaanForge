@@ -54,7 +54,7 @@ export class DeterministicAiAdapter implements AiProvider {
         ...feature.acceptanceCriteria.map((criterion) => `- ${criterion}`),
         ""
       ]),
-      "## VMNexus Synchronization",
+      "## KRAVIA Synchronization",
       `- Architecture: ${requirement.constraints.approvedArchitecture}`,
       `- Design system: ${requirement.constraints.designSystem}`,
       `- Routing: ${requirement.constraints.routing.join(", ")}`,
@@ -114,7 +114,7 @@ export class DeterministicAiAdapter implements AiProvider {
         dueDate: requirement.dueDate
       })),
       codexImplementationPrompt: [
-        `Build ${requirement.productName} inside the VMNexus ecosystem.`,
+        `Build ${requirement.productName} inside the KRAVIA ecosystem.`,
         `Use ${requirement.constraints.approvedArchitecture}. Follow ${requirement.constraints.designSystem}.`,
         `Implement features: ${featureNames.join(", ")}.`,
         "Track owner, status, priority, due date, audit logs, activity history, and next action for every workflow.",
@@ -130,7 +130,7 @@ export class DeterministicAiAdapter implements AiProvider {
         "Required requirement fields parsed successfully.",
         "Every generated output section is non-empty.",
         "All workflow fields include owner, status, priority, due date, audit logs, activity history, and next action.",
-        "VMNexus architecture, routing, permissions, and design constraints are represented in the plan."
+        "KRAVIA architecture, routing, permissions, and design constraints are represented in the plan."
       ]
     };
   }

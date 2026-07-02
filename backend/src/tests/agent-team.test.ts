@@ -32,8 +32,8 @@ async function main() {
         ]
       },
       constraints: {
-        approvedArchitecture: "VMNexus Express TypeScript backend with Next dashboard",
-        designSystem: "VMNexus design-system package",
+        approvedArchitecture: "KRAVIA Express TypeScript backend with Next dashboard",
+        designSystem: "KRAVIA design-system package",
         routing: ["/admin/agent/team", "/api/admin/agent/team"],
         permissions: ["audit:read", "workspace:create"]
       }
@@ -43,11 +43,13 @@ async function main() {
   const runId = "runId" in run ? run.runId : "";
 
   const roles = await agentTeamService.roles(organizationId);
-  assert.equal(roles.length, 9);
+  assert.equal(roles.length, 11);
+  assert.ok(roles.some((role) => role.slug === "requirement"));
+  assert.ok(roles.some((role) => role.slug === "reviewer"));
   assert.ok(roles.some((role) => role.slug === "security" && role.requiredReview));
 
   const assigned = await agentTeamService.assign(organizationId, actorId, runId, {});
-  assert.equal(assigned.assignments.length, 9);
+  assert.equal(assigned.assignments.length, 11);
 
   const product = roles.find((role) => role.slug === "product-manager")!;
   const architect = roles.find((role) => role.slug === "architect")!;

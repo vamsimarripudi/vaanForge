@@ -9,7 +9,7 @@ const pending = (content.match(/\| Pending \|/g) || []).length;
 const phases = [...content.matchAll(/^\| (\d+) \|/gm)].map((match) => Number(match[1]));
 const expectedPhaseCount = 48;
 
-console.log(`VM Nexus phase status: ${completed} complete, ${active} in progress, ${pending} pending.`);
+console.log(`KRAVIA phase status: ${completed} complete, ${active} in progress, ${pending} pending.`);
 
 if (phases.length !== expectedPhaseCount) {
   console.error(`Expected ${expectedPhaseCount} phases, found ${phases.length}. Update phase gates and docs if the plan changes.`);

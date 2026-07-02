@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { roleHasPermission } from "@vmnexus/shared/permissions";
-import type { CoreRole } from "@vmnexus/shared/roles";
+import { roleHasPermission } from "@kravia/shared/permissions";
+import type { CoreRole } from "@kravia/shared/roles";
 import { env } from "../../config/env";
 import { createId, store, type StoredEnterpriseWorkspace, type StoredLaunchReadinessCheck } from "../../database/in-memory-store";
 import { auditService } from "../audit/audit.service";

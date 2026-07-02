@@ -2,7 +2,7 @@
 
 The project intentionally uses a simple root structure:
 
-- `frontend/` for the Next.js app.
+- `frontend/` for the Vite React app.
 - `backend/` for REST APIs and business logic.
 - `shared/` for shared types and config.
 - `design-system/` for tokens.

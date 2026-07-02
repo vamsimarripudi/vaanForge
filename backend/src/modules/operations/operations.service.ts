@@ -117,7 +117,7 @@ export class OperationsService {
         memory: { rss: memory.rss, heapUsed: memory.heapUsed, heapTotal: memory.heapTotal, external: memory.external },
         disk,
         database: { mode: "in-memory/postgres-ready", recordsTracked: this.recordCount() },
-        redisCache: { configured: Boolean(process.env.REDIS_URL), queueAdapter: process.env.REDIS_URL ? "redis" : "internal" },
+        cache: { configured: Boolean(process.env.CACHE_ENDPOINT), queueAdapter: process.env.CACHE_ENDPOINT ? "external" : "internal" },
         queueLatencyMs: queueLatency,
         apiLatencyMs: apiLatency,
         backgroundWorkers: { active: store.agentActivityLogs.filter((log) => log.organizationId === actor.organizationId).length },

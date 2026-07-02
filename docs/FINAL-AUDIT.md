@@ -49,7 +49,7 @@ Known launch limitations:
 - Vaanis, VaanRTC, AI, and provider integrations are represented as launch-gated adapters until provider-specific configuration is supplied.
 - In production mode, placeholder domains, local frontend URLs, local database URLs, placeholder providers, and incomplete payment credentials report as readiness failures.
 - Commercial plan prices are still pending approval; checkout returns price-pending until a plan has an approved amount.
-- Dependency audit has a remaining moderate PostCSS advisory through the Next.js dependency tree. The lockfile keeps the reviewed current dependency state; automated fixes that downgrade framework packages must be reviewed before use.
+- Dependency audit has only low severity findings after the Vite React migration. The lockfile keeps the reviewed current dependency state; automated fixes that change framework packages must be reviewed before use.
 
 Launch interpretation:
 

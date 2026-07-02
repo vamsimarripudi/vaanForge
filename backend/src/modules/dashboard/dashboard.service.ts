@@ -6,7 +6,7 @@ import { hrService } from "../hr/hr.service";
 import { complianceService } from "../compliance/compliance.service";
 import { workspacesService } from "../workspaces/workspaces.service";
 import { crmService } from "../crm/crm.service";
-import type { SuiteType } from "@vmnexus/shared/types";
+import type { SuiteType } from "@kravia/shared/types";
 
 export class DashboardService {
   async founderSummary(organizationId: string) {

@@ -1,4 +1,4 @@
-import type { ComplianceItemInput, ComplianceStatus, GovernmentRegistrationInput, RegistrationType } from "@vmnexus/shared/legal";
+import type { ComplianceItemInput, ComplianceStatus, GovernmentRegistrationInput, RegistrationType } from "@kravia/shared/legal";
 import { env } from "../../config/env";
 import { createId, store, type StoredComplianceItem, type StoredGovernmentRegistration } from "../../database/in-memory-store";
 import { prisma } from "../../database/prisma-client";

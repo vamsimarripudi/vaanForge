@@ -10,6 +10,9 @@ const auditSchema = z.object({
   actorId: z.string(),
   organizationId: z.string(),
   action: z.enum([
+    "AUTH_LOGIN",
+    "AUTH_LOGOUT",
+    "PASSWORD_RESET",
     "FINANCE_ACTION",
     "LEGAL_ACTION",
     "SECURITY_ACTION",

@@ -1,4 +1,7 @@
 export type AuditAction =
+  | "AUTH_LOGIN"
+  | "AUTH_LOGOUT"
+  | "PASSWORD_RESET"
   | "FINANCE_ACTION"
   | "LEGAL_ACTION"
   | "SECURITY_ACTION"
@@ -14,9 +17,11 @@ export type AuditAction =
 export interface AuditLogInput {
   actorId: string;
   organizationId: string;
+  workspaceId?: string;
   action: AuditAction;
   entityType: string;
   entityId?: string;
+  result?: "success" | "failure" | "blocked";
   metadata?: Record<string, unknown>;
   requestId?: string;
   ipAddress?: string;
@@ -35,6 +40,8 @@ export class AuditService {
     const entry = {
       id: `aud_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
       ...input,
+      metadata: input.metadata ? maskRecord(input.metadata) : undefined,
+      result: input.result || "success",
       createdAt: new Date().toISOString()
     };
     this.logs.push(entry);
@@ -67,3 +74,7 @@ export class AuditService {
 }
 
 export const auditService = new AuditService();
+
+function maskRecord(value: Record<string, unknown>): Record<string, unknown> {
+  return JSON.parse(JSON.stringify(value).replace(/(secret|token|password|api[_ -]?key|private[_ -]?key)["']?\s*:\s*["'][^"']+["']/gi, "$1\":\"[masked]\"")) as Record<string, unknown>;
+}

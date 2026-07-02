@@ -26,14 +26,28 @@ filesRouter.post("/uploads", authMiddleware, requirePermission("organization:man
     return;
   }
 
-  const uploadedFile = await filesService.upload({ ...parsed.data, organizationId });
-  auditService.record({
-    actorId: request.session!.userId,
-    organizationId,
-    action: "FILE_UPLOADED",
-    entityType: "FileUpload",
-    entityId: uploadedFile.storageKey,
-    metadata: uploadedFile
-  });
-  response.status(201).json({ data: uploadedFile });
+  try {
+    const uploadedFile = await filesService.upload({ ...parsed.data, organizationId });
+    auditService.record({
+      actorId: request.session!.userId,
+      organizationId,
+      action: "FILE_UPLOADED",
+      entityType: "FileUpload",
+      entityId: uploadedFile.storageKey,
+      metadata: uploadedFile,
+      requestId: request.requestId,
+      ipAddress: request.ip,
+      userAgent: request.headers["user-agent"]
+    });
+    response.status(201).json({ data: uploadedFile });
+  } catch (error) {
+    response.status(400).json({
+      error: "File upload rejected",
+      message: error instanceof Error ? error.message : "Upload validation failed",
+      code: "FILE_UPLOAD_REJECTED",
+      recoverable: true,
+      nextAction: "Upload an allowed file type within the configured size limit.",
+      requestId: request.requestId
+    });
+  }
 });

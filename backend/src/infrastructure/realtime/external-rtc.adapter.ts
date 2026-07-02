@@ -1,4 +1,5 @@
 import type { CreateRoomInput, RealtimeAdapter } from "./realtime.interface";
+import { logger } from "../logger";
 
 export class ExternalRtcAdapter implements RealtimeAdapter {
   async createRoom(input: CreateRoomInput) {
@@ -7,10 +8,14 @@ export class ExternalRtcAdapter implements RealtimeAdapter {
   }
 
   async notifyParticipants(roomId: string, participantIds: string[]) {
-    console.log("External RTC notify placeholder", { roomId, participantIds });
+    if (process.env.NODE_ENV === "development") {
+      logger.debug("External RTC participant notification queued by development adapter.", { roomId, participantCount: participantIds.length });
+    }
   }
 
   async publishUpdate(channel: string, payload: unknown) {
-    console.log("External RTC update placeholder", { channel, payload });
+    if (process.env.NODE_ENV === "development") {
+      logger.debug("External RTC update queued by development adapter.", { channel, payload });
+    }
   }
 }

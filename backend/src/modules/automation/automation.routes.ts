@@ -7,8 +7,8 @@ import { automationService } from "./automation.service";
 
 export const automationRouter = Router();
 
-const triggerSchema = z.enum(["LEAD_CREATED", "TICKET_CREATED", "RENEWAL_DUE", "REPORT_READY", "TASK_OVERDUE"]);
-const actionSchema = z.enum(["CREATE_TASK", "SEND_NOTIFICATION", "QUEUE_REPORT", "REQUEST_APPROVAL"]);
+const triggerSchema = z.enum(["LEAD_CREATED", "TICKET_CREATED", "RENEWAL_DUE", "REPORT_READY", "TASK_OVERDUE", "DEPLOYMENT_SUCCEEDED", "BLUEPRINT_APPROVED", "CREDITS_LOW", "PAYMENT_FAILED", "AI_FINISHED"]);
+const actionSchema = z.enum(["CREATE_TASK", "SEND_NOTIFICATION", "QUEUE_REPORT", "REQUEST_APPROVAL", "SEND_EMAIL", "CALL_WEBHOOK"]);
 const statusSchema = z.enum(["DRAFT", "ACTIVE", "PAUSED"]);
 
 automationRouter.get("/summary", authMiddleware, async (request, response) => {

@@ -22,7 +22,10 @@ const migrationFiles = fs
   .filter((filePath) => fs.existsSync(filePath));
 
 const migrationSql = migrationFiles.map((filePath) => fs.readFileSync(filePath, "utf8")).join("\n");
-const models = [...schema.matchAll(/^model\s+(\w+)\s+\{/gm)].map((match) => match[1]);
+const models = [...schema.matchAll(/^model\s+(\w+)\s+\{([\s\S]*?)^}/gm)].map((match) => {
+  const mappedTable = match[2].match(/@@map\("([^"]+)"\)/)?.[1];
+  return { name: match[1], tableName: mappedTable || match[1] };
+});
 const enums = [...schema.matchAll(/^enum\s+(\w+)\s+\{/gm)].map((match) => match[1]);
 const requiredPdfModels = [
   "User",
@@ -89,16 +92,16 @@ if (!migrationFiles.length) {
 }
 
 for (const model of models) {
-  if (!migrationSql.includes(`CREATE TABLE "${model}"`)) {
-    failures.push(`Prisma model ${model} must have a CREATE TABLE migration`);
+  if (!migrationSql.includes(`CREATE TABLE "${model.tableName}"`)) {
+    failures.push(`Prisma model ${model.name} must have a CREATE TABLE migration`);
   }
-  if (!databaseDoc.includes(`- ${model}.`)) {
-    failures.push(`docs/DATABASE.md must list Prisma model ${model}`);
+  if (!databaseDoc.includes(`- ${model.name}.`)) {
+    failures.push(`docs/DATABASE.md must list Prisma model ${model.name}`);
   }
 }
 
 for (const model of requiredPdfModels) {
-  if (!models.includes(model)) {
+  if (!models.some((item) => item.name === model)) {
     failures.push(`PDF-required Prisma model ${model} must exist in schema.prisma`);
   }
 }

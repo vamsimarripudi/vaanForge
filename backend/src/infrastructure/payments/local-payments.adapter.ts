@@ -11,7 +11,9 @@ export class LocalPaymentsAdapter implements PaymentsProvider {
       amount: input.amount,
       currency: input.currency,
       status: "CREATED" as const,
-      checkoutUrl: `local://checkout/${input.organizationId}/${input.planId}`
+      checkoutUrl: `local://checkout/${input.organizationId}/${input.planId}`,
+      providerOrderId: createId("local_order"),
+      providerSubscriptionId: input.subscriptionId ? createId("local_subscription") : undefined
     };
     localCheckoutSessions.push(session);
     return session;

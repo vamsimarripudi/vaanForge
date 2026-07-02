@@ -1,4 +1,4 @@
-import type { CustomerInput, LeadInput, LeadStage } from "@vmnexus/shared/operations";
+import type { CustomerInput, LeadInput, LeadStage } from "@kravia/shared/operations";
 import { env } from "../../config/env";
 import { createId, store, type StoredCustomer, type StoredLead } from "../../database/in-memory-store";
 import { prisma } from "../../database/prisma-client";

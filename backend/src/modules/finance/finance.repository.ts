@@ -1,4 +1,4 @@
-import type { ExpenseInput, RevenueInput } from "@vmnexus/shared/finance";
+import type { ExpenseInput, RevenueInput } from "@kravia/shared/finance";
 import { env } from "../../config/env";
 import { createId, store, type StoredExpense, type StoredReportExport, type StoredRevenue } from "../../database/in-memory-store";
 import { prisma } from "../../database/prisma-client";

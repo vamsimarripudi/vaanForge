@@ -1,13 +1,11 @@
-# Frontend
 
-Next.js application for the VM Nexus Ecosystem OS.
+  # Design assets creation
 
-Key routes:
+  This is a code bundle for Design assets creation. The original project is available at https://www.figma.com/design/aHNGINOkdT3xvxbkvcWeaH/Design-assets-creation.
 
-- `/` public landing.
-- `/pricing` suite pricing.
-- `/onboarding` suite selection and onboarding start.
-- `/education/dashboard` Education Suite dashboard.
-- `/vmetron/dashboard` VMetron Suite dashboard.
+  ## Running the code
 
-Every screen should include loading, empty, error, and success states through shared state components.
+  Run `npm i` to install the dependencies.
+
+  Run `npm run dev` to start the development server.
+  

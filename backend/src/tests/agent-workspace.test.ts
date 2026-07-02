@@ -32,8 +32,8 @@ async function main() {
         ]
       },
       constraints: {
-        approvedArchitecture: "VMNexus Express TypeScript backend with Next dashboard",
-        designSystem: "VMNexus design-system package",
+        approvedArchitecture: "KRAVIA Express TypeScript backend with Next dashboard",
+        designSystem: "KRAVIA design-system package",
         routing: ["/admin/agent/workspace", "/api/admin/agent/workspace/:runId"],
         permissions: ["audit:read", "workspace:create"]
       }

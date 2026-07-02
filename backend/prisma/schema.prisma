@@ -381,6 +381,13 @@ enum CustomerPaymentStatus {
   refunded
 }
 
+enum CustomerPaymentAttemptStatus {
+  pending
+  succeeded
+  failed
+  retry_scheduled
+}
+
 enum CustomerUsageMetric {
   agent_run
   template_use
@@ -585,10 +592,28 @@ model Organization {
   builderProjectOutputs BuilderProjectOutput[]
   builderProjectChangeRequests BuilderProjectChangeRequest[]
   builderProjectActivityLogs BuilderProjectActivityLog[]
+  factoryProjects FactoryProject[]
+  factoryIntakeAnswers FactoryIntakeAnswer[]
+  factoryRequirementQuestions FactoryRequirementQuestion[]
+  factoryBlueprints FactoryBlueprint[]
+  factoryDesignSystems FactoryDesignSystem[]
+  factoryTaskGraphs FactoryTaskGraph[]
+  factoryTasks FactoryTask[]
+  factoryGeneratedFiles FactoryGeneratedFile[]
+  factoryValidationRuns FactoryValidationRun[]
+  factoryErrors FactoryError[]
+  factoryRepairAttempts FactoryRepairAttempt[]
+  factoryReleases FactoryRelease[]
+  factoryMemoryEntries FactoryMemoryEntry[]
+  factoryActivityLogs FactoryActivityLog[]
+  factoryAuditLogs FactoryAuditLog[]
   billingPlans BuilderBillingPlan[]
+  planFeatureFlags PlanFeatureFlag[]
+  planUsagePolicies PlanUsagePolicy[]
   customerSubscriptions CustomerSubscription[]
   customerInvoices CustomerInvoice[]
   customerPayments CustomerPayment[]
+  customerPaymentAttempts CustomerPaymentAttempt[]
   customerUsageLimits CustomerUsageLimit[]
   customerUsageEvents CustomerUsageEvent[]
   customerCreditWallets CustomerCreditWallet[]
@@ -622,6 +647,14 @@ model Organization {
   webhookEndpoints WebhookEndpoint[]
   apiUsageLogs ApiUsageLog[]
   apiRateLimits ApiRateLimit[]
+  marketplaceApps MarketplaceApp[]
+  marketplaceAppVersions MarketplaceAppVersion[]
+  marketplacePublishers MarketplacePublisher[]
+  marketplaceReviews MarketplaceReview[]
+  marketplaceInstalls MarketplaceInstall[]
+  marketplacePermissions MarketplacePermission[]
+  marketplacePricing MarketplacePricing[]
+  marketplacePayouts MarketplacePayout[]
   settings        OrganizationSettings?
   auditLogs     AuditLog[]
   dailyNotes    DailyNote[]
@@ -2390,6 +2423,309 @@ model BuilderProjectActivityLog {
   @@index([organizationId, createdAt])
 }
 
+model FactoryProject {
+  id                      String       @id @default(cuid())
+  projectId               String       @unique
+  organizationId          String
+  organization            Organization @relation(fields: [organizationId], references: [id])
+  ownerId                 String
+  name                    String
+  productType             String
+  targetPlatform          String
+  businessGoal            String
+  status                  String
+  priority                String
+  dueDate                 DateTime
+  complexityLevel         String
+  deploymentTarget        String
+  recommendedPlan         String
+  requirementQualityScore Int
+  complexityScore         Int
+  buildSize               String
+  nextAction              String
+  activityHistory         Json
+  createdAt               DateTime     @default(now())
+  updatedAt               DateTime     @updatedAt
+
+  @@map("factory_projects")
+  @@index([organizationId, status])
+  @@index([organizationId, ownerId])
+}
+
+model FactoryIntakeAnswer {
+  id              String       @id @default(cuid())
+  answerId        String       @unique
+  projectId       String
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  userRoles       String[]
+  coreFeatures    String[]
+  integrations    String[]
+  budgetLevel     String
+  rawInput        Json
+  normalizedInput Json
+  missingFields   String[]
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@map("factory_intake_answers")
+  @@index([organizationId, projectId])
+}
+
+model FactoryRequirementQuestion {
+  id             String       @id @default(cuid())
+  questionId     String       @unique
+  projectId      String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  question       String
+  fieldKey       String
+  reason         String
+  status         String
+  answer         String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("factory_requirement_questions")
+  @@index([organizationId, projectId, status])
+}
+
+model FactoryBlueprint {
+  id               String       @id @default(cuid())
+  blueprintId      String       @unique
+  projectId        String
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  version          Int
+  status           String
+  prd              String
+  featureList      String[]
+  userRoles        String[]
+  userJourneys     String[]
+  uxFlow           String[]
+  pageMap          String[]
+  apiMap           String[]
+  databaseSchema   String[]
+  architecturePlan String[]
+  securityPlan     String[]
+  testingPlan      String[]
+  deploymentPlan   String[]
+  rejectionReason  String?
+  approvedAt       DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@map("factory_blueprints")
+  @@unique([projectId, version])
+  @@index([organizationId, status])
+}
+
+model FactoryDesignSystem {
+  id                     String       @id @default(cuid())
+  designId               String       @unique
+  projectId              String
+  organizationId         String
+  organization           Organization @relation(fields: [organizationId], references: [id])
+  version                Int
+  status                 String
+  designSystem           String[]
+  layoutDirection        String
+  componentMap           String[]
+  responsiveStrategy     String[]
+  accessibilityChecklist String[]
+  themeTokens            Json
+  uiQualityScore         Int
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
+
+  @@map("factory_design_systems")
+  @@unique([projectId, version])
+  @@index([organizationId, status])
+}
+
+model FactoryTaskGraph {
+  id             String       @id @default(cuid())
+  graphId        String       @unique
+  projectId      String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  status         String
+  nodes          Json
+  edges          Json
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("factory_task_graphs")
+  @@index([organizationId, projectId])
+}
+
+model FactoryTask {
+  id             String       @id @default(cuid())
+  taskId         String       @unique
+  graphId        String
+  projectId      String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  module         String
+  title          String
+  status         String
+  ownerAgent     String
+  priority       String
+  dueDate        DateTime
+  nextAction     String
+  evidence       Json
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("factory_tasks")
+  @@index([organizationId, projectId, status])
+}
+
+model FactoryGeneratedFile {
+  id             String       @id @default(cuid())
+  fileId         String       @unique
+  projectId      String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  taskId         String
+  path           String
+  fileType       String
+  status         String
+  checksum       String
+  diffRequired   Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("factory_generated_files")
+  @@index([organizationId, projectId])
+}
+
+model FactoryValidationRun {
+  id             String       @id @default(cuid())
+  validationId   String       @unique
+  projectId      String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  validationType String
+  status         String
+  evidence       Json
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("factory_validation_runs")
+  @@index([organizationId, projectId, status])
+}
+
+model FactoryError {
+  id             String       @id @default(cuid())
+  errorId        String       @unique
+  projectId      String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  source         String
+  reason         String
+  line           Int?
+  status         String
+  nextAction     String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("factory_errors")
+  @@index([organizationId, projectId, status])
+}
+
+model FactoryRepairAttempt {
+  id             String       @id @default(cuid())
+  repairId       String       @unique
+  projectId      String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  errorId        String
+  summary        String
+  status         String
+  evidence       Json
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("factory_repair_attempts")
+  @@index([organizationId, projectId])
+}
+
+model FactoryRelease {
+  id                  String       @id @default(cuid())
+  releaseId           String       @unique
+  projectId           String
+  organizationId      String
+  organization        Organization @relation(fields: [organizationId], references: [id])
+  version             String
+  status              String
+  changelog           String[]
+  releaseNotes        String
+  deploymentChecklist String[]
+  rollbackPlan        String[]
+  finalReport         String
+  approvedAt          DateTime?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  @@map("factory_releases")
+  @@index([organizationId, projectId, status])
+}
+
+model FactoryMemoryEntry {
+  id             String       @id @default(cuid())
+  memoryId       String       @unique
+  projectId      String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  memoryType     String
+  summary        String
+  sourceId       String
+  trusted        Boolean      @default(false)
+  sensitive      Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("factory_memory_entries")
+  @@index([organizationId, projectId])
+  @@index([organizationId, trusted, sensitive])
+}
+
+model FactoryActivityLog {
+  id             String       @id @default(cuid())
+  activityId     String       @unique
+  projectId      String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  actorId        String
+  action         String
+  status         String
+  message        String
+  metadata       Json?
+  createdAt      DateTime     @default(now())
+
+  @@map("factory_activity_logs")
+  @@index([organizationId, projectId])
+}
+
+model FactoryAuditLog {
+  id             String       @id @default(cuid())
+  auditId        String       @unique
+  projectId      String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  actorId        String
+  action         String
+  entityType     String
+  entityId       String?
+  metadata       Json?
+  createdAt      DateTime     @default(now())
+
+  @@map("factory_audit_logs")
+  @@index([organizationId, projectId])
+  @@index([organizationId, action])
+}
+
 model BuilderBillingPlan {
   id              String                 @id @default(cuid())
   planId          String                 @unique
@@ -2418,6 +2754,44 @@ model BuilderBillingPlan {
   @@index([tier])
 }
 
+model PlanFeatureFlag {
+  id             String       @id @default(cuid())
+  flagId         String       @unique
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  planId         String
+  key            String
+  enabled        Boolean      @default(false)
+  description    String
+  ownerId        String
+  updatedBy      String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("plan_feature_flags")
+  @@unique([organizationId, planId, key])
+  @@index([planId, enabled])
+}
+
+model PlanUsagePolicy {
+  id             String       @id @default(cuid())
+  policyId       String       @unique
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  planId         String
+  metric         CustomerUsageMetric
+  creditCost     Int
+  enabled        Boolean      @default(true)
+  ownerId        String
+  updatedBy      String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("plan_usage_policies")
+  @@unique([organizationId, planId, metric])
+  @@index([planId, metric, enabled])
+}
+
 model CustomerSubscription {
   id                    String                     @id @default(cuid())
   subscriptionId        String                     @unique
@@ -2428,6 +2802,12 @@ model CustomerSubscription {
   billingCycle          BuilderBillingCycle
   status                CustomerSubscriptionStatus
   razorpaySubscriptionId String?
+  providerCheckoutId     String?
+  gracePeriodEndsAt      DateTime?
+  retryCount             Int                         @default(0)
+  lastPaymentFailureReason String?
+  pendingPlanId          String?
+  pendingBillingCycle    BuilderBillingCycle?
   currentPeriodStart    DateTime
   currentPeriodEnd      DateTime
   renewalDate           DateTime
@@ -2454,11 +2834,17 @@ model CustomerInvoice {
   subscriptionId String?
   paymentId      String?
   number         String
+  gstin          String?
   amount         Int
+  subtotal       Int?
+  gstRatePercent Int?
+  gstAmount      Int?
   currency       String                @default("INR")
   status         CustomerInvoiceStatus
   dueDate        DateTime
   paidAt         DateTime?
+  downloadUrl    String?
+  pdfContent     String?
   lineItems      Json
   createdAt      DateTime              @default(now())
   updatedAt      DateTime              @updatedAt
@@ -2479,16 +2865,49 @@ model CustomerPayment {
   provider          String
   providerPaymentId String?
   providerOrderId   String?
+  providerSubscriptionId String?
+  idempotencyKey   String?               @unique
   amount            Int
   currency          String                @default("INR")
   status            CustomerPaymentStatus
   failureReason     String?
+  retryCount        Int                   @default(0)
+  nextRetryAt       DateTime?
+  gracePeriodEndsAt DateTime?
   createdAt         DateTime              @default(now())
   updatedAt         DateTime              @updatedAt
 
   @@map("customer_payments")
   @@index([organizationId, customerId])
   @@index([providerPaymentId])
+}
+
+model CustomerPaymentAttempt {
+  id                     String                       @id @default(cuid())
+  attemptId              String                       @unique
+  organizationId         String
+  organization           Organization                 @relation(fields: [organizationId], references: [id])
+  customerId             String
+  subscriptionId         String?
+  invoiceId              String?
+  paymentId              String?
+  provider               String
+  providerPaymentId      String?
+  providerOrderId        String?
+  idempotencyKey         String
+  amount                 Int
+  currency               String                       @default("INR")
+  status                 CustomerPaymentAttemptStatus
+  failureReason          String?
+  retryCount             Int                          @default(0)
+  nextRetryAt            DateTime?
+  createdAt              DateTime                     @default(now())
+  updatedAt              DateTime                     @updatedAt
+
+  @@map("customer_payment_attempts")
+  @@index([organizationId, customerId])
+  @@index([organizationId, status])
+  @@index([idempotencyKey])
 }
 
 model CustomerUsageLimit {
@@ -3162,6 +3581,206 @@ model ApiRateLimit {
   @@index([organizationId, keyId])
 }
 
+model MarketplacePublisher {
+  id              String       @id @default(cuid())
+  publisherId     String       @unique
+  developerId     String
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  displayName     String
+  profileUrl      String?
+  verified        Boolean      @default(false)
+  status          String
+  ownerId         String
+  priority        String
+  dueDate         DateTime
+  nextAction      String
+  activityHistory Json
+  apps            MarketplaceApp[]
+  payouts         MarketplacePayout[]
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@map("marketplace_publishers")
+  @@index([organizationId, status])
+  @@index([organizationId, developerId])
+}
+
+model MarketplaceApp {
+  id                   String                   @id @default(cuid())
+  appId                String                   @unique
+  publisherId          String
+  publisher            MarketplacePublisher     @relation(fields: [publisherId], references: [publisherId], onDelete: Cascade)
+  organizationId       String
+  organization         Organization             @relation(fields: [organizationId], references: [id])
+  name                 String
+  slug                 String                   @unique
+  appType              String
+  category             String
+  shortDescription     String
+  description          String
+  supportUrl           String?
+  requestedPermissions String[]
+  pricingModel         String
+  status               String
+  currentVersionId     String?
+  latestVersionNumber  String?
+  reviewRequired       Boolean                  @default(true)
+  ownerId              String
+  priority             String
+  dueDate              DateTime
+  nextAction           String
+  activityHistory      Json
+  versions             MarketplaceAppVersion[]
+  reviews              MarketplaceReview[]
+  installs             MarketplaceInstall[]
+  permissions          MarketplacePermission[]
+  pricing              MarketplacePricing?
+  payouts              MarketplacePayout[]
+  createdAt            DateTime                 @default(now())
+  updatedAt            DateTime                 @updatedAt
+
+  @@map("marketplace_apps")
+  @@index([organizationId, status])
+  @@index([organizationId, appType])
+  @@index([publisherId])
+}
+
+model MarketplaceAppVersion {
+  id              String              @id @default(cuid())
+  versionId       String              @unique
+  appId           String
+  app             MarketplaceApp      @relation(fields: [appId], references: [appId], onDelete: Cascade)
+  organizationId  String
+  organization    Organization        @relation(fields: [organizationId], references: [id])
+  versionNumber   String
+  changelog       String
+  manifest        Json
+  packageChecksum String
+  releaseNotes    String
+  status          String
+  immutable       Boolean             @default(true)
+  submittedById   String
+  approvedById    String?
+  reviews         MarketplaceReview[]
+  installs        MarketplaceInstall[]
+  createdAt       DateTime            @default(now())
+
+  @@map("marketplace_app_versions")
+  @@unique([appId, versionNumber])
+  @@index([organizationId, status])
+}
+
+model MarketplaceReview {
+  id             String                @id @default(cuid())
+  reviewId       String                @unique
+  appId          String
+  app            MarketplaceApp        @relation(fields: [appId], references: [appId], onDelete: Cascade)
+  versionId      String
+  version        MarketplaceAppVersion @relation(fields: [versionId], references: [versionId], onDelete: Cascade)
+  organizationId String
+  organization   Organization          @relation(fields: [organizationId], references: [id])
+  reviewType     String
+  status         String
+  reviewerId     String?
+  evidence       Json
+  reason         String?
+  nextAction     String
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  @@map("marketplace_reviews")
+  @@unique([versionId, reviewType])
+  @@index([organizationId, status])
+}
+
+model MarketplaceInstall {
+  id                   String                @id @default(cuid())
+  installId            String                @unique
+  appId                String
+  app                  MarketplaceApp        @relation(fields: [appId], references: [appId])
+  versionId            String
+  version              MarketplaceAppVersion @relation(fields: [versionId], references: [versionId])
+  organizationId       String
+  organization         Organization          @relation(fields: [organizationId], references: [id])
+  workspaceId          String
+  installedById        String
+  consentedPermissions String[]
+  status               String
+  rollbackVersionId    String?
+  ownerId              String
+  priority             String
+  dueDate              DateTime
+  nextAction           String
+  activityHistory      Json
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+
+  @@map("marketplace_installs")
+  @@index([organizationId, workspaceId])
+  @@index([organizationId, status])
+}
+
+model MarketplacePermission {
+  id             String         @id @default(cuid())
+  permissionId   String         @unique
+  appId          String
+  app            MarketplaceApp @relation(fields: [appId], references: [appId], onDelete: Cascade)
+  organizationId String
+  organization   Organization   @relation(fields: [organizationId], references: [id])
+  key            String
+  description    String
+  riskLevel      String
+  required       Boolean
+  createdAt      DateTime       @default(now())
+
+  @@map("marketplace_permissions")
+  @@unique([appId, key])
+  @@index([organizationId, riskLevel])
+}
+
+model MarketplacePricing {
+  id                  String         @id @default(cuid())
+  pricingId           String         @unique
+  appId               String         @unique
+  app                 MarketplaceApp @relation(fields: [appId], references: [appId], onDelete: Cascade)
+  organizationId      String
+  organization        Organization   @relation(fields: [organizationId], references: [id])
+  model               String
+  currency            String
+  amount              Int
+  billingMetric       String?
+  revenueSharePercent Int
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  @@map("marketplace_pricing")
+  @@index([organizationId, model])
+}
+
+model MarketplacePayout {
+  id              String               @id @default(cuid())
+  payoutId        String               @unique
+  publisherId     String
+  publisher       MarketplacePublisher @relation(fields: [publisherId], references: [publisherId])
+  organizationId  String
+  organization    Organization         @relation(fields: [organizationId], references: [id])
+  appId           String
+  app             MarketplaceApp       @relation(fields: [appId], references: [appId])
+  amount          Int
+  currency        String
+  status          String
+  sourceInstallId String?
+  dueDate         DateTime
+  activityHistory Json
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  @@map("marketplace_payouts")
+  @@index([organizationId, status])
+  @@index([publisherId])
+}
+
 model OrganizationSettings {
   id                String       @id @default(cuid())
   organizationId    String       @unique
@@ -3188,4 +3807,249 @@ model DailyNote {
   nextDayPlan    String?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
+}
+
+model CloudServiceRegistry {
+  id              String   @id @default(cuid())
+  serviceId       String   @unique
+  organizationId  String
+  name            String
+  version         String
+  componentType   String
+  health          String
+  dependencies    String[]
+  region          String
+  environment     String
+  ownerId         String
+  endpoint        String
+  lastHeartbeatAt DateTime
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("service_registry")
+  @@index([organizationId, componentType])
+  @@index([organizationId, health])
+}
+
+model CloudEventBus {
+  id                String   @id @default(cuid())
+  eventId           String   @unique
+  organizationId    String
+  topic             String
+  producerServiceId String
+  consumerServiceId String?
+  status            String
+  payload           Json
+  attempts          Int
+  traceId           String
+  nextAction        String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("event_bus")
+  @@index([organizationId, topic])
+  @@index([organizationId, status])
+  @@index([traceId])
+}
+
+model CloudStorageObject {
+  id              String   @id @default(cuid())
+  objectId        String   @unique
+  organizationId  String
+  workspaceId     String?
+  bucket          String
+  key             String
+  objectType      String
+  sizeBytes       Int
+  contentType     String
+  encrypted       Boolean
+  version         Int
+  lifecyclePolicy String
+  cdnUrl          String?
+  ownerId         String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("storage_objects")
+  @@index([organizationId, bucket])
+  @@index([organizationId, objectType])
+}
+
+model CloudSecretStore {
+  id             String    @id @default(cuid())
+  secretId       String    @unique
+  organizationId String
+  name           String
+  category       String
+  version        Int
+  status         String
+  rotationDueAt  DateTime
+  lastRotatedAt  DateTime?
+  ownerId        String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@map("secret_store")
+  @@index([organizationId, category])
+  @@index([organizationId, status])
+}
+
+model CloudConfiguration {
+  id             String   @id @default(cuid())
+  configId       String   @unique
+  organizationId String
+  key            String
+  scope          String
+  value          Json
+  status         String
+  environment    String
+  ownerId        String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("configuration")
+  @@unique([organizationId, key, environment])
+  @@index([organizationId, scope])
+}
+
+model CloudNotification {
+  id             String   @id @default(cuid())
+  messageId      String   @unique
+  organizationId String
+  channel        String
+  recipient      String
+  status         String
+  provider       String
+  traceId        String
+  nextAction     String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("notifications")
+  @@index([organizationId, channel])
+  @@index([organizationId, status])
+}
+
+model CloudAiRun {
+  id                 String   @id @default(cuid())
+  jobId              String   @unique
+  organizationId     String
+  jobType            String
+  status             String
+  ownerId            String
+  priority           String
+  dueDate            DateTime
+  artifactId         String?
+  releaseId          String?
+  validationEvidence Json
+  nextAction         String
+  activityHistory    Json
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("ai_runs")
+  @@index([organizationId, status])
+}
+
+model CloudBuildJob {
+  id                 String   @id @default(cuid())
+  jobId              String   @unique
+  organizationId     String
+  status             String
+  ownerId            String
+  priority           String
+  dueDate            DateTime
+  artifactId         String?
+  validationEvidence Json
+  nextAction         String
+  activityHistory    Json
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("build_jobs")
+  @@index([organizationId, status])
+}
+
+model CloudDeployment {
+  id                 String   @id @default(cuid())
+  deploymentId       String   @unique
+  organizationId     String
+  status             String
+  ownerId            String
+  priority           String
+  dueDate            DateTime
+  releaseId          String?
+  validationEvidence Json
+  nextAction         String
+  activityHistory    Json
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("deployments")
+  @@index([organizationId, status])
+}
+
+model CloudHealthCheck {
+  id             String   @id @default(cuid())
+  metricId       String   @unique
+  organizationId String
+  componentType  String
+  metricName     String
+  value          Float
+  unit           String
+  region         String
+  traceId        String?
+  createdAt      DateTime @default(now())
+
+  @@map("health_checks")
+  @@index([organizationId, componentType])
+}
+
+model CloudAuditLog {
+  id             String   @id @default(cuid())
+  auditId        String   @unique
+  organizationId String
+  actorId        String
+  action         String
+  entityType     String
+  entityId       String
+  reason         String
+  metadata       Json
+  createdAt      DateTime @default(now())
+
+  @@map("audit_logs")
+  @@index([organizationId, action])
+  @@index([organizationId, actorId])
+}
+
+model CloudBilling {
+  id             String   @id @default(cuid())
+  billingId      String   @unique
+  organizationId String
+  product        String
+  status         String
+  subscriptions  Int
+  marketplace    Int
+  credits        Int
+  licensing      String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("billing")
+  @@index([organizationId, status])
+}
+
+model ConsolePreference {
+  id             String   @id @default(cuid())
+  preferenceId   String   @unique
+  organizationId String
+  userId         String
+  landingModule  String
+  visibleModules String[]
+  themeMode      String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("console_preferences")
+  @@unique([organizationId, userId])
 }

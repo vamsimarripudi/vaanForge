@@ -17,13 +17,13 @@ import { intelligenceService } from "../modules/intelligence/intelligence.servic
 export async function seedDemoData() {
   const founder = await authService.register({
     name: "Vamsi Marripudi",
-    email: `demo-${Date.now()}@vmnexus.local`,
+    email: `demo-${Date.now()}@kravia.local`,
     password: "secure-demo-password"
   });
 
   const workspace = await workspacesService.create({
     founderUserId: founder.user!.id,
-    organizationName: "VM nexus Pvt Ltd",
+    organizationName: "KRAVIA PRIVATE LIMITED",
     workspaceName: "Demo Founder Workspace",
     suiteType: "VMETRON_SUITE",
     planId: "vmetron-growth"
@@ -52,7 +52,7 @@ export async function seedDemoData() {
     organizationId: workspace.organization.id,
     name: "Demo Event Client",
     company: "Demo Events Co",
-    email: "client@vmnexus.local",
+    email: "client@kravia.local",
     stage: "CONTACTED",
     expectedValue: 75000
   });
@@ -60,7 +60,7 @@ export async function seedDemoData() {
   const customer = await crmService.createCustomer({
     organizationId: workspace.organization.id,
     name: "Demo Customer",
-    email: "customer@vmnexus.local",
+    email: "customer@kravia.local",
     activePlan: "vmetron-growth",
     renewalDate: "2026-12-31"
   });
@@ -79,7 +79,7 @@ export async function seedDemoData() {
     organizationId: workspace.organization.id,
     departmentId: department.id,
     name: "Demo Operator",
-    email: "operator@vmnexus.local",
+    email: "operator@kravia.local",
     role: "Operations Lead",
     status: "ACTIVE",
     joinedAt: "2026-06-18"
@@ -87,7 +87,7 @@ export async function seedDemoData() {
   const candidate = await hrService.createCandidate({
     organizationId: workspace.organization.id,
     name: "Demo Candidate",
-    email: "candidate@vmnexus.local",
+    email: "candidate@kravia.local",
     roleApplied: "Support Specialist",
     stage: "SCREENING",
     source: "Referral"
@@ -99,7 +99,7 @@ export async function seedDemoData() {
     scheduledAt: "2026-06-20T10:00:00.000Z",
     interviewerId: employee.id,
     status: "SCHEDULED",
-    vaanMeetLink: "https://meet.vmnexus.local/demo"
+    vaanMeetLink: "https://meet.kravia.local/demo"
   });
 
   await legalService.createAgreement({
@@ -142,7 +142,7 @@ export async function seedDemoData() {
   await settingsService.update({
     organizationId: workspace.organization.id,
     themeMode: "system",
-    billingEmail: "billing@vmnexus.local",
+    billingEmail: "billing@kravia.local",
     notificationEmail: true,
     notificationSms: true
   });

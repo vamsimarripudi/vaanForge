@@ -1,6 +1,6 @@
-import { coreRoles } from "@vmnexus/shared/roles";
-import { rolePermissions, roleHasPermission } from "@vmnexus/shared/permissions";
-import type { CoreRole } from "@vmnexus/shared/roles";
+import { coreRoles } from "@kravia/shared/roles";
+import { rolePermissions, roleHasPermission } from "@kravia/shared/permissions";
+import type { CoreRole } from "@kravia/shared/roles";
 
 export class RolesService {
   list() {

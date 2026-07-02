@@ -1,6 +1,6 @@
 # Non-Technical Guide
 
-VM Nexus Ecosystem OS helps a business or institution start with onboarding, choose a suite and plan, activate a workspace, invite team members, and run operations from one connected system.
+VaanForge helps a business or institution turn structured requirements into governed software plans, agent execution workflows, deployment evidence, and operations controls from one connected KRAVIA platform.
 
 Education Suite is for educational organizations.
 

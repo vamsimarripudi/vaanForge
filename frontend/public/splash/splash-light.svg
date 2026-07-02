@@ -1,0 +1,7 @@
+<svg width="1280" height="720" viewBox="0 0 1280 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1280" height="720" fill="#F4F6F9"/>
+  <circle cx="640" cy="350" r="116" fill="#007A5E" fill-opacity="0.08"/>
+  <path d="M579 279L640 405L701 279" stroke="#007A5E" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="640" cy="405" r="12" fill="#007A5E"/>
+  <text x="540" y="488" fill="#0D1117" font-family="Arial, sans-serif" font-size="36" font-weight="700">VaanForge</text>
+</svg>

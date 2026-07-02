@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { plansService } from "./plans.service";
-import type { SuiteType } from "@vmnexus/shared/types";
+import type { SuiteType } from "@kravia/shared/types";
 
 export const plansRouter = Router();
 

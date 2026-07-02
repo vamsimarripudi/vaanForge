@@ -1,6 +1,6 @@
 # Design System
 
-VM Nexus uses one design language: calm enterprise surfaces, restrained accent colors, clear information density, and stable spacing.
+KRAVIA uses one design language: calm enterprise surfaces, restrained accent colors, clear information density, and stable spacing.
 
 Rules:
 

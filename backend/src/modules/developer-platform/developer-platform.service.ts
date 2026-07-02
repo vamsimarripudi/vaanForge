@@ -75,6 +75,10 @@ export class DeveloperPlatformService {
     });
   }
 
+  app(actor: Actor, appId: string) {
+    return this.apps(actor).find((app) => app.appId === appId);
+  }
+
   createApp(actor: Actor, input: z.infer<typeof developerAppSchema>) {
     const parsed = developerAppSchema.parse(input);
     const account = this.ensureAccount(actor);
@@ -101,6 +105,28 @@ export class DeveloperPlatformService {
     this.createOAuthClient(actor, app);
     this.audit(actor, "DEVELOPER_APP_CREATED", "DeveloperApp", app.appId, { scopes: app.scopes });
     return this.apps(actor).find((item) => item.appId === app.appId);
+  }
+
+  updateApp(actor: Actor, appId: string, input: Partial<z.infer<typeof developerAppSchema>>) {
+    const account = this.ensureAccount(actor);
+    const app = store.developerApps.find((item) => item.organizationId === actor.organizationId && item.developerId === account.developerId && item.appId === appId);
+    if (!app) return undefined;
+    const parsed = developerAppSchema.partial().parse(input);
+    Object.assign(app, parsed.name ? { name: sanitize(parsed.name) } : {}, parsed.description ? { description: sanitize(parsed.description) } : {}, parsed.redirectUris ? { redirectUris: parsed.redirectUris } : {}, parsed.scopes ? { scopes: parsed.scopes } : {}, { updatedAt: new Date().toISOString() });
+    app.activityHistory.push({ at: app.updatedAt, status: app.status, message: "Developer app updated." });
+    this.audit(actor, "DEVELOPER_APP_UPDATED", "DeveloperApp", app.appId, { fields: Object.keys(parsed) });
+    return this.app(actor, appId);
+  }
+
+  deleteApp(actor: Actor, appId: string) {
+    const account = this.ensureAccount(actor);
+    const app = store.developerApps.find((item) => item.organizationId === actor.organizationId && item.developerId === account.developerId && item.appId === appId);
+    if (!app) return undefined;
+    app.status = "disabled";
+    app.updatedAt = new Date().toISOString();
+    app.activityHistory.push({ at: app.updatedAt, status: app.status, message: "Developer app disabled." });
+    this.audit(actor, "DEVELOPER_APP_DISABLED", "DeveloperApp", app.appId);
+    return this.app(actor, appId);
   }
 
   keys(actor: Actor) {
@@ -156,6 +182,10 @@ export class DeveloperPlatformService {
     return this.redactKey(key);
   }
 
+  deleteKey(actor: Actor, keyId: string) {
+    return this.revokeKey(actor, keyId);
+  }
+
   sdkMetadata(actor: Actor) {
     this.ensureSdks(actor.organizationId);
     return {
@@ -207,6 +237,10 @@ export class DeveloperPlatformService {
       .map((webhook) => ({ ...webhook, signingSecretHash: "[hashed]" }));
   }
 
+  webhook(actor: Actor, webhookId: string) {
+    return this.webhooks(actor).find((webhook) => webhook.webhookId === webhookId);
+  }
+
   createWebhook(actor: Actor, input: z.infer<typeof webhookSchema>) {
     const parsed = webhookSchema.parse(input);
     const account = this.ensureAccount(actor);
@@ -233,6 +267,36 @@ export class DeveloperPlatformService {
     return { webhook: { ...webhook, signingSecretHash: "[hashed]" }, signingSecret: secret };
   }
 
+  updateWebhook(actor: Actor, webhookId: string, input: Partial<z.infer<typeof webhookSchema>>) {
+    const account = this.ensureAccount(actor);
+    const webhook = store.webhookEndpoints.find((item) => item.organizationId === actor.organizationId && item.developerId === account.developerId && item.webhookId === webhookId);
+    if (!webhook) return undefined;
+    const parsed = webhookSchema.partial().parse(input);
+    Object.assign(webhook, parsed.url ? { url: parsed.url } : {}, parsed.events ? { events: parsed.events } : {}, parsed.retryPolicy ? { retryPolicy: parsed.retryPolicy } : {}, { updatedAt: new Date().toISOString() });
+    this.audit(actor, "WEBHOOK_UPDATED", "WebhookEndpoint", webhook.webhookId, { fields: Object.keys(parsed) });
+    return this.webhook(actor, webhookId);
+  }
+
+  deleteWebhook(actor: Actor, webhookId: string) {
+    const account = this.ensureAccount(actor);
+    const webhook = store.webhookEndpoints.find((item) => item.organizationId === actor.organizationId && item.developerId === account.developerId && item.webhookId === webhookId);
+    if (!webhook) return undefined;
+    webhook.status = "paused";
+    webhook.updatedAt = new Date().toISOString();
+    this.audit(actor, "WEBHOOK_DISABLED", "WebhookEndpoint", webhook.webhookId);
+    return this.webhook(actor, webhookId);
+  }
+
+  testWebhook(actor: Actor, webhookId: string) {
+    const webhook = store.webhookEndpoints.find((item) => item.organizationId === actor.organizationId && item.webhookId === webhookId);
+    if (!webhook) return undefined;
+    const payload = { type: "workspace.event", webhookId, test: true, createdAt: new Date().toISOString() };
+    const signature = this.signWebhookPayload(webhookId, payload);
+    this.logUsage({ organizationId: actor.organizationId, developerId: webhook.developerId, appId: webhook.appId, apiVersion: "v1", method: "POST", path: `/developer/webhooks/${webhookId}/test`, statusCode: 202, latencyMs: 0 });
+    this.audit(actor, "WEBHOOK_TEST_SENT", "WebhookEndpoint", webhookId, { events: webhook.events });
+    return { delivered: true, webhookId, payload, signature };
+  }
+
   signWebhookPayload(webhookId: string, payload: Record<string, unknown>, timestamp = Date.now().toString()) {
     const webhook = store.webhookEndpoints.find((item) => item.webhookId === webhookId);
     if (!webhook) throw new Error("Webhook endpoint not found.");
@@ -254,6 +318,11 @@ export class DeveloperPlatformService {
       byVersion: groupCount(logs.map((log) => log.apiVersion)),
       recent: logs.slice(-50).reverse()
     };
+  }
+
+  logs(actor: Actor) {
+    const account = this.ensureAccount(actor);
+    return store.apiUsageLogs.filter((log) => log.organizationId === actor.organizationId && log.developerId === account.developerId).slice(-100).reverse().map((log) => ({ ...log, keyId: log.keyId ? `${String(log.keyId).slice(0, 8)}...` : undefined }));
   }
 
   async gateway(apiVersion: string, rawKey: string | undefined, request: z.infer<typeof gatewayRequestSchema>) {

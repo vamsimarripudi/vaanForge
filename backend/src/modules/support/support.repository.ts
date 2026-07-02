@@ -1,4 +1,4 @@
-import type { SupportTicketInput, TicketPriority, TicketStatus } from "@vmnexus/shared/operations";
+import type { SupportTicketInput, TicketPriority, TicketStatus } from "@kravia/shared/operations";
 import { env } from "../../config/env";
 import { createId, store, type StoredSupportTicket, type StoredTicketMessage } from "../../database/in-memory-store";
 import { prisma } from "../../database/prisma-client";

@@ -8,9 +8,8 @@ const filesServicePath = path.join(rootDir, "backend", "src", "modules", "files"
 const storageServicePath = path.join(rootDir, "backend", "src", "infrastructure", "storage", "storage.service.ts");
 const apiDocPath = path.join(rootDir, "docs", "API.md");
 const backendDocPath = path.join(rootDir, "docs", "BACKEND.md");
-const frontendDocPath = path.join(rootDir, "docs", "FRONTEND.md");
-const uploadPanelPath = path.join(rootDir, "frontend", "src", "features", "files", "components", "FileUploadPanel.tsx");
-const settingsPagePath = path.join(rootDir, "frontend", "src", "app", "settings", "page.tsx");
+const workspacePath = path.join(rootDir, "frontend", "src", "app", "Workspace.tsx");
+const apiClientPath = path.join(rootDir, "frontend", "src", "services", "apiClient.ts");
 
 const routes = fs.readFileSync(routesPath, "utf8");
 const filesRoutes = fs.readFileSync(filesRoutesPath, "utf8");
@@ -18,9 +17,8 @@ const filesService = fs.readFileSync(filesServicePath, "utf8");
 const storageService = fs.readFileSync(storageServicePath, "utf8");
 const apiDoc = fs.readFileSync(apiDocPath, "utf8");
 const backendDoc = fs.readFileSync(backendDocPath, "utf8");
-const frontendDoc = fs.readFileSync(frontendDocPath, "utf8");
-const uploadPanel = fs.readFileSync(uploadPanelPath, "utf8");
-const settingsPage = fs.readFileSync(settingsPagePath, "utf8");
+const workspace = fs.readFileSync(workspacePath, "utf8");
+const apiClient = fs.readFileSync(apiClientPath, "utf8");
 const failures = [];
 
 for (const required of [
@@ -58,33 +56,14 @@ for (const required of ["POST /api/v1/files/uploads", "contentBase64", "FILE_UPL
   }
 }
 
-for (const required of [
-  'apiClient<UploadedFile>("/files/uploads"',
-  'apiClient<{ csrfToken: string }>("/security/csrf")',
-  "FileReader",
-  "contentBase64",
-  "documentType",
-  "expiresAt",
-  "tags",
-  "version",
-  "Document OS Metadata",
-  "Upload file",
-  "checksum",
-  "storageKey"
-]) {
-  if (!uploadPanel.includes(required)) {
-    failures.push(`FileUploadPanel.tsx must include ${required}`);
+for (const required of ["Generated files", "File versions", "No silent overwrite", "Review status", "Repair links"]) {
+  if (!workspace.includes(required)) {
+    failures.push(`Workspace file workflow surface must include ${required}`);
   }
 }
 
-if (!settingsPage.includes("FileUploadPanel")) {
-  failures.push("settings page must render FileUploadPanel");
-}
-
-for (const required of ["File uploads", "storage abstraction", "scripts/qa-file-upload-contract.js"]) {
-  if (!frontendDoc.includes(required)) {
-    failures.push(`FRONTEND.md must mention ${required}`);
-  }
+for (const required of ["API_BASE_URL", "credentials: \"include\"", "content-type", "ApiError"]) {
+  if (!apiClient.includes(required)) failures.push(`apiClient.ts must include ${required}`);
 }
 
 if (failures.length) {

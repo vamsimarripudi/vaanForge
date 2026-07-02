@@ -1,4 +1,4 @@
-import type { PartnerInput } from "@vmnexus/shared/growth";
+import type { PartnerInput } from "@kravia/shared/growth";
 import { partnersRepository, type PartnersRepository } from "./partners.repository";
 
 export class PartnersService {

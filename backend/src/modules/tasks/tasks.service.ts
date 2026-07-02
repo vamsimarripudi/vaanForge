@@ -1,4 +1,4 @@
-import type { ProjectInput, TaskInput, WorkStatus } from "@vmnexus/shared/operations";
+import type { ProjectInput, TaskInput, WorkStatus } from "@kravia/shared/operations";
 import { realtimeService } from "../../infrastructure/realtime/realtime.service";
 import { tasksRepository, type TasksRepository } from "./tasks.repository";
 

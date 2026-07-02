@@ -264,8 +264,8 @@ export class VFormixAgentService {
       businessContext: { targetUsers: ["Admin"], goals: ["Convert VFormix submission into an approved build plan."], successMetrics: ["Blueprint generated", "Admin approval captured"] },
       scope: { coreFeatures: [] },
       constraints: {
-        approvedArchitecture: "VMNexus approved architecture",
-        designSystem: "VMNexus design system",
+        approvedArchitecture: "KRAVIA approved architecture",
+        designSystem: "KRAVIA design system",
         routing: ["/admin/agent", "/admin/vformix"],
         permissions: ["audit:read", "workspace:create"]
       },

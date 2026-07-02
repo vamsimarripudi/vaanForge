@@ -1,4 +1,4 @@
-import type { SettingsInput } from "@vmnexus/shared/growth";
+import type { SettingsInput } from "@kravia/shared/growth";
 import { settingsRepository, type SettingsRepository } from "./settings.repository";
 
 export class SettingsService {

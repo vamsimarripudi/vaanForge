@@ -1,4 +1,5 @@
 import type { MemoryAdapter } from "./memory.interface";
+import { logger } from "../logger";
 
 export class RedisMemoryAdapter implements MemoryAdapter {
   private readonly store = new Map<string, { value: unknown; expiresAt?: number }>();
@@ -22,11 +23,15 @@ export class RedisMemoryAdapter implements MemoryAdapter {
   }
 
   async publish(channel: string, payload: unknown): Promise<void> {
-    console.log("Redis adapter publish placeholder", { channel, payload });
+    if (process.env.NODE_ENV === "development") {
+      logger.debug("Redis-compatible memory adapter published development event.", { channel, payload });
+    }
   }
 
   async enqueue(queueName: string, payload: unknown): Promise<void> {
-    console.log("Redis adapter queue placeholder", { queueName, payload });
+    if (process.env.NODE_ENV === "development") {
+      logger.debug("Redis-compatible memory adapter queued development job.", { queueName, payload });
+    }
   }
 
   async rateLimit(key: string, limit: number): Promise<{ allowed: boolean; remaining: number }> {

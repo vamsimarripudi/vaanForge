@@ -17,4 +17,4 @@
 - Background jobs have a typed queue abstraction and local memory adapter handoff through `memory.service.ts`. Production still needs BullMQ or the approved Vaanis queue adapter before high-volume asynchronous workloads.
 - Realtime notification, task, support, and approval events are published through the `realtime.service.ts` abstraction. Vaanis, VaanRTC, and SFU adapters are placeholders until production providers are approved.
 - Full browser-driven CRUD hardening remains planned for production use; API auth, permission guard contract checks, and backend HTTP smoke coverage are configured for the implemented route set.
-- `npm audit` reports a moderate PostCSS advisory through the current Next.js dependency tree; the automated fix currently proposes a breaking downgrade and should be revisited when a safe Next.js/PostCSS patch path is available. Dependency hygiene is guarded locally by `npm run test:e2e`.
+- `npm audit` currently reports only low severity vulnerabilities after the Vite React migration. Dependency hygiene is guarded locally by `npm run test:e2e`.

@@ -47,11 +47,11 @@ if (!publicBlock) {
 
 for (const required of [
   'const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"])',
-  'cookieValue(request.headers.cookie, "vmnexus_session")',
+  'cookieValue(request.headers.cookie, "kravia_session")',
   "sessionService.verify(sessionToken)",
   "sessionService.isRevoked(session)",
   'request.header("x-csrf-token")',
-  'cookieValue(request.headers.cookie, "vmnexus_csrf")',
+  'cookieValue(request.headers.cookie, "kravia_csrf")',
   "headerToken !== cookieToken",
   "csrfService.verify(session.userId, headerToken)",
   "request.session = session"
@@ -76,7 +76,7 @@ if (!mainSource.includes('import { createApp } from "./app"') || !mainSource.inc
 const securityRoutesSource = fs.readFileSync(securityRoutesPath, "utf8");
 for (const required of [
   'securityRouter.get("/csrf", authMiddleware',
-  'response.cookie("vmnexus_csrf", token, csrfCookieOptions)',
+  'response.cookie("kravia_csrf", token, csrfCookieOptions)',
   "csrfService.sign(request.session!.userId)"
 ]) {
   if (!securityRoutesSource.includes(required)) {

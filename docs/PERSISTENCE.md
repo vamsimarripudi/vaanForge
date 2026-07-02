@@ -1,6 +1,6 @@
 # Persistence
 
-VM Nexus OS currently supports two explicit persistence modes.
+VaanForge currently supports two explicit persistence modes.
 
 ## Memory Mode
 

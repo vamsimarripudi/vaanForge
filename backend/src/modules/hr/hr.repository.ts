@@ -7,7 +7,7 @@ import type {
   InterviewInput,
   InterviewRound,
   InterviewStatus
-} from "@vmnexus/shared/hr";
+} from "@kravia/shared/hr";
 import { env } from "../../config/env";
 import {
   createId,

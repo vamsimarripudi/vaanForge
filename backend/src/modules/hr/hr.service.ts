@@ -1,4 +1,4 @@
-import type { CandidateInput, CandidateStage, DepartmentInput, EmployeeInput, InterviewInput } from "@vmnexus/shared/hr";
+import type { CandidateInput, CandidateStage, DepartmentInput, EmployeeInput, InterviewInput } from "@kravia/shared/hr";
 import { hrRepository, type HrRepository } from "./hr.repository";
 
 export class HrService {

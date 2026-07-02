@@ -7,4 +7,4 @@ Nginx should route:
 - `meet.example.com` to meeting service.
 - `assets.example.com` to asset storage or CDN.
 
-See `infrastructure/nginx/vmnexus.conf`.
+See `infrastructure/nginx/kravia.conf`.

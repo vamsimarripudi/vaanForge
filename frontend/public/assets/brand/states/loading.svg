@@ -1,0 +1,9 @@
+<svg width="640" height="360" viewBox="0 0 640 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="640" height="360" rx="28" fill="#0F1520"/>
+  <circle cx="320" cy="136" r="54" fill="#00D49A" fill-opacity="0.08"/>
+  <path d="M294 105L320 160L346 105" stroke="#00D49A" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="320" cy="160" r="7" fill="#00D49A"/>
+  <rect x="212" y="218" width="216" height="10" rx="5" fill="#1D2734"/>
+  <rect x="212" y="218" width="94" height="10" rx="5" fill="#00D49A"/>
+  <text x="244" y="264" fill="#7A8DA8" font-family="Instrument Sans, Arial, sans-serif" font-size="16">Preparing your workspace...</text>
+</svg>

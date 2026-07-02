@@ -4,6 +4,9 @@ export type CheckoutInput = {
   amount: number;
   currency: "INR";
   billingCycle: "MONTHLY" | "YEARLY";
+  customerId?: string;
+  subscriptionId?: string;
+  idempotencyKey?: string;
 };
 
 export type CheckoutSession = {
@@ -13,6 +16,8 @@ export type CheckoutSession = {
   currency: "INR";
   status: "CREATED";
   checkoutUrl: string;
+  providerOrderId?: string;
+  providerSubscriptionId?: string;
 };
 
 export interface PaymentsProvider {

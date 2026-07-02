@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type Request } from "express";
 import { z } from "zod";
 import { requirePermission } from "../../guards/permission.guard";
 import { authMiddleware } from "../../middlewares/auth.middleware";
@@ -10,6 +10,8 @@ import { financeService } from "../finance/finance.service";
 import { hrService } from "../hr/hr.service";
 import { tasksService } from "../tasks/tasks.service";
 import { workspacesService } from "../workspaces/workspaces.service";
+import { billingService } from "../billing/billing.service";
+import { store } from "../../database/in-memory-store";
 
 export const organizationsAliasRouter = Router();
 export const usersAliasRouter = Router();
@@ -175,7 +177,60 @@ projectsAliasRouter.post("/", authMiddleware, requirePermission("workspace:creat
     response.status(400).json({ error: "Invalid project request" });
     return;
   }
+  try {
+    billingService.checkAndConsume({ organizationId, customerId: request.session!.userId, actorId: request.session!.userId, metric: "agent_run", quantity: 1, source: "app_project", sourceId: parsed.data.name });
+  } catch (error) {
+    response.status(402).json({ error: "Plan limit exceeded", message: error instanceof Error ? error.message : "Upgrade plan to create more active projects.", requiredPlan: "Creator" });
+    return;
+  }
   response.status(201).json({ data: await tasksService.createProject({ ...parsed.data, organizationId }) });
+});
+
+projectsAliasRouter.get("/:projectId", authMiddleware, async (request, response) => {
+  const organizationId = request.session?.organizationId;
+  const project = store.projects.find((item) => item.organizationId === organizationId && item.id === String(request.params.projectId));
+  if (!project) return response.status(404).json({ error: "Project not found" });
+  response.json({ data: projectDetail(project) });
+});
+
+projectsAliasRouter.patch("/:projectId", authMiddleware, requirePermission("workspace:create"), async (request, response) => {
+  const organizationId = request.session?.organizationId;
+  const project = store.projects.find((item) => item.organizationId === organizationId && item.id === String(request.params.projectId));
+  const parsed = z.object({ name: z.string().min(2).optional(), description: z.string().optional(), ownerId: z.string().optional(), dueDate: z.string().optional() }).safeParse(request.body || {});
+  if (!project) return response.status(404).json({ error: "Project not found" });
+  if (!parsed.success) return response.status(400).json({ error: "Invalid project update", issues: parsed.error.issues });
+  Object.assign(project, parsed.data);
+  auditService.record({ actorId: request.session!.userId, organizationId: organizationId!, action: "SETTINGS_CHANGED", entityType: "Project", entityId: project.id, metadata: { fields: Object.keys(parsed.data) } });
+  response.json({ data: projectDetail(project) });
+});
+
+projectsAliasRouter.delete("/:projectId", authMiddleware, requirePermission("workspace:create"), async (request, response) => {
+  const organizationId = request.session?.organizationId;
+  const index = store.projects.findIndex((item) => item.organizationId === organizationId && item.id === String(request.params.projectId));
+  if (index === -1) return response.status(404).json({ error: "Project not found" });
+  const [project] = store.projects.splice(index, 1);
+  auditService.record({ actorId: request.session!.userId, organizationId: organizationId!, action: "SETTINGS_CHANGED", entityType: "Project", entityId: project.id, metadata: { action: "deleted" } });
+  response.json({ data: { projectId: project.id, deleted: true } });
+});
+
+projectsAliasRouter.post("/:projectId/archive", authMiddleware, requirePermission("workspace:create"), async (request, response) => {
+  response.json({ data: archiveProject(request, true) });
+});
+
+projectsAliasRouter.post("/:projectId/restore", authMiddleware, requirePermission("workspace:create"), async (request, response) => {
+  response.json({ data: archiveProject(request, false) });
+});
+
+projectsAliasRouter.get("/:projectId/activity", authMiddleware, async (request, response) => {
+  const organizationId = request.session?.organizationId;
+  const projectId = String(request.params.projectId);
+  response.json({ data: store.tasks.filter((task) => task.organizationId === organizationId && task.projectId === projectId).map((task) => ({ at: task.createdAt, action: "task.created", status: task.status, message: task.title })) });
+});
+
+projectsAliasRouter.get("/:projectId/usage", authMiddleware, async (request, response) => {
+  const organizationId = request.session?.organizationId;
+  if (!organizationId) return response.status(400).json({ error: "Organization context is required" });
+  response.json({ data: billingService.usage(organizationId, request.session!.userId) });
 });
 
 employeesAliasRouter.get("/", authMiddleware, async (request, response) => {
@@ -224,3 +279,22 @@ interviewsAliasRouter.post("/", authMiddleware, requirePermission("hr:manage"), 
 });
 
 documentsAliasRouter.use(filesRouter);
+
+function projectDetail(project: { id: string; organizationId: string; name: string; description?: string; ownerId?: string; dueDate?: string; createdAt: string; archivedAt?: string }) {
+  return {
+    ...project,
+    status: project.archivedAt ? "archived" : "active",
+    activity: store.tasks.filter((task) => task.organizationId === project.organizationId && task.projectId === project.id),
+    usageRoute: `/api/v1/projects/${project.id}/usage`,
+    activityRoute: `/api/v1/projects/${project.id}/activity`
+  };
+}
+
+function archiveProject(request: Request, archived: boolean) {
+  const organizationId = request.session?.organizationId;
+  const project = store.projects.find((item) => item.organizationId === organizationId && item.id === String(request.params.projectId)) as (typeof store.projects[number] & { archivedAt?: string }) | undefined;
+  if (!project) throw new Error("Project not found");
+  project.archivedAt = archived ? new Date().toISOString() : undefined;
+  auditService.record({ actorId: request.session!.userId, organizationId: organizationId!, action: "SETTINGS_CHANGED", entityType: "Project", entityId: project.id, metadata: { archived } });
+  return projectDetail(project);
+}

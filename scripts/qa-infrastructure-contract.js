@@ -3,7 +3,7 @@ const path = require("path");
 
 const rootDir = path.join(__dirname, "..");
 const composePath = path.join(rootDir, "infrastructure", "docker-compose.yml");
-const nginxPath = path.join(rootDir, "infrastructure", "nginx", "vmnexus.conf");
+const nginxPath = path.join(rootDir, "infrastructure", "nginx", "kravia.conf");
 const deploymentPath = path.join(rootDir, "docs", "DEPLOYMENT.md");
 const serverSetupPath = path.join(rootDir, "docs", "infra", "server-setup.md");
 const nginxSetupPath = path.join(rootDir, "docs", "infra", "nginx-setup.md");
@@ -25,7 +25,7 @@ const failures = [];
 for (const required of [
   "postgres:",
   "image: postgres:16",
-  "POSTGRES_DB: vmnexus",
+  "POSTGRES_DB: kravia",
   "POSTGRES_USER: postgres",
   "POSTGRES_PASSWORD: postgres",
   '"5432:5432"',
@@ -50,7 +50,7 @@ for (const required of [
   "proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for"
 ]) {
   if (!nginx.includes(required)) {
-    failures.push(`vmnexus.conf must include ${required}`);
+    failures.push(`kravia.conf must include ${required}`);
   }
 }
 
@@ -76,7 +76,7 @@ for (const required of [
   }
 }
 
-for (const required of ["app.example.com", "api.example.com", "infrastructure/nginx/vmnexus.conf"]) {
+for (const required of ["app.example.com", "api.example.com", "infrastructure/nginx/kravia.conf"]) {
   if (!nginxSetup.includes(required)) {
     failures.push(`nginx-setup.md must include ${required}`);
   }

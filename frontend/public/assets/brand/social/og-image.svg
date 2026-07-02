@@ -1,0 +1,10 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#07090F"/>
+  <circle cx="280" cy="316" r="145" fill="#00D49A" fill-opacity="0.08"/>
+  <path d="M220 235L280 360L340 235" stroke="#00D49A" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="280" cy="360" r="14" fill="#00D49A"/>
+  <text x="460" y="286" fill="#DCE8F8" font-family="Onest, Arial, sans-serif" font-size="64" font-weight="800">Vaan</text>
+  <text x="632" y="286" fill="#7A8DA8" font-family="Onest, Arial, sans-serif" font-size="64" font-weight="300">Forge</text>
+  <text x="464" y="346" fill="#00D49A" fill-opacity="0.72" font-family="JetBrains Mono, monospace" font-size="18" letter-spacing="5">ENTERPRISE AI SOFTWARE FACTORY</text>
+  <text x="464" y="410" fill="#7A8DA8" font-family="Instrument Sans, Arial, sans-serif" font-size="24">Plan, build, validate, deploy, and operate software with guided AI agents.</text>
+</svg>

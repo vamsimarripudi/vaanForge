@@ -35,6 +35,9 @@ export const permissionGroups = [
   "legal:manage",
   "compliance:manage",
   "reports:export",
+  "profile:manage",
+  "support:create",
+  "api-keys:manage",
   "settings:manage",
   "audit:read"
 ] as const;

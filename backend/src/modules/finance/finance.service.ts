@@ -1,4 +1,4 @@
-import { calculateGstPayable, calculateProfitMargin, type ExpenseInput, type RevenueInput } from "@vmnexus/shared/finance";
+import { calculateGstPayable, calculateProfitMargin, type ExpenseInput, type RevenueInput } from "@kravia/shared/finance";
 import { jobService } from "../../infrastructure/jobs/job.service";
 import { storageService } from "../../infrastructure/storage/storage.service";
 import { financeRepository, type FinanceRepository, type ReportFormat, type ReportType } from "./finance.repository";

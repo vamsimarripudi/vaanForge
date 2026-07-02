@@ -1,4 +1,4 @@
-import type { CommunicationInput, MessageChannel } from "@vmnexus/shared/growth";
+import type { CommunicationInput, MessageChannel } from "@kravia/shared/growth";
 import { env } from "../../config/env";
 import { createId, store, type StoredCommunication } from "../../database/in-memory-store";
 import { prisma } from "../../database/prisma-client";

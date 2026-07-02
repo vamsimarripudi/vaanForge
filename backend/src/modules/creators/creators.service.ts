@@ -1,4 +1,4 @@
-import type { CampaignInput, CreatorProfileInput } from "@vmnexus/shared/growth";
+import type { CampaignInput, CreatorProfileInput } from "@kravia/shared/growth";
 import { creatorsRepository, type CreatorsRepository } from "./creators.repository";
 
 export class CreatorsService {

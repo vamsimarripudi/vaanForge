@@ -1,6 +1,6 @@
 import { authService } from "../auth/auth.service";
 import { plansService } from "../plans/plans.service";
-import type { SuiteType } from "@vmnexus/shared/types";
+import type { SuiteType } from "@kravia/shared/types";
 import { workspacesRepository, type WorkspacesRepository } from "./workspaces.repository";
 
 export interface CreateWorkspaceInput {

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
-import { educationSuitePlans } from "../config/plans/education-suite.plans";
 import { entitlementsService } from "../modules/entitlements/entitlements.service";
+import { plansService } from "../modules/plans/plans.service";
 import { authService } from "../modules/auth/auth.service";
 import { workspacesService } from "../modules/workspaces/workspaces.service";
 import { financeService } from "../modules/finance/finance.service";
@@ -28,7 +28,7 @@ import { csrfService } from "../services/csrf.service";
 import { sessionService } from "../services/session.service";
 
 async function main() {
-const growthPlan = educationSuitePlans.find((plan) => plan.planId === "education-growth");
+const growthPlan = plansService.findById("education-growth");
 
 assert.ok(growthPlan, "Education Growth plan should exist");
 
@@ -53,25 +53,25 @@ assert.equal(blocked.reason, "Usage limit reached");
 
 const registered = await authService.register({
   name: "Vamsi Marripudi",
-  email: "founder@vmnexus.local",
+  email: "founder@kravia.local",
   password: "secure-demo-password"
 });
 
 assert.ok(registered.user?.id, "Registered user should be returned");
-const resetRequest = await authService.requestPasswordReset("founder@vmnexus.local");
+const resetRequest = await authService.requestPasswordReset("founder@kravia.local");
 assert.equal(resetRequest.accepted, true);
 assert.ok(resetRequest.resetToken);
 assert.equal(resetRequest.delivery?.provider, "local");
-assert.equal(localEmailOutbox.some((message) => message.to === "founder@vmnexus.local" && message.text.includes(resetRequest.resetToken!)), true);
+assert.equal(localEmailOutbox.some((message) => message.to === "founder@kravia.local" && message.text.includes(resetRequest.resetToken!)), true);
 await authService.resetPassword(resetRequest.resetToken!, "new-secure-demo-password");
-await assert.rejects(() => authService.login("founder@vmnexus.local", "secure-demo-password"));
-assert.ok((await authService.login("founder@vmnexus.local", "new-secure-demo-password")).user?.id);
+await assert.rejects(() => authService.login("founder@kravia.local", "secure-demo-password"));
+assert.ok((await authService.login("founder@kravia.local", "new-secure-demo-password")).user?.id);
 await assert.rejects(() => authService.resetPassword(resetRequest.resetToken!, "another-secure-demo-password"));
 
 const workspace = await workspacesService.create({
   founderUserId: registered.user!.id,
-  organizationName: "VM nexus Pvt Ltd",
-  workspaceName: "VM Nexus Founder Workspace",
+  organizationName: "KRAVIA PRIVATE LIMITED",
+  workspaceName: "KRAVIA Founder Workspace",
   suiteType: "EDUCATION_SUITE",
   planId: "education-growth"
 });
@@ -185,7 +185,7 @@ await hrService.createEmployee({
   organizationId: workspace.organization.id,
   departmentId: department.id,
   name: "Demo Employee",
-  email: "employee@vmnexus.local",
+  email: "employee@kravia.local",
   role: "Product Manager",
   status: "ACTIVE",
   joinedAt: "2026-06-18"
@@ -193,7 +193,7 @@ await hrService.createEmployee({
 const candidate = await hrService.createCandidate({
   organizationId: workspace.organization.id,
   name: "Demo Candidate",
-  email: "candidate@vmnexus.local",
+  email: "candidate@kravia.local",
   roleApplied: "Full-stack Engineer",
   stage: "SCREENING"
 });
@@ -278,7 +278,7 @@ await communicationService.create({
   organizationId: workspace.organization.id,
   channel: "ANNOUNCEMENT",
   title: "Demo announcement",
-  message: "Welcome to VM Nexus OS"
+  message: "Welcome to KRAVIA OS"
 });
 assert.equal((await communicationService.summary(workspace.organization.id)).announcements, 1);
 assert.equal(communicationService.health().name, "communication");
@@ -299,11 +299,11 @@ assert.equal(automationService.health().mode, "memory");
 await settingsService.update({
   organizationId: workspace.organization.id,
   themeMode: "system",
-  billingEmail: "billing@vmnexus.local",
+  billingEmail: "billing@kravia.local",
   notificationEmail: true,
   notificationSms: true
 });
-assert.equal((await settingsService.summary(workspace.organization.id)).billingEmail, "billing@vmnexus.local");
+assert.equal((await settingsService.summary(workspace.organization.id)).billingEmail, "billing@kravia.local");
 const smsNotification = await notificationsService.create({
   organizationId: workspace.organization.id,
   title: "SMS enabled",
@@ -352,7 +352,7 @@ await csrfMiddleware(
   {
     method: "POST",
     path: "/api/v1/tasks",
-    headers: { cookie: `vmnexus_session=${sessionToken}; vmnexus_csrf=${csrfToken}` },
+    headers: { cookie: `kravia_session=${sessionToken}; kravia_csrf=${csrfToken}` },
     header: (name: string) => (name.toLowerCase() === "x-csrf-token" ? csrfToken : undefined)
   } as any,
   {
@@ -370,7 +370,7 @@ await csrfMiddleware(
   {
     method: "POST",
     path: "/api/v1/tasks",
-    headers: { cookie: `vmnexus_session=${sessionToken}` },
+    headers: { cookie: `kravia_session=${sessionToken}` },
     header: () => undefined
   } as any,
   {

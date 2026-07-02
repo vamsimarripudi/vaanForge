@@ -1,4 +1,4 @@
-import type { ComplianceItemInput, ComplianceStatus, GovernmentRegistrationInput } from "@vmnexus/shared/legal";
+import type { ComplianceItemInput, ComplianceStatus, GovernmentRegistrationInput } from "@kravia/shared/legal";
 import { complianceRepository, type ComplianceRepository } from "./compliance.repository";
 
 export class ComplianceService {

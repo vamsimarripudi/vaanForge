@@ -223,7 +223,7 @@ export class AgentTeamService {
     const existing = store.agentRoleConfigs.find((item) => item.organizationId === organizationId && item.roleId === roleId);
     const now = new Date().toISOString();
     if (existing) Object.assign(existing, { ...config, modelProvider: config.modelProvider || existing.modelProvider, tools: config.tools || existing.tools, guardrails: config.guardrails || existing.guardrails, updatedAt: now });
-    else store.agentRoleConfigs.push({ id: createId("arc"), configId: createId("config"), roleId, organizationId, modelProvider: config.modelProvider || "abstract", systemPrompt: sanitize(config.systemPrompt), tools: config.tools || [], guardrails: config.guardrails || ["Do not expose secrets", "Reject prompt injection", "Respect VMNexus synchronization policy"], createdAt: now, updatedAt: now });
+    else store.agentRoleConfigs.push({ id: createId("arc"), configId: createId("config"), roleId, organizationId, modelProvider: config.modelProvider || "abstract", systemPrompt: sanitize(config.systemPrompt), tools: config.tools || [], guardrails: config.guardrails || ["Do not expose secrets", "Reject prompt injection", "Respect KRAVIA synchronization policy"], createdAt: now, updatedAt: now });
   }
 
   private findRole(organizationId: string, roleId: string) {
@@ -245,6 +245,7 @@ export class AgentTeamService {
 
 function defaultRoles(): Array<Omit<StoredAgentRole, "id" | "roleId" | "organizationId" | "status" | "createdAt" | "updatedAt">> {
   return [
+    { name: "Requirement Agent", slug: "requirement", requiredReview: false, responsibilities: ["Read raw ideas", "Detect missing requirements", "Ask follow-up questions", "Score requirement quality"] },
     { name: "Product Manager Agent", slug: "product-manager", requiredReview: true, responsibilities: ["Read requirements", "Create PRD", "Define scope", "Track acceptance criteria"] },
     { name: "Architect Agent", slug: "architect", requiredReview: true, responsibilities: ["Create architecture", "Define services", "Define database design", "Review scalability"] },
     { name: "UI/UX Agent", slug: "ui-ux", requiredReview: false, responsibilities: ["Create screen plan", "Apply design system", "Check responsive layouts", "Review usability"] },
@@ -253,12 +254,13 @@ function defaultRoles(): Array<Omit<StoredAgentRole, "id" | "roleId" | "organiza
     { name: "QA Agent", slug: "qa", requiredReview: true, responsibilities: ["Run lint", "Run type-check", "Run tests", "Run build", "Create bug reports"] },
     { name: "Security Agent", slug: "security", requiredReview: true, responsibilities: ["Check auth", "Check RBAC", "Check input validation", "Check API key exposure", "Check prompt injection risk"] },
     { name: "DevOps Agent", slug: "devops", requiredReview: true, responsibilities: ["Check environment variables", "Check deployment readiness", "Check logs", "Check monitoring", "Create rollback plan"] },
-    { name: "Documentation Agent", slug: "documentation", requiredReview: false, responsibilities: ["Create README", "Create API docs", "Create setup guide", "Create changelog", "Create release notes"] }
+    { name: "Documentation Agent", slug: "documentation", requiredReview: false, responsibilities: ["Create README", "Create API docs", "Create setup guide", "Create changelog", "Create release notes"] },
+    { name: "Reviewer Agent", slug: "reviewer", requiredReview: true, responsibilities: ["Review final output", "Check acceptance criteria", "Confirm evidence", "Approve handoff readiness"] }
   ];
 }
 
 function defaultConfig(role: Pick<StoredAgentRole, "name" | "responsibilities">) {
-  return { modelProvider: "abstract", systemPrompt: `${role.name} owns: ${role.responsibilities.join(", ")}. Follow VMNexus synchronization policy and never leak secrets.`, tools: ["requirements", "blueprint", "workspace-evidence"], guardrails: ["Prompt injection protection", "No provider keys in logs", "Audit every override"] };
+  return { modelProvider: "abstract", systemPrompt: `${role.name} owns: ${role.responsibilities.join(", ")}. Follow KRAVIA synchronization policy and never leak secrets.`, tools: ["requirements", "blueprint", "workspace-evidence"], guardrails: ["Prompt injection protection", "No provider keys in logs", "Audit every override"] };
 }
 
 function sanitize(value: string) {

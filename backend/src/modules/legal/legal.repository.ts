@@ -1,5 +1,5 @@
-import type { AgreementInput, AgreementType, DocumentStatus } from "@vmnexus/shared/legal";
-import { legalDisclaimer } from "@vmnexus/shared/legal";
+import type { AgreementInput, AgreementType, DocumentStatus } from "@kravia/shared/legal";
+import { legalDisclaimer } from "@kravia/shared/legal";
 import { env } from "../../config/env";
 import { createId, store, type StoredAgreement } from "../../database/in-memory-store";
 import { prisma } from "../../database/prisma-client";

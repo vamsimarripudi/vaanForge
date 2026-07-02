@@ -1,6 +1,6 @@
 # Start Here
 
-VM Nexus Ecosystem OS is being built as a production-grade company operating ecosystem.
+VaanForge is being built as KRAVIA PVT LTD's production-grade enterprise AI software factory.
 
 The first commercial release starts with two suites:
 

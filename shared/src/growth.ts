@@ -1,8 +1,18 @@
 export type CampaignStatus = "DRAFT" | "IN_REVIEW" | "APPROVED" | "ACTIVE" | "COMPLETED";
 export type PartnerStatus = "PROSPECT" | "ACTIVE" | "PAUSED" | "ENDED";
 export type AutomationStatus = "DRAFT" | "ACTIVE" | "PAUSED";
-export type AutomationTrigger = "LEAD_CREATED" | "TICKET_CREATED" | "RENEWAL_DUE" | "REPORT_READY" | "TASK_OVERDUE";
-export type AutomationAction = "CREATE_TASK" | "SEND_NOTIFICATION" | "QUEUE_REPORT" | "REQUEST_APPROVAL";
+export type AutomationTrigger =
+  | "LEAD_CREATED"
+  | "TICKET_CREATED"
+  | "RENEWAL_DUE"
+  | "REPORT_READY"
+  | "TASK_OVERDUE"
+  | "DEPLOYMENT_SUCCEEDED"
+  | "BLUEPRINT_APPROVED"
+  | "CREDITS_LOW"
+  | "PAYMENT_FAILED"
+  | "AI_FINISHED";
+export type AutomationAction = "CREATE_TASK" | "SEND_NOTIFICATION" | "QUEUE_REPORT" | "REQUEST_APPROVAL" | "SEND_EMAIL" | "CALL_WEBHOOK";
 export type MessageChannel = "ANNOUNCEMENT" | "DIRECT" | "TEAM" | "SUPPORT" | "CUSTOMER_FOLLOW_UP";
 
 export interface CreatorProfileInput {

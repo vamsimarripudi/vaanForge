@@ -1,4 +1,4 @@
-import type { AutomationRuleInput } from "@vmnexus/shared/growth";
+import type { AutomationRuleInput } from "@kravia/shared/growth";
 import { jobService } from "../../infrastructure/jobs/job.service";
 import { realtimeService } from "../../infrastructure/realtime/realtime.service";
 import { automationRepository, type AutomationRepository } from "./automation.repository";
@@ -37,13 +37,20 @@ export class AutomationService {
         { trigger: "TICKET_CREATED", purpose: "Notify support owners and create escalation tasks." },
         { trigger: "RENEWAL_DUE", purpose: "Send renewal reminders before plan expiry." },
         { trigger: "REPORT_READY", purpose: "Notify founders when report generation completes." },
-        { trigger: "TASK_OVERDUE", purpose: "Create recovery tasks and approval checks." }
+        { trigger: "TASK_OVERDUE", purpose: "Create recovery tasks and approval checks." },
+        { trigger: "DEPLOYMENT_SUCCEEDED", purpose: "Notify stakeholders and create release follow-up tasks." },
+        { trigger: "BLUEPRINT_APPROVED", purpose: "Request build approval or start implementation handoff." },
+        { trigger: "CREDITS_LOW", purpose: "Warn owners before AI usage blocks work." },
+        { trigger: "PAYMENT_FAILED", purpose: "Notify billing owners and open recovery workflow." },
+        { trigger: "AI_FINISHED", purpose: "Notify project owners when an AI step completes." }
       ],
       actions: [
         { action: "CREATE_TASK", route: "/api/v1/tasks" },
         { action: "SEND_NOTIFICATION", route: "/api/v1/notifications" },
         { action: "QUEUE_REPORT", route: "/api/v1/reports/exports" },
-        { action: "REQUEST_APPROVAL", route: "/api/v1/audit" }
+        { action: "REQUEST_APPROVAL", route: "/api/v1/audit" },
+        { action: "SEND_EMAIL", route: "/api/v1/messaging" },
+        { action: "CALL_WEBHOOK", route: "/api/v1/developer/webhooks" }
       ],
       conditions: [
         { condition: "status === ACTIVE", appliesTo: "All automation runs" },
@@ -69,7 +76,12 @@ export class AutomationService {
         { title: "Lead follow-up", trigger: "LEAD_CREATED", action: "SEND_NOTIFICATION" },
         { title: "Renewal reminder", trigger: "RENEWAL_DUE", action: "SEND_NOTIFICATION" },
         { title: "Monthly report generation", trigger: "REPORT_READY", action: "QUEUE_REPORT" },
-        { title: "Overdue task recovery", trigger: "TASK_OVERDUE", action: "CREATE_TASK" }
+        { title: "Overdue task recovery", trigger: "TASK_OVERDUE", action: "CREATE_TASK" },
+        { title: "Credits low warning", trigger: "CREDITS_LOW", action: "SEND_NOTIFICATION" },
+        { title: "Blueprint approved handoff", trigger: "BLUEPRINT_APPROVED", action: "REQUEST_APPROVAL" },
+        { title: "Deployment success webhook", trigger: "DEPLOYMENT_SUCCEEDED", action: "CALL_WEBHOOK" },
+        { title: "AI finished notification", trigger: "AI_FINISHED", action: "SEND_NOTIFICATION" },
+        { title: "Payment recovery email", trigger: "PAYMENT_FAILED", action: "SEND_EMAIL" }
       ]
     };
   }

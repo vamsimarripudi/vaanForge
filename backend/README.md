@@ -1,6 +1,6 @@
 # Backend
 
-TypeScript REST API for VM Nexus Ecosystem OS.
+TypeScript REST API for KRAVIA Ecosystem OS.
 
 Current scope:
 

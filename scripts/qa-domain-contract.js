@@ -63,7 +63,7 @@ for (const required of [
 for (const required of [
   "ROOT_DOMAIN=example.com",
   "FRONTEND_URL=http://localhost:3000",
-  "NEXT_PUBLIC_API_BASE_URL=http://localhost:4000/api/v1"
+  "VITE_API_BASE_URL=http://localhost:4000/api/v1"
 ]) {
   if (!envExample.includes(required)) {
     failures.push(`.env.example must include ${required}`);

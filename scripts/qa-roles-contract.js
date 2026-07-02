@@ -8,16 +8,14 @@ const guardPath = path.join(rootDir, "backend", "src", "guards", "permission.gua
 const rolesRoutesPath = path.join(rootDir, "backend", "src", "modules", "roles", "roles.routes.ts");
 const modulesDir = path.join(rootDir, "backend", "src", "modules");
 const docsPath = path.join(rootDir, "docs", "ROLES-PERMISSIONS.md");
-const roleSetupPanelPath = path.join(rootDir, "frontend", "src", "features", "roles", "components", "RoleSetupPanel.tsx");
-const settingsPagePath = path.join(rootDir, "frontend", "src", "app", "settings", "page.tsx");
+const workspacePath = path.join(rootDir, "frontend", "src", "app", "Workspace.tsx");
 
 const rolesSource = fs.readFileSync(rolesPath, "utf8");
 const permissionsSource = fs.readFileSync(permissionsPath, "utf8");
 const guardSource = fs.readFileSync(guardPath, "utf8");
 const rolesRoutesSource = fs.readFileSync(rolesRoutesPath, "utf8");
 const docsSource = fs.readFileSync(docsPath, "utf8");
-const roleSetupPanel = fs.readFileSync(roleSetupPanelPath, "utf8");
-const settingsPage = fs.readFileSync(settingsPagePath, "utf8");
+const workspaceSource = fs.readFileSync(workspacePath, "utf8");
 
 const failures = [];
 
@@ -83,12 +81,12 @@ if (!permissionsSource.includes("export const roleHasPermission")) {
   failures.push("roleHasPermission must be exported from shared/src/permissions.ts");
 }
 
-if (!guardSource.includes('import { roleHasPermission } from "@vmnexus/shared/permissions"')) {
+if (!guardSource.includes('import { roleHasPermission } from "@kravia/shared/permissions"')) {
   failures.push("permission guard must use shared roleHasPermission");
 }
 
-if (!guardSource.includes("response.status(403)")) {
-  failures.push("permission guard must deny unauthorized access with 403");
+if (!guardSource.includes("sendError(response, request, 403") || !guardSource.includes('code: "PERMISSION_DENIED"')) {
+  failures.push("permission guard must deny unauthorized access with standardized 403 PERMISSION_DENIED response");
 }
 
 for (const filePath of listRouteFiles(modulesDir)) {
@@ -123,22 +121,10 @@ for (const requiredDocLine of [
   }
 }
 
-for (const required of [
-  'apiClient<RoleSummary[]>("/roles")',
-  'apiClient<PermissionCheck>("/roles/check"',
-  'apiClient<{ csrfToken: string }>("/security/csrf")',
-  '"x-csrf-token": csrf.csrfToken',
-  "coreRoles.map",
-  "permissionGroups.map",
-  "Check permission"
-]) {
-  if (!roleSetupPanel.includes(required)) {
-    failures.push(`RoleSetupPanel.tsx must include ${required}`);
+for (const required of ["Workspace permissions", "Owner access", "Admin command center", "Security dashboard", "Platform settings"]) {
+  if (!workspaceSource.includes(required)) {
+    failures.push(`Workspace RBAC UI must include ${required}`);
   }
-}
-
-if (!settingsPage.includes("RoleSetupPanel")) {
-  failures.push("settings page must render RoleSetupPanel");
 }
 
 if (failures.length) {

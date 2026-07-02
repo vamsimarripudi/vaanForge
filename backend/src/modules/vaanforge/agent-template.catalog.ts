@@ -2,7 +2,7 @@ import type { StoredAgentTemplate } from "../../database/in-memory-store";
 
 type TemplateSeed = Omit<StoredAgentTemplate, "id" | "templateId" | "organizationId" | "createdBy" | "ownerId" | "dueDate" | "activityHistory" | "createdAt" | "updatedAt">;
 
-const commonStack = ["Next.js App Router", "Express TypeScript API", "Prisma", "PostgreSQL", "VMNexus design tokens"];
+const commonStack = ["Next.js App Router", "Express TypeScript API", "Prisma", "PostgreSQL", "KRAVIA design tokens"];
 const commonSecurity = ["Authenticated admin APIs", "Role-based permissions", "CSRF-protected mutations", "No provider secrets in UI", "Input validation with Zod"];
 const commonValidation = ["Architecture validation", "Design system validation", "Required fields validation", "Security validation", "Build/lint/type-check validation"];
 

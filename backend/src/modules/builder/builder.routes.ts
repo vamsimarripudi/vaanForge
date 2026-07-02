@@ -2,6 +2,7 @@ import { Router } from "express";
 import type { Request } from "express";
 import { authMiddleware } from "../../middlewares/auth.middleware";
 import { rateLimitMiddleware } from "../../middlewares/rate-limit.middleware";
+import { requireUsageLimit } from "../billing/usage-limit.middleware";
 import {
   builderBlueprintDecisionSchema,
   builderChangeRequestSchema,
@@ -16,13 +17,13 @@ export const builderRouter = Router();
 
 builderRouter.use(authMiddleware, rateLimitMiddleware(120, 60));
 
-builderRouter.get("/projects", async (request, response) => {
+builderRouter.get("/projects", authMiddleware, async (request, response) => {
   const actor = actorFromSession(request);
   if (!actor) return response.status(400).json({ error: "Organization context is required" });
   response.json({ data: await builderService.list(actor) });
 });
 
-builderRouter.post("/projects", async (request, response) => {
+builderRouter.post("/projects", authMiddleware, requireUsageLimit({ metric: "agent_run" }), async (request, response) => {
   const actor = actorFromSession(request);
   const parsed = builderProjectSchema.safeParse(request.body || {});
   if (!actor || !parsed.success) {
@@ -36,7 +37,7 @@ builderRouter.post("/projects", async (request, response) => {
   }
 });
 
-builderRouter.get("/projects/:projectId", async (request, response) => {
+builderRouter.get("/projects/:projectId", authMiddleware, async (request, response) => {
   const actor = actorFromSession(request);
   const project = actor ? await builderService.detail(actor, String(request.params.projectId)) : undefined;
   if (!project) {
@@ -46,7 +47,7 @@ builderRouter.get("/projects/:projectId", async (request, response) => {
   response.json({ data: project });
 });
 
-builderRouter.patch("/projects/:projectId", async (request, response) => {
+builderRouter.patch("/projects/:projectId", authMiddleware, async (request, response) => {
   const actor = actorFromSession(request);
   const parsed = builderProjectPatchSchema.safeParse(request.body || {});
   if (!actor || !parsed.success) {
@@ -58,7 +59,7 @@ builderRouter.patch("/projects/:projectId", async (request, response) => {
   else response.json({ data: project });
 });
 
-builderRouter.post("/projects/:projectId/requirements", async (request, response) => {
+builderRouter.post("/projects/:projectId/requirements", authMiddleware, requireUsageLimit({ metric: "regeneration" }), async (request, response) => {
   const actor = actorFromSession(request);
   const parsed = builderRequirementSchema.safeParse(request.body || {});
   if (!actor || !parsed.success) {
@@ -74,14 +75,14 @@ builderRouter.post("/projects/:projectId/requirements", async (request, response
   }
 });
 
-builderRouter.get("/projects/:projectId/blueprint", async (request, response) => {
+builderRouter.get("/projects/:projectId/blueprint", authMiddleware, async (request, response) => {
   const actor = actorFromSession(request);
   const blueprint = actor ? await builderService.blueprint(actor, String(request.params.projectId)) : undefined;
   if (!blueprint) response.status(404).json({ error: "Builder blueprint not found" });
   else response.json({ data: blueprint });
 });
 
-builderRouter.post("/projects/:projectId/blueprint/approve", async (request, response) => {
+builderRouter.post("/projects/:projectId/blueprint/approve", authMiddleware, requireUsageLimit({ metric: "build_minute" }), async (request, response) => {
   const actor = actorFromSession(request);
   if (!actor) return response.status(400).json({ error: "Organization context is required" });
   try {
@@ -93,7 +94,7 @@ builderRouter.post("/projects/:projectId/blueprint/approve", async (request, res
   }
 });
 
-builderRouter.post("/projects/:projectId/blueprint/reject", async (request, response) => {
+builderRouter.post("/projects/:projectId/blueprint/reject", authMiddleware, async (request, response) => {
   const actor = actorFromSession(request);
   const parsed = builderBlueprintDecisionSchema.safeParse(request.body || {});
   if (!actor || !parsed.success) {
@@ -105,20 +106,20 @@ builderRouter.post("/projects/:projectId/blueprint/reject", async (request, resp
   else response.json({ data: project });
 });
 
-builderRouter.get("/projects/:projectId/progress", async (request, response) => {
+builderRouter.get("/projects/:projectId/progress", authMiddleware, async (request, response) => {
   const actor = actorFromSession(request);
   const progress = actor ? await builderService.progress(actor, String(request.params.projectId)) : undefined;
   if (!progress) response.status(404).json({ error: "Builder project not found" });
   else response.json({ data: progress });
 });
 
-builderRouter.get("/projects/:projectId/outputs", async (request, response) => {
+builderRouter.get("/projects/:projectId/outputs", authMiddleware, async (request, response) => {
   const actor = actorFromSession(request);
   if (!actor) return response.status(400).json({ error: "Organization context is required" });
   response.json({ data: await builderService.outputs(actor, String(request.params.projectId)) });
 });
 
-builderRouter.post("/projects/:projectId/change-requests", async (request, response) => {
+builderRouter.post("/projects/:projectId/change-requests", authMiddleware, requireUsageLimit({ metric: "regeneration" }), async (request, response) => {
   const actor = actorFromSession(request);
   const parsed = builderChangeRequestSchema.safeParse(request.body || {});
   if (!actor || !parsed.success) {

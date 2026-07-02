@@ -1,4 +1,5 @@
 import { Router } from "express";
+import type { NextFunction, Request, Response } from "express";
 import { authMiddleware } from "../../middlewares/auth.middleware";
 import { requirePermission } from "../../guards/permission.guard";
 import {
@@ -15,11 +16,11 @@ export const vformixAgentInternalRouter = Router();
 
 vformixAgentAdminRouter.use(authMiddleware, requirePermission("audit:read"));
 
-vformixAgentAdminRouter.get("/forms/:formId/agent", async (request, response) => {
+vformixAgentAdminRouter.get("/forms/:formId/agent", authMiddleware, async (request, response) => {
   response.json({ data: request.session?.organizationId ? await vformixAgentService.getConfig(request.session.organizationId, String(request.params.formId)) : undefined });
 });
 
-vformixAgentAdminRouter.patch("/forms/:formId/agent", requirePermission("workspace:create"), async (request, response) => {
+vformixAgentAdminRouter.patch("/forms/:formId/agent", authMiddleware, requirePermission("workspace:create"), async (request, response) => {
   const parsed = vformixAgentConfigSchema.safeParse(request.body);
   if (!parsed.success || !request.session?.organizationId || !request.session.userId) {
     response.status(400).json({ error: "Invalid VFormix agent config", issues: parsed.success ? [] : parsed.error.issues });
@@ -28,11 +29,11 @@ vformixAgentAdminRouter.patch("/forms/:formId/agent", requirePermission("workspa
   response.json({ data: await vformixAgentService.updateConfig(request.session.organizationId, request.session.userId, String(request.params.formId), parsed.data) });
 });
 
-vformixAgentAdminRouter.get("/forms/:formId/agent/mapping", async (request, response) => {
+vformixAgentAdminRouter.get("/forms/:formId/agent/mapping", authMiddleware, async (request, response) => {
   response.json({ data: request.session?.organizationId ? await vformixAgentService.getMapping(request.session.organizationId, String(request.params.formId)) : [] });
 });
 
-vformixAgentAdminRouter.patch("/forms/:formId/agent/mapping", requirePermission("workspace:create"), async (request, response) => {
+vformixAgentAdminRouter.patch("/forms/:formId/agent/mapping", authMiddleware, requirePermission("workspace:create"), async (request, response) => {
   const parsed = vformixFieldMappingSchema.safeParse(request.body);
   if (!parsed.success || !request.session?.organizationId || !request.session.userId) {
     response.status(400).json({ error: "Invalid VFormix field mapping", issues: parsed.success ? [] : parsed.error.issues });
@@ -41,11 +42,11 @@ vformixAgentAdminRouter.patch("/forms/:formId/agent/mapping", requirePermission(
   response.json({ data: await vformixAgentService.updateMapping(request.session.organizationId, request.session.userId, String(request.params.formId), parsed.data) });
 });
 
-vformixAgentAdminRouter.get("/forms/:formId/agent/triggers", async (request, response) => {
+vformixAgentAdminRouter.get("/forms/:formId/agent/triggers", authMiddleware, async (request, response) => {
   response.json({ data: request.session?.organizationId ? await vformixAgentService.getTriggers(request.session.organizationId, String(request.params.formId)) : [] });
 });
 
-vformixAgentAdminRouter.patch("/forms/:formId/agent/triggers", requirePermission("workspace:create"), async (request, response) => {
+vformixAgentAdminRouter.patch("/forms/:formId/agent/triggers", authMiddleware, requirePermission("workspace:create"), async (request, response) => {
   const parsed = vformixTriggerSchema.safeParse(request.body);
   if (!parsed.success || !request.session?.organizationId || !request.session.userId) {
     response.status(400).json({ error: "Invalid VFormix trigger rules", issues: parsed.success ? [] : parsed.error.issues });
@@ -54,7 +55,7 @@ vformixAgentAdminRouter.patch("/forms/:formId/agent/triggers", requirePermission
   response.json({ data: await vformixAgentService.updateTriggers(request.session.organizationId, request.session.userId, String(request.params.formId), parsed.data) });
 });
 
-vformixAgentAdminRouter.post("/submissions/:submissionId/agent/run", requirePermission("workspace:create"), async (request, response) => {
+vformixAgentAdminRouter.post("/submissions/:submissionId/agent/run", authMiddleware, requirePermission("workspace:create"), async (request, response) => {
   const parsed = vformixRunSchema.safeParse(request.body || {});
   if (!parsed.success || !request.session?.organizationId || !request.session.userId) {
     response.status(400).json({ error: "Invalid VFormix agent run request", issues: parsed.success ? [] : parsed.error.issues });
@@ -76,7 +77,7 @@ vformixAgentAdminRouter.post("/submissions/:submissionId/agent/run", requirePerm
   });
 });
 
-vformixAgentAdminRouter.get("/submissions/:submissionId/agent/status", async (request, response) => {
+vformixAgentAdminRouter.get("/submissions/:submissionId/agent/status", authMiddleware, async (request, response) => {
   const status = request.session?.organizationId ? await vformixAgentService.status(request.session.organizationId, String(request.params.submissionId)) : undefined;
   if (!status) {
     response.status(404).json({ error: "VFormix submission agent status not found" });
@@ -85,7 +86,7 @@ vformixAgentAdminRouter.get("/submissions/:submissionId/agent/status", async (re
   response.json({ data: status });
 });
 
-vformixAgentInternalRouter.post("/agent/webhook", async (request, response) => {
+vformixAgentInternalRouter.post("/agent/webhook", verifyVFormixAgentWebhookSignature, async (request, response) => {
   if (!vformixAgentService.verifyWebhookToken(request.header("x-vformix-agent-token"))) {
     vformixAgentService.logWebhook({ eventType: String(request.body?.eventType || "unknown"), status: "rejected", reason: "Invalid webhook token" });
     response.status(401).json({ error: "Invalid webhook token" });
@@ -113,3 +114,12 @@ vformixAgentInternalRouter.post("/agent/webhook", async (request, response) => {
     response.status(400).json({ error: "VFormix webhook failed", message: error instanceof Error ? error.message : "Unknown webhook error" });
   }
 });
+
+function verifyVFormixAgentWebhookSignature(request: Request, response: Response, next: NextFunction) {
+  if (!vformixAgentService.verifyWebhookToken(request.header("x-vformix-agent-token"))) {
+    vformixAgentService.logWebhook({ eventType: String(request.body?.eventType || "unknown"), status: "rejected", reason: "Invalid webhook token" });
+    response.status(401).json({ error: "Invalid webhook token" });
+    return;
+  }
+  next();
+}

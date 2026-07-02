@@ -1,16 +1,13 @@
-import { educationSuitePlans } from "../../config/plans/education-suite.plans";
-import { vmetronSuitePlans } from "../../config/plans/vmetron-suite.plans";
-import type { SuitePlan, SuiteType } from "@vmnexus/shared/types";
-
-const allPlans = [...educationSuitePlans, ...vmetronSuitePlans];
+import type { SuitePlan, SuiteType } from "@kravia/shared/types";
+import { planConfigurationService } from "../billing/plan-configuration.service";
 
 export class PlansService {
   list(suiteType?: SuiteType): SuitePlan[] {
-    return suiteType ? allPlans.filter((plan) => plan.suiteType === suiteType) : allPlans;
+    return planConfigurationService.suitePlans(suiteType);
   }
 
   findById(planId: string): SuitePlan | undefined {
-    return allPlans.find((plan) => plan.planId === planId);
+    return planConfigurationService.findSuitePlan(planId);
   }
 }
 

@@ -58,7 +58,7 @@ async function main() {
     goals: ["Improve blueprint clarity", "Track delivery evidence"],
     features: ["Delivery dashboard", "Approval controls", "Output version history"],
     successMetrics: ["Blueprint regenerated", "Outputs versioned", "Actions audited"],
-    constraints: ["VMNexus synchronization policy"],
+    constraints: ["KRAVIA synchronization policy"],
     integrations: ["VaanForge"],
     dataEntities: ["BuilderProject", "BuilderOutput"]
   });

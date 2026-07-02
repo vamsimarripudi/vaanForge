@@ -1,88 +1,65 @@
 const fs = require("fs");
 const path = require("path");
 
-const appDir = path.join(__dirname, "..", "frontend", "src", "app");
-const requiredRoutes = [
-  "page.tsx",
-  "about/page.tsx",
-  "account/page.tsx",
-  "account/reset-password/page.tsx",
-  "admin/page.tsx",
-  "automation/page.tsx",
-  "billing/page.tsx",
-  "client/page.tsx",
-  "communication/page.tsx",
-  "compliance/page.tsx",
-  "contact/page.tsx",
-  "creator/page.tsx",
-  "crm/page.tsx",
-  "customer/page.tsx",
-  "data-policy/page.tsx",
-  "education/page.tsx",
-  "education/dashboard/page.tsx",
-  "education/forms/page.tsx",
-  "education/meetings/page.tsx",
-  "education/onboarding/page.tsx",
-  "education/settings/page.tsx",
-  "education/students/page.tsx",
-  "education/support/page.tsx",
-  "education/teachers/page.tsx",
-  "finance/page.tsx",
-  "founder/dashboard/page.tsx",
-  "features/page.tsx",
-  "hiring/page.tsx",
-  "hr/page.tsx",
-  "intelligence/page.tsx",
-  "interviews/page.tsx",
-  "legal/page.tsx",
-  "marketing/page.tsx",
-  "onboarding/page.tsx",
-  "operations/page.tsx",
-  "partners/page.tsx",
-  "planning/page.tsx",
-  "pricing/page.tsx",
-  "privacy/page.tsx",
-  "registrations/page.tsx",
-  "refund/page.tsx",
-  "reports/page.tsx",
-  "settings/page.tsx",
-  "support/page.tsx",
-  "terms/page.tsx",
-  "vmetron/page.tsx",
-  "vmetron/dashboard/page.tsx",
-  "vmetron/events/page.tsx",
-  "vmetron/forms/page.tsx",
-  "vmetron/meetings/page.tsx",
-  "vmetron/onboarding/page.tsx",
-  "vmetron/promotions/page.tsx",
-  "vmetron/registrations/page.tsx",
-  "vmetron/settings/page.tsx",
-  "vmetron/support/page.tsx"
+const rootDir = path.join(__dirname, "..");
+const appPath = path.join(rootDir, "frontend", "src", "app", "App.tsx");
+const workspacePath = path.join(rootDir, "frontend", "src", "app", "Workspace.tsx");
+
+const appSource = fs.readFileSync(appPath, "utf8");
+const workspaceSource = fs.readFileSync(workspacePath, "utf8");
+
+const requiredRouteContracts = [
+  "builder/projects",
+  "builder/projects/new",
+  "builder/projects/",
+  "builder/billing",
+  "builder/billing/checkout",
+  "builder/billing/payment-success",
+  "marketplace/apps/",
+  "marketplace/installed",
+  "developers/api-keys",
+  "developers/webhooks",
+  "admin/operations",
+  "admin/security",
+  "legal/privacy-policy",
+  "legal/terms-of-use",
+  "legal/refund-cancellation-policy",
+  "legal/plan-limits",
+  "login",
+  "register",
+  "forgot-password",
+  "verify-email"
 ];
 
-const missing = requiredRoutes.filter((route) => !fs.existsSync(path.join(appDir, route)));
+const requiredSurfaceRoutes = [
+  "project-chat",
+  "project-intake",
+  "project-questions",
+  "project-blueprint",
+  "project-design",
+  "project-tasks",
+  "project-agents",
+  "project-files",
+  "project-diffs",
+  "project-qa",
+  "project-security",
+  "project-deployment",
+  "project-release",
+  "project-docs",
+  "project-memory",
+  "billing-usage",
+  "developer-api-keys",
+  "admin-operations"
+];
+
+const missing = [
+  ...requiredRouteContracts.filter((route) => !appSource.includes(route)),
+  ...requiredSurfaceRoutes.filter((route) => !workspaceSource.includes(route))
+];
 
 if (missing.length) {
-  console.error(`Missing routes:\n${missing.join("\n")}`);
+  console.error(`Vite route smoke check failed. Missing route contracts:\n${missing.join("\n")}`);
   process.exit(1);
 }
 
-const manifestPath = path.join(__dirname, "..", "frontend", ".next", "app-path-routes-manifest.json");
-if (fs.existsSync(manifestPath)) {
-  const manifestMtime = fs.statSync(manifestPath).mtimeMs;
-  const latestRouteMtime = Math.max(...requiredRoutes.map((route) => fs.statSync(path.join(appDir, route)).mtimeMs));
-  if (manifestMtime >= latestRouteMtime) {
-    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
-    const routeValues = new Set(Object.values(manifest));
-    const missingBuiltRoutes = requiredRoutes
-      .filter((route) => route.endsWith("page.tsx"))
-      .map((route) => `/${route.replace(/\/page\.tsx$/, "").replace(/^page\.tsx$/, "")}`.replace(/\/$/, "") || "/")
-      .filter((route) => !routeValues.has(route));
-    if (missingBuiltRoutes.length) {
-      console.error(`Missing built routes:\n${missingBuiltRoutes.join("\n")}`);
-      process.exit(1);
-    }
-  }
-}
-
-console.log(`Route smoke check passed for ${requiredRoutes.length} app routes.`);
+console.log(`Vite route smoke check passed for ${requiredRouteContracts.length + requiredSurfaceRoutes.length} route contracts.`);

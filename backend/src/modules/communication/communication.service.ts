@@ -1,4 +1,4 @@
-import type { CommunicationInput } from "@vmnexus/shared/growth";
+import type { CommunicationInput } from "@kravia/shared/growth";
 import { notificationsService } from "../notifications/notifications.service";
 import { communicationRepository, type CommunicationRepository } from "./communication.repository";
 
@@ -51,13 +51,13 @@ export class CommunicationService {
         records: communications.filter((item) => item.channel === entry.channel).length
       })),
       emailTemplates: [
-        { key: "welcome", subject: "Welcome to VM Nexus OS", audience: "Customers", status: "draft" },
+        { key: "welcome", subject: "Welcome to KRAVIA OS", audience: "Customers", status: "draft" },
         { key: "renewal-reminder", subject: "Renewal reminder", audience: "Customers", status: "draft" },
         { key: "support-follow-up", subject: "Support follow-up", audience: "Support", status: "draft" }
       ],
       smsTemplates: [
-        { key: "otp-placeholder", message: "Your VM Nexus verification code is {{code}}.", audience: "Users", status: "provider-gated" },
-        { key: "renewal-short", message: "Your VM Nexus renewal is due on {{date}}.", audience: "Customers", status: "provider-gated" },
+        { key: "otp-placeholder", message: "Your KRAVIA verification code is {{code}}.", audience: "Users", status: "provider-gated" },
+        { key: "renewal-short", message: "Your KRAVIA renewal is due on {{date}}.", audience: "Customers", status: "provider-gated" },
         { key: "support-alert", message: "Support update: {{ticketStatus}}.", audience: "Customers", status: "provider-gated" }
       ],
       routingRules: [

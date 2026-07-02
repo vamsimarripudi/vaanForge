@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
+import { sendError } from "../http/error-response";
 import { sessionService, type SessionPayload } from "../services/session.service";
 
 declare module "express-serve-static-core" {
@@ -12,12 +13,17 @@ export const authMiddleware = async (request: Request, response: Response, next:
   const token = cookieHeader
     .split(";")
     .map((item) => item.trim())
-    .find((item) => item.startsWith("vmnexus_session="))
+    .find((item) => item.startsWith("kravia_session="))
     ?.split("=")[1];
 
   const session = sessionService.verify(token);
   if (!session || (await sessionService.isRevoked(session))) {
-    response.status(401).json({ error: "Authentication required" });
+    sendError(response, request, 401, {
+      code: "AUTH_REQUIRED",
+      message: "Sign in to continue.",
+      recoverable: true,
+      nextAction: "sign_in"
+    });
     return;
   }
 

@@ -19,7 +19,7 @@ npm.cmd run test:e2e
 
 ## Repository Map
 
-- `frontend/` contains the Next.js web application.
+- `frontend/` contains the Vite React web application.
 - `backend/` contains the Express API and operational checks.
 - `shared/` contains shared configuration and package code.
 - `design-system/` contains shared UI package foundations.

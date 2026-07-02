@@ -15,7 +15,7 @@ function printChecks(title: string, checks: ReadinessCheck[]) {
   }
 }
 
-console.log(`VM Nexus readiness: ${readiness.status}`);
+console.log(`KRAVIA readiness: ${readiness.status}`);
 console.log(`Persistence mode: ${readiness.mode}`);
 printChecks("Failures", blockingChecks);
 printChecks("Warnings", warningChecks);

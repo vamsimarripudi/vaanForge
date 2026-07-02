@@ -44,6 +44,7 @@ Current QA coverage:
 - Audit coverage through `scripts/qa-audit-contract.js`.
 - Phase documentation coverage through `scripts/qa-phase-contract.js`.
 - Domain configuration coverage through `scripts/qa-domain-contract.js`.
+- Subdomain page shell, guard, redirect, metadata, and navigation coverage through `scripts/qa-subdomain-shells-contract.js`.
 - Pricing placeholder coverage through `scripts/qa-pricing-contract.js`.
 - Dependency hygiene coverage through `scripts/qa-dependency-contract.js`.
 - QA documentation coverage through `scripts/qa-documentation-contract.js`.

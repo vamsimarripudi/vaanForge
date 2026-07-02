@@ -26,10 +26,20 @@ for (const script of ["build", "typecheck", "test", "test:e2e", "phase:status", 
   }
 }
 
-for (const dependency of ["next", "react", "react-dom", "zod"]) {
+for (const dependency of ["react", "react-dom", "zod"]) {
   if (!frontendPackage.dependencies?.[dependency]) {
     failures.push(`frontend package.json must depend on ${dependency}`);
   }
+}
+
+for (const dependency of ["vite", "@vitejs/plugin-react", "typescript-eslint"]) {
+  if (!frontendPackage.devDependencies?.[dependency]) {
+    failures.push(`frontend package.json must include Vite React tooling dependency ${dependency}`);
+  }
+}
+
+if (frontendPackage.dependencies?.next || frontendPackage.devDependencies?.next || frontendPackage.devDependencies?.["eslint-config-next"]) {
+  failures.push("frontend package.json must not depend on the retired app-router framework after the Vite migration");
 }
 
 for (const dependency of ["express", "helmet", "cors", "jsonwebtoken", "zod", "@prisma/client"]) {
@@ -43,21 +53,22 @@ if (!lockRoot?.workspaces || JSON.stringify(lockRoot.workspaces) !== JSON.string
   failures.push("package-lock root workspace metadata must match package.json");
 }
 
-const lockedNext = packageLock.packages?.["node_modules/next"];
-if (!lockedNext || !lockedNext.version?.startsWith("15.")) {
-  failures.push("package-lock must include Next 15");
+const lockedVite = packageLock.packages?.["node_modules/vite"] || packageLock.packages?.["frontend/node_modules/vite"];
+if (!lockedVite) {
+  failures.push("package-lock must include Vite");
 }
 
-if (lockedNext && lockedNext.dependencies?.postcss !== "8.4.31") {
-  failures.push("package-lock should document the current Next.js PostCSS dependency that motivates the advisory note until reviewed");
+const lockedPluginReact = packageLock.packages?.["node_modules/@vitejs/plugin-react"] || packageLock.packages?.["frontend/node_modules/@vitejs/plugin-react"];
+if (!lockedPluginReact) {
+  failures.push("package-lock must include @vitejs/plugin-react");
 }
 
-const lockedPostcss = packageLock.packages?.["node_modules/postcss"];
-if (!lockedPostcss || lockedPostcss.version !== "8.4.31") {
-  failures.push("package-lock must reflect the current reviewed PostCSS advisory state until the Next.js upgrade path changes");
+const lockedPostcss = packageLock.packages?.["node_modules/postcss"] || packageLock.packages?.["frontend/node_modules/postcss"];
+if (!lockedPostcss) {
+  failures.push("package-lock must include PostCSS through Tailwind/Vite tooling");
 }
 
-for (const required of ["npm audit", "moderate PostCSS advisory", "breaking downgrade", "Next.js dependency tree"]) {
+for (const required of ["npm audit", "Vite React", "low severity vulnerabilities"]) {
   if (!knownIssues.includes(required) && !finalAudit.includes(required)) {
     failures.push(`dependency risk docs must mention ${required}`);
   }
@@ -68,4 +79,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log("Dependency contract check passed for workspace, runtime, and PostCSS advisory state.");
+console.log("Dependency contract check passed for workspace, Vite React runtime, and dependency risk documentation.");

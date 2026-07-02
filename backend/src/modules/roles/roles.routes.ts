@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import { coreRoles } from "@vmnexus/shared/roles";
+import { coreRoles } from "@kravia/shared/roles";
 import { authMiddleware } from "../../middlewares/auth.middleware";
 import { requirePermission } from "../../guards/permission.guard";
 import { rolesService } from "./roles.service";

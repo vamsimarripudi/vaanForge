@@ -1,6 +1,6 @@
 # VaanForge AI Agent
 
-VaanForge is the VMNexus backend agent that accepts structured VFormix requirements and generates a production-ready project blueprint.
+VaanForge is KRAVIA PVT LTD's enterprise AI software factory. It accepts structured requirements, generates production-ready blueprints, coordinates agent execution, and records delivery evidence.
 
 ## Backend Structure
 
@@ -417,7 +417,7 @@ Phase 8 adds a guarded deployment agent for preparing, verifying, promoting, mon
 - S3 + CloudFront
 - Docker server
 - Vercel
-- Future VMNexus Cloud
+- Future KRAVIA Cloud
 
 ### Deployment Workflow Checks
 
@@ -525,7 +525,7 @@ The same routes are mounted under `/api/v1/builder/*`.
 
 ### Builder Workflow Checks
 
-- Customer login uses the existing VMNexus session cookie and auth middleware.
+- Customer login uses the existing KRAVIA session cookie and auth middleware.
 - Customer project creation creates a real VaanForge Phase 1 run and stores the linked `agentRunId`.
 - Requirement submissions store raw customer input separately from normalized VaanForge input.
 - Blueprint records are versioned; regenerated requirements supersede older generated blueprints.
@@ -588,7 +588,7 @@ The same routes are mounted under `/api/v1/admin/agent/billing/*`.
 
 ### Billing Workflow Checks
 
-- Plans include Free Trial, Starter, Pro, Business, Enterprise, and Custom tiers.
+- Plans include Free, Creator, Professional, Studio, Business, and Enterprise tiers, with backend-driven prices, usage limits, credits, storage, and deployment allowances.
 - Customer subscriptions create invoice and payment records and reset plan usage limits.
 - Customer credit wallets are created automatically with plan grants and support top-up transactions.
 - Builder project creation consumes `agent_run` usage and credits before creating a VaanForge run.
@@ -671,3 +671,61 @@ The same routes are mounted under `/api/v1/admin/agent/*`.
 - Compliance reports include privacy, terms, retention, billing, export, and delete evidence.
 - Launch readiness refuses production launch unless security, reliability, billing, deployment, compliance, and support checks pass.
 - Public launch pages expose only safe product, pricing, docs, and help information.
+
+## Phase 15: KRAVIA App Marketplace
+
+Phase 15 adds a reviewed app marketplace for KRAVIA developers, partners, and internal teams. Storefront listings are database-driven and appear only after immutable app versions pass security, code scan, permission, and manual review gates.
+
+### Marketplace Tables
+
+- `marketplace_apps`
+- `marketplace_app_versions`
+- `marketplace_publishers`
+- `marketplace_reviews`
+- `marketplace_installs`
+- `marketplace_permissions`
+- `marketplace_pricing`
+- `marketplace_payouts`
+
+### Marketplace APIs
+
+- `GET /api/marketplace/apps`
+- `GET /api/marketplace/apps/:appId`
+- `GET /api/developers/publisher`
+- `POST /api/developers/publisher`
+- `GET /api/developers/publisher/apps`
+- `POST /api/developers/publisher/apps`
+- `POST /api/developers/publisher/apps/:appId/submit`
+- `POST /api/developers/publisher/apps/:appId/versions`
+- `GET /api/developers/publisher/payouts`
+- `GET /api/admin/marketplace/reviews`
+- `POST /api/admin/marketplace/reviews/:reviewId/decision`
+- `GET /api/builder/workspace/apps`
+- `POST /api/builder/workspace/apps/:appId/install`
+- `POST /api/builder/workspace/apps/:appId/uninstall`
+- `POST /api/builder/workspace/apps/:appId/update`
+- `POST /api/builder/workspace/apps/:appId/rollback`
+
+The same routes are mounted under `/api/v1/*`.
+
+### Marketplace Pages
+
+- `/marketplace`
+- `/marketplace/apps/:appId`
+- `/developers/publisher`
+- `/developers/publisher/apps`
+- `/developers/publisher/apps/new`
+- `/admin/marketplace/reviews`
+- `/builder/workspace/apps`
+
+### Marketplace Workflow Checks
+
+- The storefront returns only reviewed and published apps.
+- Publisher submissions create immutable version snapshots.
+- Every app defines requested permissions and pricing metadata before review.
+- Publishing requires all review gates to approve; rejected reviews keep the app unavailable for install.
+- Workspace installs require explicit permission consent.
+- Paid installs consume billing usage and accrue payout metadata.
+- Updates and rollbacks preserve previous installed versions instead of overwriting them.
+- Publisher create, app create, submit, review decision, install, uninstall, update, and rollback actions are audited.
+- Marketplace input is scanned for secrets and prompt-injection phrases before storage.

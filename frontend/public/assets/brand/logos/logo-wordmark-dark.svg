@@ -1,0 +1,8 @@
+<svg width="260" height="56" viewBox="0 0 260 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M9 8L28 47L47 8" stroke="#00D49A" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="28" cy="47" r="5" fill="#00D49A"/>
+  <circle cx="9" cy="8" r="2" fill="#00D49A" fill-opacity="0.45"/>
+  <circle cx="47" cy="8" r="2" fill="#00D49A" fill-opacity="0.45"/>
+  <text x="66" y="36" fill="#DCE8F8" font-family="Onest, Arial, sans-serif" font-size="28" font-weight="800">Vaan</text>
+  <text x="133" y="36" fill="#7A8DA8" font-family="Onest, Arial, sans-serif" font-size="28" font-weight="300">Forge</text>
+</svg>

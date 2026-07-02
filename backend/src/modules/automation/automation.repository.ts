@@ -1,4 +1,4 @@
-import type { AutomationAction, AutomationRuleInput, AutomationStatus, AutomationTrigger } from "@vmnexus/shared/growth";
+import type { AutomationAction, AutomationRuleInput, AutomationStatus, AutomationTrigger } from "@kravia/shared/growth";
 import { env } from "../../config/env";
 import { createId, store, type StoredAutomationRule } from "../../database/in-memory-store";
 import { prisma } from "../../database/prisma-client";

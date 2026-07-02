@@ -1,4 +1,4 @@
-import type { PartnerInput, PartnerStatus } from "@vmnexus/shared/growth";
+import type { PartnerInput, PartnerStatus } from "@kravia/shared/growth";
 import { env } from "../../config/env";
 import { createId, store, type StoredPartner } from "../../database/in-memory-store";
 import { prisma } from "../../database/prisma-client";

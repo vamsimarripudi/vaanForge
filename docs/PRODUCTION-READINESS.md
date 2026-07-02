@@ -19,7 +19,7 @@ Local/demo values are intentionally allowed to produce `limited` readiness. Prod
 | `ai-provider` | Replace `AI_PROVIDER=deterministic` with the approved production AI provider and credentials. |
 | `payments-provider` | Replace `RAZORPAY_KEY_ID=local` and `RAZORPAY_KEY_SECRET=local` with production Razorpay credentials. |
 
-All domain and proxy changes must also update `infrastructure/nginx/vmnexus.conf`, SSL setup, and DNS records together.
+All domain and proxy changes must also update `infrastructure/nginx/kravia.conf`, SSL setup, and DNS records together.
 
 Production launch sequence:
 

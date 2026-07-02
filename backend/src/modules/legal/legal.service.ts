@@ -1,5 +1,5 @@
-import type { AgreementInput, DocumentStatus } from "@vmnexus/shared/legal";
-import { legalDisclaimer } from "@vmnexus/shared/legal";
+import type { AgreementInput, DocumentStatus } from "@kravia/shared/legal";
+import { legalDisclaimer } from "@kravia/shared/legal";
 import { legalRepository, type LegalRepository } from "./legal.repository";
 
 export class LegalService {

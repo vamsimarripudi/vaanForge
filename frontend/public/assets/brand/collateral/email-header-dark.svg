@@ -1,0 +1,8 @@
+<svg width="1200" height="260" viewBox="0 0 1200 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="260" fill="#07090F"/>
+  <path d="M86 74L124 154L162 74" stroke="#00D49A" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="124" cy="154" r="8" fill="#00D49A"/>
+  <text x="210" y="126" fill="#DCE8F8" font-family="Onest, Arial, sans-serif" font-size="44" font-weight="800">Vaan</text>
+  <text x="328" y="126" fill="#7A8DA8" font-family="Onest, Arial, sans-serif" font-size="44" font-weight="300">Forge</text>
+  <text x="212" y="170" fill="#00D49A" fill-opacity="0.72" font-family="JetBrains Mono, monospace" font-size="14" letter-spacing="4">ENTERPRISE AI SOFTWARE FACTORY</text>
+</svg>

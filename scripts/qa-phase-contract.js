@@ -9,7 +9,8 @@ const readmePath = path.join(rootDir, "README.md");
 const phaseStatusPath = path.join(rootDir, "scripts", "phase-status.js");
 const routesPath = path.join(rootDir, "backend", "src", "routes.ts");
 const reportsRoutesPath = path.join(rootDir, "backend", "src", "modules", "reports", "reports.routes.ts");
-const reportsPagePath = path.join(rootDir, "frontend", "src", "app", "reports", "page.tsx");
+const workspacePath = path.join(rootDir, "frontend", "src", "app", "Workspace.tsx");
+const appPath = path.join(rootDir, "frontend", "src", "app", "App.tsx");
 
 const phaseTracker = fs.readFileSync(phaseTrackerPath, "utf8");
 const launchChecklist = fs.readFileSync(launchChecklistPath, "utf8");
@@ -18,7 +19,8 @@ const readme = fs.readFileSync(readmePath, "utf8");
 const phaseStatus = fs.readFileSync(phaseStatusPath, "utf8");
 const routes = fs.readFileSync(routesPath, "utf8");
 const reportsRoutes = fs.readFileSync(reportsRoutesPath, "utf8");
-const reportsPage = fs.readFileSync(reportsPagePath, "utf8");
+const workspace = fs.readFileSync(workspacePath, "utf8");
+const app = fs.readFileSync(appPath, "utf8");
 
 const requiredPhaseCount = 48;
 const phaseRows = [...phaseTracker.matchAll(/^\| (\d+) \| ([^|]+) \| ([^|]+) \|/gm)].map((match) => ({
@@ -114,9 +116,28 @@ for (const required of [
   }
 }
 
-for (const required of ['apiClient<ReportExport[]>("/reports/exports")', "Queue export", "Export Queue"]) {
-  if (!reportsPage.includes(required)) {
-    failures.push(`reports page must include operational export UI evidence: ${required}`);
+for (const required of [
+  "Validation factory",
+  "Release manager",
+  "Generated documentation",
+  "Operations center",
+  "Audit center",
+  "Export"
+]) {
+  if (!workspace.includes(required)) {
+    failures.push(`Vite workspace must include operational/reporting surface evidence: ${required}`);
+  }
+}
+
+for (const required of [
+  '"project-qa"',
+  '"project-release"',
+  '"project-docs"',
+  '"admin-operations"',
+  '"admin-audit"'
+]) {
+  if (!app.includes(required)) {
+    failures.push(`Vite route map must include phase/reporting route evidence: ${required}`);
   }
 }
 

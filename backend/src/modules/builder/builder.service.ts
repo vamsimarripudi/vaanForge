@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { roleHasPermission } from "@vmnexus/shared/permissions";
-import type { CoreRole } from "@vmnexus/shared/roles";
+import { roleHasPermission } from "@kravia/shared/permissions";
+import type { CoreRole } from "@kravia/shared/roles";
 import {
   createId,
   store,
@@ -403,7 +403,7 @@ export class BuilderService {
       },
       constraints: {
         approvedArchitecture: ["Node.js", "Express", "PostgreSQL", "Next.js", ...(input.constraints || [])].join(", "),
-        designSystem: "VMNexus design system, responsive light and dark theme, enterprise dashboard styling",
+        designSystem: "KRAVIA design system, responsive light and dark theme, enterprise dashboard styling",
         routing: [`/builder/projects/${slug}`, `/builder/projects/${slug}/requirements`, `/builder/projects/${slug}/blueprint`, `/builder/projects/${slug}/progress`, `/builder/projects/${slug}/outputs`],
         permissions: ["Customer project owner", "Admin audit visibility", "Tenant isolation"]
       },

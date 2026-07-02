@@ -2,52 +2,31 @@ const fs = require("fs");
 const path = require("path");
 
 const rootDir = path.join(__dirname, "..");
-const suiteConfig = fs.readFileSync(path.join(rootDir, "shared", "src", "suites.ts"), "utf8");
-const typeConfig = fs.readFileSync(path.join(rootDir, "shared", "src", "types.ts"), "utf8");
-const educationBackendPlans = fs.readFileSync(path.join(rootDir, "backend", "src", "config", "plans", "education-suite.plans.ts"), "utf8");
-const vmetronBackendPlans = fs.readFileSync(path.join(rootDir, "backend", "src", "config", "plans", "vmetron-suite.plans.ts"), "utf8");
-const educationFrontendPlans = fs.readFileSync(path.join(rootDir, "frontend", "src", "config", "plans", "educationSuitePlans.ts"), "utf8");
-const vmetronFrontendPlans = fs.readFileSync(path.join(rootDir, "frontend", "src", "config", "plans", "vmetronSuitePlans.ts"), "utf8");
-const educationOnboarding = fs.readFileSync(path.join(rootDir, "frontend", "src", "app", "education", "onboarding", "page.tsx"), "utf8");
-const vmetronOnboarding = fs.readFileSync(path.join(rootDir, "frontend", "src", "app", "vmetron", "onboarding", "page.tsx"), "utf8");
-const suiteDashboard = fs.readFileSync(path.join(rootDir, "frontend", "src", "features", "dashboard", "components", "SuiteDashboard.tsx"), "utf8");
+const planConfiguration = fs.readFileSync(path.join(rootDir, "backend", "src", "modules", "billing", "plan-configuration.service.ts"), "utf8");
+const billingService = fs.readFileSync(path.join(rootDir, "backend", "src", "modules", "billing", "billing.service.ts"), "utf8");
+const workspace = fs.readFileSync(path.join(rootDir, "frontend", "src", "app", "Workspace.tsx"), "utf8");
+const pricingDoc = fs.readFileSync(path.join(rootDir, "docs", "product", "pricing.md"), "utf8");
 
 const failures = [];
 
-for (const product of ["VIDYALUMA", "VAANMEET", "VFORMIX", "VMETRON", "SUPPORT", "CUSTOMER_PORTAL", "CLIENT_PORTAL", "BILLING", "REPORTS", "COMMUNICATION", "PROMOTIONS"]) {
-  if (!typeConfig.includes(`"${product}"`) || !suiteConfig.includes(product)) {
-    failures.push(`shared suite catalog must include product ${product}`);
+for (const plan of ["Free", "Creator", "Professional", "Studio", "Business", "Enterprise"]) {
+  if (!planConfiguration.includes(plan)) failures.push(`central plan configuration must include ${plan}`);
+  if (!workspace.includes(plan)) failures.push(`pricing UI must include ${plan}`);
+  if (!pricingDoc.includes(plan)) failures.push(`pricing docs must include ${plan}`);
+}
+
+for (const price of ["999", "2999", "7999", "19999"]) {
+  if (!planConfiguration.includes(price)) failures.push(`central plan configuration must include INR price ${price}`);
+}
+
+for (const required of ["creditsIncluded", "limits", "features", "billingPlanSeeds", "usage", "credits", "topup"]) {
+  if (!planConfiguration.includes(required) && !billingService.includes(required)) {
+    failures.push(`billing backend must include ${required}`);
   }
 }
 
-for (const product of ["VIDYALUMA", "VAANMEET", "VFORMIX", "SUPPORT", "CUSTOMER_PORTAL", "BILLING", "REPORTS", "COMMUNICATION"]) {
-  if (!educationBackendPlans.includes(product) || !educationFrontendPlans.includes(product)) {
-    failures.push(`Education Suite plans must include ${product}`);
-  }
-}
-
-for (const product of ["VMETRON", "VAANMEET", "VFORMIX", "SUPPORT", "CLIENT_PORTAL", "CUSTOMER_PORTAL", "BILLING", "PROMOTIONS", "REPORTS"]) {
-  if (!vmetronBackendPlans.includes(product) || !vmetronFrontendPlans.includes(product)) {
-    failures.push(`VMetron Suite plans must include ${product}`);
-  }
-}
-
-for (const required of ["Institution name", "Institution type", "Number of students", "Number of teachers", "Admin contact", "Meeting requirements", "Form requirements", "Support requirements", "Preferred plan"]) {
-  if (!educationOnboarding.includes(required)) {
-    failures.push(`Education onboarding must include ${required}`);
-  }
-}
-
-for (const required of ["Organization name", "Organizer type", "Event types", "Expected monthly events", "Average attendees", "Online/offline/hybrid", "Registration form needs", "Promotion/collab needs", "Billing needs", "Preferred plan"]) {
-  if (!vmetronOnboarding.includes(required)) {
-    failures.push(`VMetron onboarding must include ${required}`);
-  }
-}
-
-for (const required of ["Active students", "Active teachers", "Meetings created", "Create VaanMeet Room", "Create with VFormix", "Total events", "Upcoming events", "Promotion requests", "Attach VFormix Registration Form", "Enable Support Desk"]) {
-  if (!suiteDashboard.includes(required)) {
-    failures.push(`Suite dashboard must include ${required}`);
-  }
+for (const required of ["Billing dashboard", "Secure checkout", "Usage and limits", "Credit wallet", "Most Popular"]) {
+  if (!workspace.includes(required)) failures.push(`billing UI must include ${required}`);
 }
 
 if (failures.length) {
@@ -55,4 +34,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log("Commercial suite contract check passed for Education Suite and VMetron Suite.");
+console.log("Commercial suite contract check passed for VaanForge pricing and billing surfaces.");

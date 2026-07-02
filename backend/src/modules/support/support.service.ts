@@ -1,4 +1,4 @@
-import type { SupportTicketInput, TicketStatus } from "@vmnexus/shared/operations";
+import type { SupportTicketInput, TicketStatus } from "@kravia/shared/operations";
 import { realtimeService } from "../../infrastructure/realtime/realtime.service";
 import { supportRepository, type SupportRepository, type TicketMessageInput } from "./support.repository";
 

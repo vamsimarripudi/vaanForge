@@ -10,7 +10,7 @@
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
-      "@vmnexus/shared/*": ["../shared/src/*"]
+      "@kravia/shared/*": ["../shared/src/*"]
     }
   },
   "include": ["src/**/*.ts"],

@@ -1,6 +1,6 @@
 # VaanForge AI Agent
 
-VaanForge receives validated VFormix requirement JSON and generates a production blueprint for the VMNexus ecosystem.
+VaanForge receives validated VFormix requirement JSON and generates a production blueprint for the KRAVIA ecosystem.
 
 ## API
 
@@ -19,4 +19,4 @@ Every phase writes activity history and audit logs. The service validates the cu
 
 ## Required Input
 
-Required fields include product identity, source, owner, priority, due date, business context, core features, accepted VMNexus architecture, design system, routes, and permissions.
+Required fields include product identity, source, owner, priority, due date, business context, core features, accepted KRAVIA architecture, design system, routes, and permissions.

@@ -1,4 +1,4 @@
-import type { SettingsInput } from "@vmnexus/shared/growth";
+import type { SettingsInput } from "@kravia/shared/growth";
 import { env } from "../../config/env";
 import { prisma } from "../../database/prisma-client";
 import { store, type StoredSettings } from "../../database/in-memory-store";

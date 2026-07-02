@@ -2,7 +2,7 @@ import { Router } from "express";
 import { authMiddleware } from "../../middlewares/auth.middleware";
 import { requirePermission } from "../../guards/permission.guard";
 import { dashboardService } from "./dashboard.service";
-import type { SuiteType } from "@vmnexus/shared/types";
+import type { SuiteType } from "@kravia/shared/types";
 
 export const dashboardRouter = Router();
 

@@ -1,4 +1,4 @@
-import type { CustomerInput, LeadInput, LeadStage } from "@vmnexus/shared/operations";
+import type { CustomerInput, LeadInput, LeadStage } from "@kravia/shared/operations";
 import { crmRepository, type CrmRepository } from "./crm.repository";
 
 export class CrmService {

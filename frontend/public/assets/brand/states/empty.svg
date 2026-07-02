@@ -1,0 +1,8 @@
+<svg width="640" height="360" viewBox="0 0 640 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="640" height="360" rx="28" fill="#0F1520"/>
+  <rect x="220" y="92" width="200" height="142" rx="22" fill="#0C1018" stroke="rgba(255,255,255,0.08)"/>
+  <path d="M282 132H358M282 166H330M282 200H376" stroke="#7A8DA8" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="410" cy="108" r="16" fill="#00D49A"/>
+  <text x="235" y="286" fill="#DCE8F8" font-family="Onest, Arial, sans-serif" font-size="20" font-weight="700">Nothing here yet</text>
+  <text x="212" y="314" fill="#7A8DA8" font-family="Instrument Sans, Arial, sans-serif" font-size="15">Create a project to start building.</text>
+</svg>

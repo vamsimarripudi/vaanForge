@@ -12,19 +12,19 @@ export const agentAdminRouter = Router();
 
 agentAdminRouter.use(authMiddleware, requirePermission("audit:read"));
 
-agentAdminRouter.get("/summary", async (request, response) => {
+agentAdminRouter.get("/summary", authMiddleware, async (request, response) => {
   response.json({ data: request.session?.organizationId ? await agentAdminService.summary(request.session.organizationId) : emptySummary() });
 });
 
-agentAdminRouter.get("/runs", async (request, response) => {
+agentAdminRouter.get("/runs", authMiddleware, async (request, response) => {
   response.json({ data: request.session?.organizationId ? await agentAdminService.runs(request.session.organizationId) : [] });
 });
 
-agentAdminRouter.get("/memory", async (request, response) => {
+agentAdminRouter.get("/memory", authMiddleware, async (request, response) => {
   response.json({ data: request.session?.organizationId ? await agentMemoryService.list(request.session.organizationId, true) : [] });
 });
 
-agentAdminRouter.post("/memory", requirePermission("workspace:create"), async (request, response) => {
+agentAdminRouter.post("/memory", authMiddleware, requirePermission("workspace:create"), async (request, response) => {
   const parsed = memoryInputSchema.safeParse(request.body);
   if (!parsed.success || !request.session?.organizationId || !request.session.userId) {
     response.status(400).json({ error: "Invalid memory request", issues: parsed.success ? [] : parsed.error.issues });
@@ -37,12 +37,12 @@ agentAdminRouter.post("/memory", requirePermission("workspace:create"), async (r
   }
 });
 
-agentAdminRouter.get("/memory/review", async (request, response) => {
+agentAdminRouter.get("/memory/review", authMiddleware, async (request, response) => {
   const entries = request.session?.organizationId ? await agentMemoryService.list(request.session.organizationId, true) : [];
   response.json({ data: entries.filter((entry) => entry.status === "pending_review") });
 });
 
-agentAdminRouter.get("/memory/:memoryId", async (request, response) => {
+agentAdminRouter.get("/memory/:memoryId", authMiddleware, async (request, response) => {
   const memory = request.session?.organizationId ? await agentMemoryService.detail(request.session.organizationId, String(request.params.memoryId)) : undefined;
   if (!memory) {
     response.status(404).json({ error: "Memory entry not found" });
@@ -51,7 +51,7 @@ agentAdminRouter.get("/memory/:memoryId", async (request, response) => {
   response.json({ data: memory });
 });
 
-agentAdminRouter.patch("/memory/:memoryId", requirePermission("workspace:create"), async (request, response) => {
+agentAdminRouter.patch("/memory/:memoryId", authMiddleware, requirePermission("workspace:create"), async (request, response) => {
   const parsed = memoryPatchSchema.safeParse(request.body || {});
   if (!parsed.success || !request.session?.organizationId || !request.session.userId) {
     response.status(400).json({ error: "Invalid memory update", issues: parsed.success ? [] : parsed.error.issues });
@@ -80,11 +80,11 @@ for (const action of ["approve", "reject", "archive"] as const) {
   });
 }
 
-agentAdminRouter.get("/knowledge-base", async (request, response) => {
+agentAdminRouter.get("/knowledge-base", authMiddleware, async (request, response) => {
   response.json({ data: request.session?.organizationId ? await agentMemoryService.knowledge(request.session.organizationId) : [] });
 });
 
-agentAdminRouter.post("/knowledge-base/search", async (request, response) => {
+agentAdminRouter.post("/knowledge-base/search", authMiddleware, requirePermission("audit:read"), async (request, response) => {
   const parsed = knowledgeSearchSchema.safeParse(request.body || {});
   if (!parsed.success || !request.session?.organizationId || !request.session.userId) {
     response.status(400).json({ error: "Invalid knowledge search", issues: parsed.success ? [] : parsed.error.issues });
@@ -93,7 +93,7 @@ agentAdminRouter.post("/knowledge-base/search", async (request, response) => {
   response.json({ data: await agentMemoryService.search(request.session.organizationId, request.session.userId, parsed.data) });
 });
 
-agentAdminRouter.post("/knowledge-base/retrieve", async (request, response) => {
+agentAdminRouter.post("/knowledge-base/retrieve", authMiddleware, requirePermission("audit:read"), async (request, response) => {
   const parsed = knowledgeSearchSchema.safeParse(request.body || {});
   if (!parsed.success || !request.session?.organizationId || !request.session.userId) {
     response.status(400).json({ error: "Invalid knowledge retrieval", issues: parsed.success ? [] : parsed.error.issues });
@@ -102,11 +102,11 @@ agentAdminRouter.post("/knowledge-base/retrieve", async (request, response) => {
   response.json({ data: await agentMemoryService.retrieve(request.session.organizationId, request.session.userId, parsed.data) });
 });
 
-agentAdminRouter.get("/deployments", async (request, response) => {
+agentAdminRouter.get("/deployments", authMiddleware, async (request, response) => {
   response.json({ data: request.session?.organizationId ? await agentDeploymentService.list(request.session.organizationId) : [] });
 });
 
-agentAdminRouter.post("/deployments", requirePermission("workspace:create"), async (request, response) => {
+agentAdminRouter.post("/deployments", authMiddleware, requirePermission("workspace:create"), async (request, response) => {
   const parsed = deploymentCreateSchema.safeParse(request.body);
   if (!parsed.success || !request.session?.organizationId || !request.session.userId) {
     response.status(400).json({ error: "Invalid deployment request", issues: parsed.success ? [] : parsed.error.issues });
@@ -119,7 +119,7 @@ agentAdminRouter.post("/deployments", requirePermission("workspace:create"), asy
   }
 });
 
-agentAdminRouter.get("/deployments/:deploymentId", async (request, response) => {
+agentAdminRouter.get("/deployments/:deploymentId", authMiddleware, async (request, response) => {
   const deployment = request.session?.organizationId ? await agentDeploymentService.detail(request.session.organizationId, String(request.params.deploymentId)) : undefined;
   if (!deployment) {
     response.status(404).json({ error: "Deployment not found" });
@@ -128,7 +128,7 @@ agentAdminRouter.get("/deployments/:deploymentId", async (request, response) => 
   response.json({ data: deployment });
 });
 
-agentAdminRouter.get("/deployments/:deploymentId/logs", async (request, response) => {
+agentAdminRouter.get("/deployments/:deploymentId/logs", authMiddleware, async (request, response) => {
   response.json({ data: request.session?.organizationId ? agentDeploymentService.logs(request.session.organizationId, String(request.params.deploymentId)) : [] });
 });
 
@@ -156,23 +156,23 @@ for (const action of ["prepare", "deploy", "verify", "rollback"] as const) {
   });
 }
 
-agentAdminRouter.get("/runs/:runId/deployment", async (request, response) => {
+agentAdminRouter.get("/runs/:runId/deployment", authMiddleware, async (request, response) => {
   response.json({ data: request.session?.organizationId ? await agentDeploymentService.runDeploymentForRun(request.session.organizationId, String(request.params.runId)) : [] });
 });
 
-agentAdminRouter.get("/workspace", async (request, response) => {
+agentAdminRouter.get("/workspace", authMiddleware, async (request, response) => {
   response.json({ data: request.session?.organizationId ? await agentWorkspaceService.overview(request.session.organizationId) : [] });
 });
 
-agentAdminRouter.get("/team", async (request, response) => {
+agentAdminRouter.get("/team", authMiddleware, async (request, response) => {
   response.json({ data: request.session?.organizationId ? await agentTeamService.team(request.session.organizationId) : { roles: [], activeAssignments: [] } });
 });
 
-agentAdminRouter.get("/team/roles", async (request, response) => {
+agentAdminRouter.get("/team/roles", authMiddleware, async (request, response) => {
   response.json({ data: request.session?.organizationId ? await agentTeamService.roles(request.session.organizationId) : [] });
 });
 
-agentAdminRouter.post("/team/roles", requirePermission("workspace:create"), async (request, response) => {
+agentAdminRouter.post("/team/roles", authMiddleware, requirePermission("workspace:create"), async (request, response) => {
   const parsed = roleSchema.safeParse(request.body);
   if (!parsed.success || !request.session?.organizationId || !request.session.userId) {
     response.status(400).json({ error: "Invalid agent role", issues: parsed.success ? [] : parsed.error.issues });
@@ -181,7 +181,7 @@ agentAdminRouter.post("/team/roles", requirePermission("workspace:create"), asyn
   response.status(201).json({ data: await agentTeamService.createRole(request.session.organizationId, request.session.userId, parsed.data) });
 });
 
-agentAdminRouter.patch("/team/roles/:roleId", requirePermission("workspace:create"), async (request, response) => {
+agentAdminRouter.patch("/team/roles/:roleId", authMiddleware, requirePermission("workspace:create"), async (request, response) => {
   if (!request.session?.organizationId || !request.session.userId) {
     response.status(400).json({ error: "Organization context is required" });
     return;
@@ -194,11 +194,11 @@ agentAdminRouter.patch("/team/roles/:roleId", requirePermission("workspace:creat
   response.json({ data: updated });
 });
 
-agentAdminRouter.get("/runs/:runId/team", async (request, response) => {
+agentAdminRouter.get("/runs/:runId/team", authMiddleware, async (request, response) => {
   response.json({ data: request.session?.organizationId ? await agentTeamService.runTeam(request.session.organizationId, String(request.params.runId)) : undefined });
 });
 
-agentAdminRouter.post("/runs/:runId/team/assign", requirePermission("workspace:create"), async (request, response) => {
+agentAdminRouter.post("/runs/:runId/team/assign", authMiddleware, requirePermission("workspace:create"), async (request, response) => {
   const parsed = assignSchema.safeParse(request.body || {});
   if (!parsed.success || !request.session?.organizationId || !request.session.userId) {
     response.status(400).json({ error: "Invalid team assignment request", issues: parsed.success ? [] : parsed.error.issues });
@@ -226,7 +226,7 @@ for (const action of ["handoff", "comment", "conflict", "review", "final-review"
   });
 }
 
-agentAdminRouter.get("/workspace/:runId", async (request, response) => {
+agentAdminRouter.get("/workspace/:runId", authMiddleware, async (request, response) => {
   const workspace = request.session?.organizationId ? await agentWorkspaceService.workspace(request.session.organizationId, String(request.params.runId)) : undefined;
   if (!workspace) {
     response.status(404).json({ error: "Agent workspace not found" });
@@ -235,15 +235,15 @@ agentAdminRouter.get("/workspace/:runId", async (request, response) => {
   response.json({ data: workspace });
 });
 
-agentAdminRouter.get("/workspace/:runId/evidence", async (request, response) => {
+agentAdminRouter.get("/workspace/:runId/evidence", authMiddleware, async (request, response) => {
   response.json({ data: request.session?.organizationId ? await agentWorkspaceService.evidence(request.session.organizationId, String(request.params.runId)) : [] });
 });
 
-agentAdminRouter.get("/workspace/:runId/instructions", async (request, response) => {
+agentAdminRouter.get("/workspace/:runId/instructions", authMiddleware, async (request, response) => {
   response.json({ data: request.session?.organizationId ? await agentWorkspaceService.instructions(request.session.organizationId, String(request.params.runId)) : [] });
 });
 
-agentAdminRouter.get("/workspace/:runId/live", async (request, response) => {
+agentAdminRouter.get("/workspace/:runId/live", authMiddleware, async (request, response) => {
   const organizationId = request.session?.organizationId;
   const actorId = request.session?.userId;
   const runId = String(request.params.runId);
@@ -288,7 +288,7 @@ for (const action of ["pause", "resume", "stop", "approve-step", "reject-step", 
   });
 }
 
-agentAdminRouter.post("/workspace/:runId/instructions", requirePermission("workspace:create"), async (request, response) => {
+agentAdminRouter.post("/workspace/:runId/instructions", authMiddleware, requirePermission("workspace:create"), async (request, response) => {
   const parsed = workspaceInstructionSchema.safeParse(request.body || {});
   const organizationId = request.session?.organizationId;
   const actorId = request.session?.userId;
@@ -299,11 +299,11 @@ agentAdminRouter.post("/workspace/:runId/instructions", requirePermission("works
   response.status(201).json({ data: await agentWorkspaceService.addInstruction(organizationId, actorId, String(request.params.runId), parsed.data) });
 });
 
-agentAdminRouter.get("/templates", async (request, response) => {
+agentAdminRouter.get("/templates", authMiddleware, async (request, response) => {
   response.json({ data: request.session?.organizationId ? await agentTemplateService.list(request.session.organizationId, true) : [] });
 });
 
-agentAdminRouter.post("/templates", requirePermission("workspace:create"), async (request, response) => {
+agentAdminRouter.post("/templates", authMiddleware, requirePermission("workspace:create"), async (request, response) => {
   const parsed = templateInputSchema.safeParse(request.body);
   if (!parsed.success || !request.session?.organizationId || !request.session.userId) {
     response.status(400).json({ error: "Invalid template request", issues: parsed.success ? [] : parsed.error.issues });
@@ -312,11 +312,11 @@ agentAdminRouter.post("/templates", requirePermission("workspace:create"), async
   response.status(201).json({ data: await agentTemplateService.create(request.session.organizationId, request.session.userId, parsed.data) });
 });
 
-agentAdminRouter.get("/marketplace", async (request, response) => {
+agentAdminRouter.get("/marketplace", authMiddleware, async (request, response) => {
   response.json({ data: request.session?.organizationId ? await agentTemplateService.marketplace(request.session.organizationId) : [] });
 });
 
-agentAdminRouter.get("/marketplace/:templateId", async (request, response) => {
+agentAdminRouter.get("/marketplace/:templateId", authMiddleware, async (request, response) => {
   const detail = request.session?.organizationId ? await agentTemplateService.detail(request.session.organizationId, String(request.params.templateId)) : undefined;
   if (!detail || detail.status !== "published") {
     response.status(404).json({ error: "Published template not found" });
@@ -325,7 +325,7 @@ agentAdminRouter.get("/marketplace/:templateId", async (request, response) => {
   response.json({ data: detail });
 });
 
-agentAdminRouter.get("/templates/:templateId", async (request, response) => {
+agentAdminRouter.get("/templates/:templateId", authMiddleware, async (request, response) => {
   const detail = request.session?.organizationId ? await agentTemplateService.detail(request.session.organizationId, String(request.params.templateId)) : undefined;
   if (!detail) {
     response.status(404).json({ error: "Template not found" });
@@ -334,7 +334,7 @@ agentAdminRouter.get("/templates/:templateId", async (request, response) => {
   response.json({ data: detail });
 });
 
-agentAdminRouter.patch("/templates/:templateId", requirePermission("workspace:create"), async (request, response) => {
+agentAdminRouter.patch("/templates/:templateId", authMiddleware, requirePermission("workspace:create"), async (request, response) => {
   if (!request.session?.organizationId || !request.session.userId) {
     response.status(400).json({ error: "Organization context is required" });
     return;
@@ -347,11 +347,11 @@ agentAdminRouter.patch("/templates/:templateId", requirePermission("workspace:cr
   response.json({ data: updated });
 });
 
-agentAdminRouter.get("/templates/:templateId/versions", async (request, response) => {
+agentAdminRouter.get("/templates/:templateId/versions", authMiddleware, async (request, response) => {
   response.json({ data: request.session?.organizationId ? await agentTemplateService.versions(request.session.organizationId, String(request.params.templateId)) : [] });
 });
 
-agentAdminRouter.post("/templates/:templateId/versions", requirePermission("workspace:create"), async (request, response) => {
+agentAdminRouter.post("/templates/:templateId/versions", authMiddleware, requirePermission("workspace:create"), async (request, response) => {
   const template = request.session?.organizationId ? await agentTemplateService.detail(request.session.organizationId, String(request.params.templateId)) : undefined;
   if (!template || !request.session?.userId) {
     response.status(404).json({ error: "Template not found" });
@@ -384,7 +384,7 @@ for (const action of ["archive", "clone", "publish", "unpublish", "rollback"] as
   });
 }
 
-agentAdminRouter.post("/templates/:templateId/use", requirePermission("workspace:create"), async (request, response) => {
+agentAdminRouter.post("/templates/:templateId/use", authMiddleware, requirePermission("workspace:create"), async (request, response) => {
   const parsed = templateUseSchema.safeParse(request.body);
   if (!parsed.success || !request.session?.organizationId || !request.session.userId) {
     response.status(400).json({ error: "Invalid template usage request", issues: parsed.success ? [] : parsed.error.issues });
@@ -397,7 +397,7 @@ agentAdminRouter.post("/templates/:templateId/use", requirePermission("workspace
   }
 });
 
-agentAdminRouter.get("/runs/:runId", async (request, response) => {
+agentAdminRouter.get("/runs/:runId", authMiddleware, async (request, response) => {
   const detail = request.session?.organizationId ? await agentAdminService.detail(request.session.organizationId, String(request.params.runId)) : undefined;
   if (!detail) {
     response.status(404).json({ error: "Agent run not found" });
@@ -406,23 +406,23 @@ agentAdminRouter.get("/runs/:runId", async (request, response) => {
   response.json({ data: detail });
 });
 
-agentAdminRouter.get("/runs/:runId/tasks", async (request, response) => {
+agentAdminRouter.get("/runs/:runId/tasks", authMiddleware, async (request, response) => {
   response.json({ data: request.session?.organizationId ? await agentAdminService.tasks(request.session.organizationId, String(request.params.runId)) : [] });
 });
 
-agentAdminRouter.get("/runs/:runId/files", async (request, response) => {
+agentAdminRouter.get("/runs/:runId/files", authMiddleware, async (request, response) => {
   response.json({ data: request.session?.organizationId ? await agentAdminService.files(request.session.organizationId, String(request.params.runId)) : [] });
 });
 
-agentAdminRouter.get("/runs/:runId/validations", async (request, response) => {
+agentAdminRouter.get("/runs/:runId/validations", authMiddleware, async (request, response) => {
   response.json({ data: request.session?.organizationId ? await agentAdminService.validations(request.session.organizationId, String(request.params.runId)) : [] });
 });
 
-agentAdminRouter.get("/runs/:runId/errors", async (request, response) => {
+agentAdminRouter.get("/runs/:runId/errors", authMiddleware, async (request, response) => {
   response.json({ data: request.session?.organizationId ? await agentAdminService.errors(request.session.organizationId, String(request.params.runId)) : [] });
 });
 
-agentAdminRouter.get("/runs/:runId/logs", async (request, response) => {
+agentAdminRouter.get("/runs/:runId/logs", authMiddleware, async (request, response) => {
   response.json({ data: request.session?.organizationId ? await agentAdminService.logs(request.session.organizationId, String(request.params.runId)) : [] });
 });
 

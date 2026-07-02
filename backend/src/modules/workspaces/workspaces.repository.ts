@@ -1,4 +1,4 @@
-import type { ProductEntitlement, SuiteType } from "@vmnexus/shared/types";
+import type { ProductEntitlement, SuiteType } from "@kravia/shared/types";
 import { createId, store, type StoredOrganization, type StoredWorkspace } from "../../database/in-memory-store";
 import { env } from "../../config/env";
 import { prisma } from "../../database/prisma-client";

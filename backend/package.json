@@ -1,12 +1,12 @@
 {
-  "name": "@vmnexus/backend",
-  "version": "0.1.0",
+  "name": "@kravia/backend",
+  "version": "1.0.0-rc1",
   "private": true,
   "scripts": {
     "dev": "tsx watch src/main.ts",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit",
-    "test": "tsx src/tests/entitlements.test.ts && tsx src/tests/vaanforge.test.ts && tsx src/tests/vaanforge-execution.test.ts && tsx src/tests/agent-admin.test.ts && tsx src/tests/agent-template.test.ts && tsx src/tests/vformix-agent.test.ts && tsx src/tests/agent-workspace.test.ts && tsx src/tests/agent-team.test.ts && tsx src/tests/agent-deployment.test.ts && tsx src/tests/agent-memory.test.ts && tsx src/tests/builder-portal.test.ts && tsx src/tests/builder-billing.test.ts && tsx src/tests/enterprise-launch.test.ts && tsx src/tests/operations-command-center.test.ts && tsx src/tests/developer-platform.test.ts",
+    "test": "tsx src/tests/entitlements.test.ts && tsx src/tests/vaanforge.test.ts && tsx src/tests/vaanforge-execution.test.ts && tsx src/tests/agent-admin.test.ts && tsx src/tests/agent-template.test.ts && tsx src/tests/vformix-agent.test.ts && tsx src/tests/agent-workspace.test.ts && tsx src/tests/agent-team.test.ts && tsx src/tests/agent-deployment.test.ts && tsx src/tests/agent-memory.test.ts && tsx src/tests/builder-portal.test.ts && tsx src/tests/builder-billing.test.ts && tsx src/tests/pricing-foundation.test.ts && tsx src/tests/checkout-subscription.test.ts && tsx src/tests/enterprise-launch.test.ts && tsx src/tests/operations-command-center.test.ts && tsx src/tests/developer-platform.test.ts && tsx src/tests/marketplace.test.ts && tsx src/tests/cloud-platform.test.ts && tsx src/tests/factory.test.ts && tsx src/tests/account-subdomains.test.ts && tsx src/tests/product-subdomains.test.ts && tsx src/tests/public-trust-subdomains.test.ts && tsx src/tests/validation-error-contract.test.ts && tsx src/tests/production-data-hardening.test.ts && tsx src/tests/product-lifecycle.test.ts && tsx src/tests/release-operations-readiness.test.ts && tsx src/tests/enterprise-trust.test.ts",
     "test:api": "tsx src/tests/api-http-smoke.test.ts",
     "seed:demo": "tsx src/database/seed-demo-data.ts",
     "readiness:check": "tsx src/ops/readiness-check.ts",

@@ -1,4 +1,4 @@
-import type { ProjectInput, TaskInput, WorkPriority, WorkStatus } from "@vmnexus/shared/operations";
+import type { ProjectInput, TaskInput, WorkPriority, WorkStatus } from "@kravia/shared/operations";
 import { env } from "../../config/env";
 import { createId, store, type StoredProject, type StoredTask } from "../../database/in-memory-store";
 import { prisma } from "../../database/prisma-client";

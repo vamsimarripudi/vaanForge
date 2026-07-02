@@ -11,8 +11,10 @@ import {
   type StoredUsageEventType
 } from "../../database/in-memory-store";
 import { paymentsService } from "../../infrastructure/payments/payments.service";
+import { emailService } from "../../infrastructure/email/email.service";
 import { auditService } from "../audit/audit.service";
 import { plansService } from "../plans/plans.service";
+import { planConfigurationService } from "./plan-configuration.service";
 
 export type BillingCycle = "MONTHLY" | "YEARLY";
 export type PaymentStatus = "TRIAL" | "PRICE_PENDING" | "ACTIVE" | "PAST_DUE";
@@ -38,6 +40,11 @@ export const subscribeSchema = z.object({
   billingCycle: z.enum(["MONTHLY", "YEARLY"]).default("MONTHLY")
 });
 
+export const planChangeSchema = z.object({
+  planId: z.string().min(2),
+  billingCycle: z.enum(["MONTHLY", "YEARLY"]).default("MONTHLY")
+});
+
 export const creditTopupSchema = z.object({
   credits: z.number().int().min(1).max(100000),
   paymentReference: z.string().min(2).optional()
@@ -51,23 +58,9 @@ export const usageCheckSchema = z.object({
   credits: z.number().int().min(0).default(0)
 });
 
-const creditCost: Partial<Record<StoredUsageEventType, number>> = {
-  agent_run: 25,
-  template_use: 10,
-  deployment: 50,
-  regeneration: 15,
-  build_minute: 1,
-  ai_credit: 1
-};
-
-const defaultPlanSeeds: Array<Omit<StoredBillingPlan, "id" | "createdAt" | "updatedAt" | "activityHistory">> = [
-  plan("free-trial", "free_trial", "Free Trial", "Trial access for validating one small builder workflow.", 0, 0, { agent_run: 3, template_use: 2, build_minute: 60, ai_credit: 100, storage_mb: 512, deployment: 0, team_member: 1, regeneration: 3 }, 100),
-  plan("starter", "starter", "Starter", "Starter plan for individual builders and small prototype projects.", 199900, 1999000, { agent_run: 20, template_use: 10, build_minute: 600, ai_credit: 1000, storage_mb: 5120, deployment: 2, team_member: 3, regeneration: 10 }, 1000),
-  plan("pro", "pro", "Pro", "Pro plan for recurring customer app generation and validation workflows.", 499900, 4999000, { agent_run: 75, template_use: 40, build_minute: 2400, ai_credit: 5000, storage_mb: 20480, deployment: 8, team_member: 10, regeneration: 40 }, 5000),
-  plan("business", "business", "Business", "Business plan for teams operating multiple builder projects.", 1299900, 12999000, { agent_run: 250, template_use: 120, build_minute: 9000, ai_credit: 20000, storage_mb: 102400, deployment: 25, team_member: 35, regeneration: 120 }, 20000),
-  plan("enterprise", "enterprise", "Enterprise", "Enterprise plan with expanded capacity and admin governance.", 3999900, 39999000, { agent_run: 1000, template_use: 500, build_minute: 40000, ai_credit: 100000, storage_mb: 512000, deployment: 100, team_member: 150, regeneration: 500 }, 100000),
-  plan("custom", "custom", "Custom", "Custom negotiated plan for VMNexus enterprise deployments.", 0, 0, { agent_run: 0, template_use: 0, build_minute: 0, ai_credit: 0, storage_mb: 0, deployment: 0, team_member: 0, regeneration: 0 }, 0)
-];
+export const planFeatureFlagsPatchSchema = z.object({
+  flags: z.record(z.boolean())
+});
 
 export class BillingService {
   summary(input: { organizationId: string; planId?: string }) {
@@ -104,6 +97,36 @@ export class BillingService {
   plans(organizationId?: string, includeArchived = false) {
     this.ensurePlans();
     return store.billingPlans.filter((item) => (!item.organizationId || item.organizationId === organizationId) && (includeArchived || item.status === "active"));
+  }
+
+  featureFlags(organizationId: string | undefined, planId: string) {
+    this.ensurePlans();
+    return store.planFeatureFlags.filter((item) => item.planId === planId && (!item.organizationId || item.organizationId === organizationId));
+  }
+
+  usagePolicies(organizationId: string | undefined, planId: string) {
+    this.ensurePlans();
+    return store.planUsagePolicies.filter((item) => item.planId === planId && (!item.organizationId || item.organizationId === organizationId));
+  }
+
+  updateFeatureFlags(actorId: string, organizationId: string, planId: string, flags: Record<string, boolean>) {
+    this.ensurePlans();
+    const plan = store.billingPlans.find((item) => item.planId === planId && (!item.organizationId || item.organizationId === organizationId));
+    if (!plan) return undefined;
+    const now = new Date().toISOString();
+    for (const [key, enabled] of Object.entries(flags)) {
+      let flag = store.planFeatureFlags.find((item) => item.planId === planId && item.key === key && (!item.organizationId || item.organizationId === organizationId));
+      if (!flag) {
+        flag = { id: createId("pff"), flagId: createId("plan_flag"), organizationId, planId, key, enabled, description: "Admin-created plan feature flag.", ownerId: actorId, updatedBy: actorId, createdAt: now, updatedAt: now };
+        store.planFeatureFlags.push(flag);
+      } else {
+        flag.enabled = enabled;
+        flag.updatedBy = actorId;
+        flag.updatedAt = now;
+      }
+    }
+    this.audit(actorId, organizationId, "PlanFeatureFlag", planId, "PLAN_FEATURE_FLAGS_UPDATED", { flags });
+    return this.featureFlags(organizationId, planId);
   }
 
   createPlan(actorId: string, organizationId: string, input: z.input<typeof builderBillingPlanSchema>) {
@@ -146,6 +169,7 @@ export class BillingService {
     if (!plan) throw new Error("Billing plan not found.");
     const now = new Date().toISOString();
     const periodEnd = input.billingCycle === "YEARLY" ? inDays(365) : inDays(30);
+    const idempotencyKey = this.idempotencyKey(input.organizationId, input.customerId, plan.planId, input.billingCycle, "subscribe");
     const subscription: StoredCustomerSubscription = {
       id: createId("sub"),
       subscriptionId: createId("subscription"),
@@ -154,6 +178,7 @@ export class BillingService {
       planId: plan.planId,
       billingCycle: input.billingCycle,
       status: plan.tier === "free_trial" ? "trialing" : "active",
+      providerCheckoutId: idempotencyKey,
       currentPeriodStart: now,
       currentPeriodEnd: periodEnd,
       renewalDate: periodEnd,
@@ -173,8 +198,14 @@ export class BillingService {
     if (plan.creditsIncluded > 0) this.credit(input.organizationId, input.customerId, "grant", plan.creditsIncluded, "subscription", subscription.subscriptionId, "Plan credits granted.");
     const amount = input.billingCycle === "YEARLY" ? plan.yearlyPrice : plan.monthlyPrice;
     const invoice = this.createInvoice(input.organizationId, input.customerId, subscription.subscriptionId, amount, `Subscription ${plan.name}`);
-    const checkout = amount > 0 ? await paymentsService.createCheckout({ organizationId: input.organizationId, planId: plan.planId, amount, currency: "INR", billingCycle: input.billingCycle }) : undefined;
-    if (checkout) this.createPayment(input.organizationId, input.customerId, subscription.subscriptionId, invoice.invoiceId, amount, checkout.provider as "local" | "razorpay", checkout.checkoutId, "created");
+    const checkout = amount > 0 ? await paymentsService.createCheckout({ organizationId: input.organizationId, customerId: input.customerId, subscriptionId: subscription.subscriptionId, planId: plan.planId, amount, currency: "INR", billingCycle: input.billingCycle, idempotencyKey }) : undefined;
+    if (checkout) {
+      subscription.razorpaySubscriptionId = checkout.providerSubscriptionId;
+      subscription.providerCheckoutId = checkout.checkoutId;
+      this.createPayment(input.organizationId, input.customerId, subscription.subscriptionId, invoice.invoiceId, amount, checkout.provider as "local" | "razorpay", checkout.checkoutId, "created", { providerOrderId: checkout.providerOrderId, providerSubscriptionId: checkout.providerSubscriptionId, idempotencyKey });
+      this.paymentAttempt(input.organizationId, input.customerId, subscription.subscriptionId, invoice.invoiceId, undefined, checkout.provider as "local" | "razorpay", amount, "pending", idempotencyKey, { providerOrderId: checkout.providerOrderId });
+    }
+    void this.sendBillingEmail(input.customerId, "KRAVIA subscription started", `Your ${plan.name} ${input.billingCycle.toLowerCase()} subscription is ready. Invoice ${invoice.number} has been generated.`);
     this.audit(input.actorId, input.organizationId, "CustomerSubscription", subscription.subscriptionId, "SUBSCRIPTION_CREATED", { planId: plan.planId, invoiceId: invoice.invoiceId });
     return { subscription, invoice, checkout };
   }
@@ -190,8 +221,54 @@ export class BillingService {
     return subscription;
   }
 
+  async changePlan(input: { organizationId: string; customerId: string; actorId: string; planId: string; billingCycle: StoredBuilderBillingCycle }) {
+    const current = this.activeSubscription(input.organizationId, input.customerId);
+    if (!current) throw new Error("Active subscription not found.");
+    const nextPlan = store.billingPlans.find((item) => item.planId === input.planId && item.status === "active");
+    if (!nextPlan) throw new Error("Target billing plan not found.");
+    const currentPlan = store.billingPlans.find((item) => item.planId === current.planId);
+    const now = new Date();
+    const periodEnd = new Date(current.currentPeriodEnd);
+    const remainingRatio = Math.max(0, periodEnd.getTime() - now.getTime()) / Math.max(1, periodEnd.getTime() - new Date(current.currentPeriodStart).getTime());
+    const currentAmount = currentPlan ? (current.billingCycle === "YEARLY" ? currentPlan.yearlyPrice : currentPlan.monthlyPrice) : 0;
+    const nextAmount = input.billingCycle === "YEARLY" ? nextPlan.yearlyPrice : nextPlan.monthlyPrice;
+    const proratedAmount = Math.max(0, Math.round(nextAmount - currentAmount * remainingRatio));
+    current.pendingPlanId = input.planId;
+    current.pendingBillingCycle = input.billingCycle;
+    current.nextAction = proratedAmount > 0 ? "Collect prorated invoice before applying plan change." : "Plan change can be applied immediately.";
+    current.updatedAt = new Date().toISOString();
+    const invoice = this.createInvoice(input.organizationId, input.customerId, current.subscriptionId, proratedAmount, `Prorated plan change to ${nextPlan.name}`);
+    if (proratedAmount === 0) {
+      current.planId = nextPlan.planId;
+      current.billingCycle = input.billingCycle;
+      current.pendingPlanId = undefined;
+      current.pendingBillingCycle = undefined;
+      this.resetUsageLimits(current, nextPlan);
+    }
+    this.audit(input.actorId, input.organizationId, "CustomerSubscription", current.subscriptionId, "SUBSCRIPTION_PLAN_CHANGE_REQUESTED", { fromPlanId: currentPlan?.planId, toPlanId: nextPlan.planId, proratedAmount, invoiceId: invoice.invoiceId });
+    return { subscription: current, invoice, proratedAmount };
+  }
+
   invoices(organizationId: string, customerId?: string) {
     return store.customerInvoices.filter((item) => item.organizationId === organizationId && (!customerId || item.customerId === customerId)).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+
+  invoiceDownload(organizationId: string, customerId: string, invoiceId: string) {
+    const invoice = store.customerInvoices.find((item) => item.organizationId === organizationId && item.customerId === customerId && item.invoiceId === invoiceId);
+    if (!invoice) return undefined;
+    return {
+      invoiceId: invoice.invoiceId,
+      fileName: `${invoice.number}.txt`,
+      mimeType: "text/plain",
+      content: invoice.pdfContent || this.invoiceContent(invoice)
+    };
+  }
+
+  paymentHistory(organizationId: string, customerId?: string) {
+    return {
+      payments: store.customerPayments.filter((item) => item.organizationId === organizationId && (!customerId || item.customerId === customerId)).sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+      attempts: store.customerPaymentAttempts.filter((item) => item.organizationId === organizationId && (!customerId || item.customerId === customerId)).sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    };
   }
 
   usage(organizationId: string, customerId?: string) {
@@ -211,6 +288,38 @@ export class BillingService {
     };
   }
 
+  async autoRenew(input: { organizationId: string; customerId: string; actorId: string; now?: Date }) {
+    const subscription = this.activeSubscription(input.organizationId, input.customerId);
+    if (!subscription) throw new Error("Active subscription not found.");
+    if (subscription.cancelAtPeriodEnd) return { status: "cancelled_at_period_end" as const, subscription };
+    const now = input.now || new Date();
+    if (new Date(subscription.renewalDate).getTime() > now.getTime()) return { status: "not_due" as const, subscription };
+    const plan = store.billingPlans.find((item) => item.planId === subscription.planId);
+    if (!plan) throw new Error("Billing plan not found.");
+    const amount = subscription.billingCycle === "YEARLY" ? plan.yearlyPrice : plan.monthlyPrice;
+    const invoice = this.createInvoice(input.organizationId, input.customerId, subscription.subscriptionId, amount, `Auto-renewal ${plan.name}`);
+    subscription.currentPeriodStart = now.toISOString();
+    subscription.currentPeriodEnd = subscription.billingCycle === "YEARLY" ? inDaysFrom(now, 365) : inDaysFrom(now, 30);
+    subscription.renewalDate = subscription.currentPeriodEnd;
+    subscription.status = "active";
+    subscription.updatedAt = new Date().toISOString();
+    this.resetUsageLimits(subscription, plan);
+    this.audit(input.actorId, input.organizationId, "CustomerSubscription", subscription.subscriptionId, "SUBSCRIPTION_AUTO_RENEWED", { invoiceId: invoice.invoiceId });
+    return { status: "renewed" as const, subscription, invoice };
+  }
+
+  retryFailedPayments(input: { organizationId: string; customerId: string; actorId: string }) {
+    const attempts = store.customerPaymentAttempts.filter((item) => item.organizationId === input.organizationId && item.customerId === input.customerId && item.status === "retry_scheduled");
+    for (const attempt of attempts) {
+      attempt.retryCount += 1;
+      attempt.status = attempt.retryCount >= 3 ? "failed" : "retry_scheduled";
+      attempt.nextRetryAt = attempt.status === "retry_scheduled" ? inDays(1) : undefined;
+      attempt.updatedAt = new Date().toISOString();
+    }
+    this.audit(input.actorId, input.organizationId, "CustomerPaymentAttempt", input.customerId, "PAYMENT_RETRY_PROCESSED", { attempts: attempts.length });
+    return attempts;
+  }
+
   topup(input: { organizationId: string; customerId: string; actorId: string; credits: number; paymentReference?: string }) {
     const wallet = this.credit(input.organizationId, input.customerId, "topup", input.credits, "credit_topup", input.paymentReference, "Customer credit top-up.");
     const invoice = this.createInvoice(input.organizationId, input.customerId, undefined, input.credits * 100, "AI credit top-up");
@@ -219,34 +328,50 @@ export class BillingService {
     return this.credits(input.organizationId, input.customerId);
   }
 
-  checkAndConsume(input: { organizationId: string; customerId: string; actorId: string; metric: StoredUsageEventType; quantity: number; source: string; sourceId?: string; credits?: number }) {
+  canConsume(input: { organizationId: string; customerId: string; metric: StoredUsageEventType; quantity: number; credits?: number }) {
+    this.ensureDefaultSubscription(input.organizationId, input.customerId);
+    const subscription = this.activeSubscription(input.organizationId, input.customerId);
+    if (!subscription) return { allowed: false, reason: "Active builder subscription is required." };
+    const limit = store.customerUsageLimits.find((item) => item.organizationId === input.organizationId && item.customerId === input.customerId && item.metric === input.metric);
+    if (!limit) return { allowed: false, reason: `Usage limit for ${input.metric} is not configured.` };
+    if (!limit.adminOverride && limit.usedValue + input.quantity > limit.limitValue) return { allowed: false, reason: `Plan limit exceeded for ${input.metric}. Used ${limit.usedValue}/${limit.limitValue}.`, subscription, limit };
+    const credits = input.credits ?? this.creditCost(subscription.planId, input.metric) * input.quantity;
+    const wallet = this.wallet(input.organizationId, input.customerId);
+    if (credits > wallet.balance) return { allowed: false, reason: "Insufficient AI credit balance.", subscription, limit, creditsRequired: credits, creditBalance: wallet.balance };
+    return { allowed: true, subscription, limit, creditsRequired: credits, creditBalance: wallet.balance };
+  }
+
+  checkAndConsume(input: { organizationId: string; customerId: string; actorId: string; metric: StoredUsageEventType; quantity: number; source: string; sourceId?: string; credits?: number; workspaceId?: string; idempotencyKey?: string; metadata?: Record<string, unknown> }) {
     this.ensureDefaultSubscription(input.organizationId, input.customerId);
     const subscription = this.activeSubscription(input.organizationId, input.customerId);
     if (!subscription) throw new Error("Active builder subscription is required.");
+    const duplicate = input.idempotencyKey ? store.customerUsageEvents.find((event) => event.organizationId === input.organizationId && event.idempotencyKey === input.idempotencyKey) : undefined;
+    if (duplicate?.status === "accepted") return { allowed: true, subscription, limit: store.customerUsageLimits.find((item) => item.organizationId === input.organizationId && item.customerId === input.customerId && item.metric === input.metric), creditsDeducted: duplicate.creditsUsed || 0, duplicate: true };
     const limit = store.customerUsageLimits.find((item) => item.organizationId === input.organizationId && item.customerId === input.customerId && item.metric === input.metric);
     if (!limit) throw new Error(`Usage limit for ${input.metric} is not configured.`);
     if (!limit.adminOverride && limit.usedValue + input.quantity > limit.limitValue) {
-      this.usageEvent(input.organizationId, input.customerId, subscription.subscriptionId, input.metric, input.quantity, input.source, input.sourceId, "rejected", `Plan limit exceeded for ${input.metric}.`);
+      this.usageEvent({ organizationId: input.organizationId, customerId: input.customerId, userId: input.actorId, workspaceId: input.workspaceId, subscriptionId: subscription.subscriptionId, planId: subscription.planId, metric: input.metric, quantity: input.quantity, source: input.source, sourceId: input.sourceId, status: "rejected", reason: `Plan limit exceeded for ${input.metric}.`, idempotencyKey: input.idempotencyKey, metadata: input.metadata });
       throw new Error(`Plan limit exceeded for ${input.metric}. Used ${limit.usedValue}/${limit.limitValue}.`);
     }
-    const cost = input.credits ?? (creditCost[input.metric] || 0) * input.quantity;
+    const cost = input.credits ?? this.creditCost(subscription.planId, input.metric) * input.quantity;
     if (cost > 0) this.credit(input.organizationId, input.customerId, "deduct", cost, input.source, input.sourceId, `${input.metric} credit deduction.`);
     limit.usedValue += input.quantity;
     limit.updatedAt = new Date().toISOString();
-    this.usageEvent(input.organizationId, input.customerId, subscription.subscriptionId, input.metric, input.quantity, input.source, input.sourceId, "accepted");
+    this.usageEvent({ organizationId: input.organizationId, customerId: input.customerId, userId: input.actorId, workspaceId: input.workspaceId, subscriptionId: subscription.subscriptionId, planId: subscription.planId, metric: input.metric, quantity: input.quantity, source: input.source, sourceId: input.sourceId, status: "accepted", creditsUsed: cost, idempotencyKey: input.idempotencyKey, metadata: input.metadata });
     this.audit(input.actorId, input.organizationId, "CustomerUsageEvent", input.sourceId, "USAGE_CONSUMED", { metric: input.metric, quantity: input.quantity, credits: cost });
     return { allowed: true, subscription, limit, creditsDeducted: cost };
   }
 
-  refund(input: { organizationId: string; customerId: string; actorId: string; metric: StoredUsageEventType; quantity: number; source: string; sourceId?: string; credits?: number; reason: string }) {
+  refund(input: { organizationId: string; customerId: string; actorId: string; metric: StoredUsageEventType; quantity: number; source: string; sourceId?: string; credits?: number; reason: string; workspaceId?: string; idempotencyKey?: string; metadata?: Record<string, unknown> }) {
     const limit = store.customerUsageLimits.find((item) => item.organizationId === input.organizationId && item.customerId === input.customerId && item.metric === input.metric);
     if (limit) {
       limit.usedValue = Math.max(0, limit.usedValue - input.quantity);
       limit.updatedAt = new Date().toISOString();
     }
-    const credits = input.credits ?? (creditCost[input.metric] || 0) * input.quantity;
+    const subscription = this.activeSubscription(input.organizationId, input.customerId);
+    const credits = input.credits ?? this.creditCost(subscription?.planId, input.metric) * input.quantity;
     if (credits > 0) this.credit(input.organizationId, input.customerId, "refund", credits, input.source, input.sourceId, input.reason);
-    this.usageEvent(input.organizationId, input.customerId, undefined, input.metric, input.quantity, input.source, input.sourceId, "refunded", input.reason);
+    this.usageEvent({ organizationId: input.organizationId, customerId: input.customerId, userId: input.actorId, workspaceId: input.workspaceId, subscriptionId: subscription?.subscriptionId, planId: subscription?.planId, metric: input.metric, quantity: input.quantity, source: input.source, sourceId: input.sourceId, status: "refunded", creditsUsed: credits, reason: input.reason, idempotencyKey: input.idempotencyKey, metadata: input.metadata });
     this.audit(input.actorId, input.organizationId, "CustomerCreditWallet", input.sourceId, "CREDITS_REFUNDED", { metric: input.metric, credits });
   }
 
@@ -265,11 +390,15 @@ export class BillingService {
   }
 
   private ensurePlans() {
-    if (store.billingPlans.length) return;
+    if (store.billingPlans.length) {
+      this.ensurePlanControls();
+      return;
+    }
     const now = new Date().toISOString();
-    for (const seed of defaultPlanSeeds) {
+    for (const seed of planConfigurationService.billingPlanSeeds()) {
       store.billingPlans.push({ id: createId("bpl"), ...seed, activityHistory: [{ at: now, status: seed.status, message: "Default builder billing plan seeded." }], createdAt: now, updatedAt: now });
     }
+    this.ensurePlanControls();
   }
 
   private ensureDefaultSubscription(organizationId: string, customerId: string) {
@@ -316,22 +445,37 @@ export class BillingService {
     return wallet;
   }
 
-  private usageEvent(organizationId: string, customerId: string, subscriptionId: string | undefined, metric: StoredUsageEventType, quantity: number, source: string, sourceId: string | undefined, status: "accepted" | "rejected" | "refunded", reason?: string) {
-    store.customerUsageEvents.push({ id: createId("cue"), eventId: createId("usage_event"), organizationId, customerId, subscriptionId, metric, quantity, source, sourceId, status, reason, createdAt: new Date().toISOString() });
+  private usageEvent(input: { organizationId: string; customerId: string; workspaceId?: string; userId?: string; subscriptionId?: string; planId?: string; metric: StoredUsageEventType; quantity: number; source: string; sourceId?: string; status: "accepted" | "rejected" | "refunded"; reason?: string; creditsUsed?: number; idempotencyKey?: string; metadata?: Record<string, unknown> }) {
+    if (input.idempotencyKey && store.customerUsageEvents.some((event) => event.organizationId === input.organizationId && event.idempotencyKey === input.idempotencyKey)) return;
+    store.customerUsageEvents.push({ id: createId("cue"), eventId: createId("usage_event"), organizationId: input.organizationId, customerId: input.customerId, workspaceId: input.workspaceId, userId: input.userId, subscriptionId: input.subscriptionId, metric: input.metric, action: input.source, quantity: input.quantity, unit: input.metric, planId: input.planId, creditsUsed: input.creditsUsed || 0, source: input.source, sourceId: input.sourceId, idempotencyKey: input.idempotencyKey, metadata: input.metadata, status: input.status, reason: input.reason, createdAt: new Date().toISOString() });
   }
 
   private createInvoice(organizationId: string, customerId: string, subscriptionId: string | undefined, amount: number, label: string) {
-    const invoice = { id: createId("cin"), invoiceId: createId("invoice"), organizationId, customerId, subscriptionId, number: `VMN-BLD-${store.customerInvoices.length + 1}`.padStart(12, "0"), amount, currency: "INR" as const, status: amount > 0 ? "issued" as const : "paid" as const, dueDate: inDays(7), lineItems: [{ label, amount }], createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+    const subtotal = Math.round(amount / 1.18);
+    const gstAmount = Math.max(0, amount - subtotal);
+    const invoice = { id: createId("cin"), invoiceId: createId("invoice"), organizationId, customerId, subscriptionId, number: `KRV-BLD-${String(store.customerInvoices.length + 1).padStart(6, "0")}`, gstin: env.nodeEnv === "production" ? undefined : "LOCAL-GSTIN-PENDING", amount, subtotal, gstRatePercent: 18, gstAmount, currency: "INR" as const, status: amount > 0 ? "issued" as const : "paid" as const, dueDate: inDays(7), downloadUrl: "", pdfContent: "", lineItems: [{ label, subtotal, gstRatePercent: 18, gstAmount, amount }], createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+    invoice.downloadUrl = `/api/builder/billing/invoices/${invoice.invoiceId}/download`;
+    invoice.pdfContent = this.invoiceContent(invoice);
     store.customerInvoices.push(invoice);
     return invoice;
   }
 
-  private createPayment(organizationId: string, customerId: string, subscriptionId: string | undefined, invoiceId: string, amount: number, provider: "local" | "razorpay", providerRef: string | undefined, status: "created" | "paid") {
-    const payment = { id: createId("cpy"), paymentId: createId("payment"), organizationId, customerId, subscriptionId, invoiceId, provider, providerPaymentId: providerRef, amount, currency: "INR" as const, status, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+  private createPayment(organizationId: string, customerId: string, subscriptionId: string | undefined, invoiceId: string, amount: number, provider: "local" | "razorpay", providerRef: string | undefined, status: "created" | "paid", options: { providerOrderId?: string; providerSubscriptionId?: string; idempotencyKey?: string; failureReason?: string } = {}) {
+    const existing = options.idempotencyKey ? store.customerPayments.find((item) => item.idempotencyKey === options.idempotencyKey) : undefined;
+    if (existing) return existing;
+    const payment = { id: createId("cpy"), paymentId: createId("payment"), organizationId, customerId, subscriptionId, invoiceId, provider, providerPaymentId: providerRef, providerOrderId: options.providerOrderId, providerSubscriptionId: options.providerSubscriptionId, idempotencyKey: options.idempotencyKey, amount, currency: "INR" as const, status, failureReason: options.failureReason, retryCount: 0, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
     store.customerPayments.push(payment);
     const invoice = store.customerInvoices.find((item) => item.invoiceId === invoiceId);
     if (invoice) invoice.paymentId = payment.paymentId;
     return payment;
+  }
+
+  private paymentAttempt(organizationId: string, customerId: string, subscriptionId: string | undefined, invoiceId: string | undefined, paymentId: string | undefined, provider: "local" | "razorpay", amount: number, status: "pending" | "succeeded" | "failed" | "retry_scheduled", idempotencyKey: string, options: { providerPaymentId?: string; providerOrderId?: string; failureReason?: string; nextRetryAt?: string } = {}) {
+    const existing = store.customerPaymentAttempts.find((item) => item.idempotencyKey === idempotencyKey && item.status === status);
+    if (existing) return existing;
+    const attempt = { id: createId("cpa"), attemptId: createId("payment_attempt"), organizationId, customerId, subscriptionId, invoiceId, paymentId, provider, providerPaymentId: options.providerPaymentId, providerOrderId: options.providerOrderId, idempotencyKey, amount, currency: "INR" as const, status, failureReason: options.failureReason, retryCount: 0, nextRetryAt: options.nextRetryAt, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+    store.customerPaymentAttempts.push(attempt);
+    return attempt;
   }
 
   private verifySignature(body: string, signature: string | undefined) {
@@ -344,20 +488,62 @@ export class BillingService {
   }
 
   private applyWebhook(eventType: string, payload: Record<string, unknown>) {
-    const paymentId = String((payload.payload as Record<string, unknown> | undefined)?.payment || payload.paymentId || "");
-    if (!paymentId) return;
-    const payment = store.customerPayments.find((item) => item.providerPaymentId === paymentId || item.providerOrderId === paymentId);
+    const entity = this.razorpayPaymentEntity(payload);
+    const paymentId = String(entity.id || payload.paymentId || "");
+    const orderId = String(entity.order_id || payload.orderId || "");
+    if (!paymentId && !orderId) return;
+    const payment = store.customerPayments.find((item) => item.providerPaymentId === paymentId || item.providerOrderId === orderId || item.providerPaymentId === orderId);
     if (!payment) return;
     if (eventType.includes("failed")) {
       payment.status = "failed";
-      payment.failureReason = "Razorpay webhook reported payment failure.";
+      payment.failureReason = String(entity.error_description || entity.error_reason || "Razorpay webhook reported payment failure.");
+      payment.retryCount = (payment.retryCount || 0) + 1;
+      payment.nextRetryAt = inDays(1);
+      payment.gracePeriodEndsAt = inDays(7);
+      this.paymentAttempt(payment.organizationId, payment.customerId, payment.subscriptionId, payment.invoiceId, payment.paymentId, payment.provider, payment.amount, "retry_scheduled", `${payment.idempotencyKey || payment.paymentId}:failed:${payment.retryCount}`, { providerPaymentId: paymentId, providerOrderId: orderId, failureReason: payment.failureReason, nextRetryAt: payment.nextRetryAt });
+      const subscription = payment.subscriptionId ? store.customerSubscriptions.find((item) => item.subscriptionId === payment.subscriptionId) : undefined;
+      if (subscription) {
+        subscription.status = "past_due";
+        subscription.gracePeriodEndsAt = payment.gracePeriodEndsAt;
+        subscription.retryCount = payment.retryCount;
+        subscription.lastPaymentFailureReason = payment.failureReason;
+        subscription.nextAction = "Payment failed. Retry payment within grace period to avoid expiry.";
+        subscription.updatedAt = new Date().toISOString();
+      }
+      const invoice = payment.invoiceId ? store.customerInvoices.find((item) => item.invoiceId === payment.invoiceId) : undefined;
+      if (invoice) {
+        invoice.status = "failed";
+        invoice.updatedAt = new Date().toISOString();
+      }
+      this.audit("razorpay", payment.organizationId, "CustomerPayment", payment.paymentId, "PAYMENT_FAILED", { reason: payment.failureReason, nextRetryAt: payment.nextRetryAt });
     } else if (eventType.includes("paid") || eventType.includes("captured")) {
       payment.status = "paid";
+      payment.providerPaymentId = paymentId || payment.providerPaymentId;
       const invoice = store.customerInvoices.find((item) => item.invoiceId === payment.invoiceId);
       if (invoice) {
         invoice.status = "paid";
         invoice.paidAt = new Date().toISOString();
+        invoice.updatedAt = new Date().toISOString();
       }
+      const subscription = payment.subscriptionId ? store.customerSubscriptions.find((item) => item.subscriptionId === payment.subscriptionId) : undefined;
+      if (subscription) {
+        const pendingPlan = subscription.pendingPlanId ? store.billingPlans.find((item) => item.planId === subscription.pendingPlanId) : undefined;
+        if (pendingPlan) {
+          subscription.planId = pendingPlan.planId;
+          subscription.billingCycle = subscription.pendingBillingCycle || subscription.billingCycle;
+          subscription.pendingPlanId = undefined;
+          subscription.pendingBillingCycle = undefined;
+          this.resetUsageLimits(subscription, pendingPlan);
+        }
+        subscription.status = "active";
+        subscription.gracePeriodEndsAt = undefined;
+        subscription.retryCount = 0;
+        subscription.lastPaymentFailureReason = undefined;
+        subscription.nextAction = "Subscription payment is current.";
+        subscription.updatedAt = new Date().toISOString();
+      }
+      this.paymentAttempt(payment.organizationId, payment.customerId, payment.subscriptionId, payment.invoiceId, payment.paymentId, payment.provider, payment.amount, "succeeded", `${payment.idempotencyKey || payment.paymentId}:paid`, { providerPaymentId: paymentId, providerOrderId: orderId });
+      this.audit("razorpay", payment.organizationId, "CustomerPayment", payment.paymentId, "PAYMENT_CAPTURED", { invoiceId: payment.invoiceId });
     }
     payment.updatedAt = new Date().toISOString();
   }
@@ -369,14 +555,71 @@ export class BillingService {
   private audit(actorId: string, organizationId: string, entityType: string, entityId: string | undefined, billingAction: string, metadata?: Record<string, unknown>) {
     auditService.record({ actorId, organizationId, action: "BILLING_ACTION", entityType, entityId, metadata: { billingAction, ...metadata } });
   }
-}
 
-function plan(planId: string, tier: StoredBillingPlan["tier"], name: string, description: string, monthlyPrice: number, yearlyPrice: number, limits: Record<string, number>, creditsIncluded: number) {
-  return { planId, tier, name, description, monthlyPrice, yearlyPrice, currency: "INR" as const, limits, creditsIncluded, features: Object.keys(limits).map((key) => `${key.replace(/_/g, " ")} included`), status: "active" as const, ownerId: "system", priority: "HIGH" as const, dueDate: inDays(365), nextAction: "Plan is available for subscription." };
+  private ensurePlanControls() {
+    const now = new Date().toISOString();
+    for (const plan of store.billingPlans) {
+      for (const seed of planConfigurationService.featureFlagsFor(plan.planId)) {
+        if (!store.planFeatureFlags.some((flag) => flag.planId === seed.planId && flag.key === seed.key && flag.organizationId === plan.organizationId)) {
+          store.planFeatureFlags.push({ id: createId("pff"), flagId: createId("plan_flag"), organizationId: plan.organizationId, ...seed, ownerId: plan.ownerId, createdAt: now, updatedAt: now });
+        }
+      }
+      for (const seed of planConfigurationService.usagePoliciesFor(plan.planId, plan.limits)) {
+        if (!store.planUsagePolicies.some((policy) => policy.planId === seed.planId && policy.metric === seed.metric && policy.organizationId === plan.organizationId)) {
+          store.planUsagePolicies.push({ id: createId("pup"), policyId: createId("plan_policy"), organizationId: plan.organizationId, ...seed, ownerId: plan.ownerId, createdAt: now, updatedAt: now });
+        }
+      }
+    }
+  }
+
+  private creditCost(planId: string | undefined, metric: StoredUsageEventType) {
+    const policy = planId ? store.planUsagePolicies.find((item) => item.planId === planId && item.metric === metric && item.enabled) : undefined;
+    return policy?.creditCost ?? planConfigurationService.creditCost(metric);
+  }
+
+  private idempotencyKey(organizationId: string, customerId: string, planId: string, billingCycle: StoredBuilderBillingCycle, action: string) {
+    return `${organizationId}:${customerId}:${planId}:${billingCycle}:${action}`;
+  }
+
+  private invoiceContent(invoice: { number: string; invoiceId: string; amount: number; subtotal?: number; gstRatePercent?: number; gstAmount?: number; currency: "INR"; status: string; dueDate: string; lineItems: Array<Record<string, unknown>> }) {
+    return [
+      "KRAVIA PRIVATE LIMITED",
+      `Invoice: ${invoice.number}`,
+      `Invoice ID: ${invoice.invoiceId}`,
+      `Status: ${invoice.status}`,
+      `Due date: ${invoice.dueDate}`,
+      `Subtotal: ${invoice.currency} ${invoice.subtotal || 0}`,
+      `GST (${invoice.gstRatePercent || 0}%): ${invoice.currency} ${invoice.gstAmount || 0}`,
+      `Total: ${invoice.currency} ${invoice.amount}`,
+      `Line items: ${JSON.stringify(invoice.lineItems)}`
+    ].join("\n");
+  }
+
+  private razorpayPaymentEntity(payload: Record<string, unknown>) {
+    const payloadRoot = payload.payload as Record<string, unknown> | undefined;
+    const payment = payloadRoot?.payment as Record<string, unknown> | undefined;
+    const entity = payment?.entity as Record<string, unknown> | undefined;
+    return entity || payment || payload;
+  }
+
+  private async sendBillingEmail(customerId: string, subject: string, text: string) {
+    const to = customerId.includes("@") ? customerId : `billing+${customerId}@kravia.local`;
+    try {
+      return await emailService.send({ to, subject, text });
+    } catch (error) {
+      return { provider: "unavailable", delivered: false, messageId: error instanceof Error ? error.message : "unknown" };
+    }
+  }
 }
 
 function inDays(days: number) {
   const date = new Date();
+  date.setDate(date.getDate() + days);
+  return date.toISOString();
+}
+
+function inDaysFrom(from: Date, days: number) {
+  const date = new Date(from);
   date.setDate(date.getDate() + days);
   return date.toISOString();
 }

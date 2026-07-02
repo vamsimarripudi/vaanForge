@@ -1,0 +1,6 @@
+<svg width="220" height="44" viewBox="0 0 220 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M7 6L22 37L37 6" stroke="#00D49A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="22" cy="37" r="4" fill="#00D49A"/>
+  <text x="52" y="29" fill="#DCE5F0" font-family="Arial, sans-serif" font-size="24" font-weight="700">Vaan</text>
+  <text x="111" y="29" fill="#7A8DA8" font-family="Arial, sans-serif" font-size="24" font-weight="300">Forge</text>
+</svg>

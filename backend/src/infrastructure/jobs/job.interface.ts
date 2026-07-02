@@ -8,7 +8,12 @@ export type JobRecord<TPayload = unknown> = {
   queueName: string;
   payload: TPayload;
   status: JobStatus;
+  attempts: number;
+  maxAttempts: number;
+  idempotencyKey: string;
+  lastError?: string;
   createdAt: string;
+  updatedAt: string;
 };
 
 export interface JobQueue {

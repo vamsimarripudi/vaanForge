@@ -247,7 +247,7 @@ export class AgentTemplateService {
     store.agentTemplateQualityChecks = store.agentTemplateQualityChecks.filter((check) => check.templateId !== template.templateId);
     const checks = [
       gate(template.stack.length > 0, "architecture", "Template defines stack and architecture."),
-      gate(template.designTokens.length > 0, "design_system", "Template declares VMNexus design tokens."),
+      gate(template.designTokens.length > 0, "design_system", "Template declares KRAVIA design tokens."),
       gate(template.requiredInputs.length > 0, "required_fields", "Template defines reusable VFormix inputs."),
       gate(template.securityRules.length > 0 && !JSON.stringify(template).toLowerCase().includes("api_key"), "security", "Template avoids provider secrets and declares security rules."),
       gate(template.validationRules.length >= 5, "validation", "Template defines build, lint, type, security, and field validation gates.")
@@ -274,7 +274,7 @@ export class AgentTemplateService {
         successMetrics: template.validationRules
       },
       scope: {
-        coreFeatures: template.includedScreens.map((screen) => ({ name: screen, description: `Build ${screen} for ${productName}.`, priority: template.priority, acceptanceCriteria: [`${screen} follows VMNexus routing, permissions, and design tokens.`] }))
+        coreFeatures: template.includedScreens.map((screen) => ({ name: screen, description: `Build ${screen} for ${productName}.`, priority: template.priority, acceptanceCriteria: [`${screen} follows KRAVIA routing, permissions, and design tokens.`] }))
       },
       constraints: {
         approvedArchitecture: template.stack.join(", "),

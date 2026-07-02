@@ -1,4 +1,4 @@
-import type { ProductType, SuitePlan } from "@vmnexus/shared/types";
+import type { ProductType, SuitePlan } from "@kravia/shared/types";
 
 type UsageMap = Record<string, number>;
 

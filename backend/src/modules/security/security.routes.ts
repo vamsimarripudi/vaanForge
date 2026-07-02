@@ -7,6 +7,6 @@ export const securityRouter = Router();
 
 securityRouter.get("/csrf", authMiddleware, (request, response) => {
   const token = csrfService.sign(request.session!.userId);
-  response.cookie("vmnexus_csrf", token, csrfCookieOptions);
+  response.cookie("kravia_csrf", token, csrfCookieOptions);
   response.json({ data: { csrfToken: token } });
 });

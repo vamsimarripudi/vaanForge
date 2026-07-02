@@ -35,8 +35,8 @@ async function main() {
         ]
       },
       constraints: {
-        approvedArchitecture: "VMNexus Express TypeScript backend with Prisma repositories",
-        designSystem: "VMNexus design-system package",
+        approvedArchitecture: "KRAVIA Express TypeScript backend with Prisma repositories",
+        designSystem: "KRAVIA design-system package",
         routing: ["/api/v1/vaanforge/executions", "/api/v1/vaanforge/admin/executions"],
         permissions: ["workspace:create", "audit:read"]
       }

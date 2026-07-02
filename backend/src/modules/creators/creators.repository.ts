@@ -1,4 +1,4 @@
-import type { CampaignInput, CampaignStatus, CreatorProfileInput } from "@vmnexus/shared/growth";
+import type { CampaignInput, CampaignStatus, CreatorProfileInput } from "@kravia/shared/growth";
 import { env } from "../../config/env";
 import { createId, store, type StoredCampaign, type StoredCreatorProfile } from "../../database/in-memory-store";
 import { prisma } from "../../database/prisma-client";

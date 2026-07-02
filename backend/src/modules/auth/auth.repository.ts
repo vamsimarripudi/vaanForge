@@ -1,4 +1,4 @@
-import { coreRoles, type CoreRole } from "@vmnexus/shared/roles";
+import { coreRoles, type CoreRole } from "@kravia/shared/roles";
 import { env } from "../../config/env";
 import { createId, store, type StoredPasswordResetToken, type StoredUser } from "../../database/in-memory-store";
 import { prisma } from "../../database/prisma-client";

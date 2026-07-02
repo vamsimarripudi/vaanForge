@@ -3,7 +3,7 @@ import { env } from "../../config/env";
 import { emailService } from "../../infrastructure/email/email.service";
 import { passwordService } from "../../services/password.service";
 import { sessionService, type SessionPayload } from "../../services/session.service";
-import type { CoreRole } from "@vmnexus/shared/roles";
+import type { CoreRole } from "@kravia/shared/roles";
 import { authRepository, type AuthRepository } from "./auth.repository";
 
 export interface RegisterInput {
@@ -56,8 +56,8 @@ export class AuthService {
     const resetUrl = `${env.frontendUrl}/account/reset-password?token=${encodeURIComponent(token)}`;
     const delivery = await emailService.send({
       to: user.email,
-      subject: "Reset your VM Nexus password",
-      text: `Use this link to reset your VM Nexus password: ${resetUrl}\n\nThis link expires at ${expiresAt}.`
+      subject: "Reset your KRAVIA password",
+      text: `Use this link to reset your KRAVIA password: ${resetUrl}\n\nThis link expires at ${expiresAt}.`
     });
     return { accepted: true, resetToken: token, expiresAt, delivery };
   }

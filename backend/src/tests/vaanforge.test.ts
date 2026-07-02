@@ -11,7 +11,7 @@ async function main() {
     priority: "HIGH",
     dueDate: "2026-07-15",
     businessContext: {
-      problemStatement: "Convert structured VFormix requirements into production-ready project blueprints for VMNexus products.",
+      problemStatement: "Convert structured VFormix requirements into production-ready project blueprints for KRAVIA products.",
       targetUsers: ["Founder", "Product owner", "Developer"],
       goals: ["Generate validated implementation plans", "Expose admin monitoring APIs"],
       successMetrics: ["All required outputs are persisted", "Each run includes status, audit logs, and next action"]
@@ -33,8 +33,8 @@ async function main() {
       ]
     },
     constraints: {
-      approvedArchitecture: "VMNexus Express TypeScript backend with Prisma repositories",
-      designSystem: "VMNexus design-system package",
+      approvedArchitecture: "KRAVIA Express TypeScript backend with Prisma repositories",
+      designSystem: "KRAVIA design-system package",
       routing: ["/api/v1/vaanforge/runs", "/api/v1/vaanforge/admin/runs"],
       permissions: ["workspace:create", "audit:read"]
     },

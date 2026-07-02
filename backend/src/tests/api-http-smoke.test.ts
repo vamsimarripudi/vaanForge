@@ -66,14 +66,14 @@ async function main() {
     const blocked = await request<{ error: string }>("/tasks/summary");
     assert.equal(blocked.response.status, 401);
 
-    const email = `api-smoke-${Date.now()}@vmnexus.local`;
+    const email = `api-smoke-${Date.now()}@kravia.local`;
     const register = await json<{ id: string; email: string }>("/auth/register", {
       method: "POST",
       body: JSON.stringify({ name: "API Smoke Founder", email, password: "secure-demo-password" })
     });
     assert.equal(register.response.status, 201);
     assert.equal(register.body.data.email, email);
-    assert.ok(cookieJar.get("vmnexus_session"));
+    assert.ok(cookieJar.get("kravia_session"));
 
     const session = await json<{ id: string; organizationId?: string }>("/auth/session");
     assert.equal(session.response.status, 200);
@@ -82,7 +82,7 @@ async function main() {
     const missingCsrf = await request<{ error: string }>("/workspaces", {
       method: "POST",
       body: JSON.stringify({
-        organizationName: "VM Nexus API Smoke",
+        organizationName: "KRAVIA API Smoke",
         workspaceName: "Smoke Workspace",
         suiteType: "VMETRON_SUITE",
         planId: "vmetron-growth"
@@ -92,13 +92,13 @@ async function main() {
 
     const csrf = await json<{ csrfToken: string }>("/security/csrf");
     assert.equal(csrf.response.status, 200);
-    assert.ok(cookieJar.get("vmnexus_csrf"));
+    assert.ok(cookieJar.get("kravia_csrf"));
 
     const workspace = await json<{ organization: { id: string }; workspace: { id: string } }>("/workspaces", {
       method: "POST",
       headers: { "x-csrf-token": csrf.body.data.csrfToken },
       body: JSON.stringify({
-        organizationName: "VM Nexus API Smoke",
+        organizationName: "KRAVIA API Smoke",
         workspaceName: "Smoke Workspace",
         suiteType: "VMETRON_SUITE",
         planId: "vmetron-growth"
@@ -141,10 +141,10 @@ async function main() {
     const invitation = await json<{ email: string; role: string; status: string }>("/users/invite", {
       method: "POST",
       headers: csrfHeader,
-      body: JSON.stringify({ email: "teammate@vmnexus.local", role: "operations_manager" })
+      body: JSON.stringify({ email: "teammate@kravia.local", role: "operations_manager" })
     });
     assert.equal(invitation.response.status, 201);
-    assert.equal(invitation.body.data.email, "teammate@vmnexus.local");
+    assert.equal(invitation.body.data.email, "teammate@kravia.local");
     assert.equal(invitation.body.data.status, "PENDING");
 
     const trial = await json<{ status: string; planId: string }>("/billing/trial", {
@@ -291,7 +291,7 @@ async function main() {
     const lead = await json<{ id: string; stage: string }>("/crm/leads", {
       method: "POST",
       headers: csrfHeader,
-      body: JSON.stringify({ name: "HTTP Smoke Lead", company: "Smoke Co", email: "lead@vmnexus.local", stage: "NEW", expectedValue: 64000 })
+      body: JSON.stringify({ name: "HTTP Smoke Lead", company: "Smoke Co", email: "lead@kravia.local", stage: "NEW", expectedValue: 64000 })
     });
     assert.equal(lead.response.status, 201);
 
@@ -314,14 +314,14 @@ async function main() {
     const proposalLead = await json<{ id: string; stage: string }>("/crm/leads", {
       method: "POST",
       headers: csrfHeader,
-      body: JSON.stringify({ name: "HTTP Smoke Proposal Lead", company: "Proposal Co", email: "proposal@vmnexus.local", stage: "PROPOSAL_SENT", expectedValue: 91000 })
+      body: JSON.stringify({ name: "HTTP Smoke Proposal Lead", company: "Proposal Co", email: "proposal@kravia.local", stage: "PROPOSAL_SENT", expectedValue: 91000 })
     });
     assert.equal(proposalLead.response.status, 201);
 
     const demoLead = await json<{ id: string; stage: string }>("/crm/leads", {
       method: "POST",
       headers: csrfHeader,
-      body: JSON.stringify({ name: "HTTP Smoke Demo Lead", company: "Demo Co", email: "demo@vmnexus.local", stage: "DEMO_SCHEDULED", expectedValue: 45000 })
+      body: JSON.stringify({ name: "HTTP Smoke Demo Lead", company: "Demo Co", email: "demo@kravia.local", stage: "DEMO_SCHEDULED", expectedValue: 45000 })
     });
     assert.equal(demoLead.response.status, 201);
 
@@ -333,7 +333,7 @@ async function main() {
     const customer = await json<{ id: string }>("/crm/customers", {
       method: "POST",
       headers: csrfHeader,
-      body: JSON.stringify({ name: "HTTP Smoke Customer", email: "customer@vmnexus.local", activePlan: "vmetron-growth", renewalDate: "2026-12-31" })
+      body: JSON.stringify({ name: "HTTP Smoke Customer", email: "customer@kravia.local", activePlan: "vmetron-growth", renewalDate: "2026-12-31" })
     });
     assert.equal(customer.response.status, 201);
 
@@ -432,7 +432,7 @@ async function main() {
     const employee = await json<{ id: string }>("/hr/employees", {
       method: "POST",
       headers: csrfHeader,
-      body: JSON.stringify({ departmentId: department.body.data.id, name: "HTTP Smoke Employee", email: "employee@vmnexus.local", role: "Ops Lead", status: "ACTIVE", joinedAt: "2026-06-19" })
+      body: JSON.stringify({ departmentId: department.body.data.id, name: "HTTP Smoke Employee", email: "employee@kravia.local", role: "Ops Lead", status: "ACTIVE", joinedAt: "2026-06-19" })
     });
     assert.equal(employee.response.status, 201);
 
@@ -450,7 +450,7 @@ async function main() {
     const candidate = await json<{ id: string; stage: string }>("/hr/candidates", {
       method: "POST",
       headers: csrfHeader,
-      body: JSON.stringify({ name: "HTTP Smoke Candidate", email: "candidate@vmnexus.local", roleApplied: "Support Specialist", stage: "APPLIED", source: "API smoke" })
+      body: JSON.stringify({ name: "HTTP Smoke Candidate", email: "candidate@kravia.local", roleApplied: "Support Specialist", stage: "APPLIED", source: "API smoke" })
     });
     assert.equal(candidate.response.status, 201);
 
@@ -744,10 +744,10 @@ async function main() {
     const settings = await json<{ themeMode: string; billingEmail: string }>("/settings", {
       method: "PATCH",
       headers: csrfHeader,
-      body: JSON.stringify({ themeMode: "system", billingEmail: "billing@vmnexus.local", notificationEmail: true, notificationSms: true })
+      body: JSON.stringify({ themeMode: "system", billingEmail: "billing@kravia.local", notificationEmail: true, notificationSms: true })
     });
     assert.equal(settings.response.status, 200);
-    assert.equal(settings.body.data.billingEmail, "billing@vmnexus.local");
+    assert.equal(settings.body.data.billingEmail, "billing@kravia.local");
 
     const settingsOs = await json<{
       companyProfile: { route: string; status: string };
@@ -770,7 +770,7 @@ async function main() {
     assert.equal(settingsOs.body.data.themes.themeMode, "system");
     assert.ok(settingsOs.body.data.themes.options.includes("dark"));
     assert.ok(settingsOs.body.data.domains.keys.includes("ROOT_DOMAIN"));
-    assert.equal(settingsOs.body.data.billing.billingEmail, "billing@vmnexus.local");
+    assert.equal(settingsOs.body.data.billing.billingEmail, "billing@kravia.local");
     assert.equal(settingsOs.body.data.billing.route, "/api/v1/billing/summary");
     assert.equal(settingsOs.body.data.notifications.email, true);
     assert.equal(settingsOs.body.data.notifications.sms, true);
