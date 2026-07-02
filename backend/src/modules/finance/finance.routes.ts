@@ -18,6 +18,12 @@ financeRouter.get("/summary", authMiddleware, requirePermission("finance:read"),
   response.json({ data: await financeService.summary(organizationId) });
 });
 
+financeRouter.get("/overview", authMiddleware, requirePermission("finance:read"), async (request, response) => {
+  const organizationId = request.session?.organizationId;
+  if (!organizationId) return response.status(404).json({ error: "No organization is active for this session" });
+  response.json({ data: await financeService.summary(organizationId) });
+});
+
 financeRouter.get("/revenue", authMiddleware, requirePermission("finance:read"), async (request, response) => {
   const organizationId = request.session?.organizationId;
   response.json({ data: organizationId ? await financeService.listRevenue(organizationId) : [] });
@@ -88,6 +94,11 @@ financeRouter.get("/analytics", authMiddleware, requirePermission("finance:read"
     return;
   }
   response.json({ data: await financeService.analytics(organizationId) });
+});
+
+financeRouter.get("/reports", authMiddleware, requirePermission("reports:export"), async (request, response) => {
+  const organizationId = request.session?.organizationId;
+  response.json({ data: organizationId ? await financeService.listExports(organizationId) : [] });
 });
 
 financeRouter.post("/exports", authMiddleware, requirePermission("reports:export"), async (request, response) => {

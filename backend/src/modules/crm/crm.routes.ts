@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { authMiddleware } from "../../middlewares/auth.middleware";
 import { requirePermission } from "../../guards/permission.guard";
+import { businessOperationsService, opportunityPatchSchema, opportunitySchema } from "../business-operations/business-operations.service";
 import { crmService } from "./crm.service";
 
 export const crmRouter = Router();
@@ -86,6 +87,37 @@ crmRouter.patch("/leads/:leadId/stage", authMiddleware, requirePermission("organ
   response.json({ data: lead });
 });
 
+crmRouter.patch("/leads/:leadId", authMiddleware, requirePermission("organization:manage"), async (request, response) => {
+  const parsed = z.object({ stage: leadStageSchema.optional(), expectedValue: z.number().nonnegative().optional() }).safeParse(request.body || {});
+  if (!parsed.success) return response.status(400).json({ error: "Invalid lead update", issues: parsed.error.issues });
+  let lead = await crmService.listLeads(request.session!.organizationId!);
+  const current = lead.find((item) => item.id === String(request.params.leadId));
+  if (!current) return response.status(404).json({ error: "Lead not found" });
+  if (parsed.data.stage) await crmService.updateLeadStage(current.id, parsed.data.stage);
+  if (parsed.data.expectedValue !== undefined) current.expectedValue = parsed.data.expectedValue;
+  response.json({ data: { ...current, ...parsed.data } });
+});
+
+crmRouter.get("/opportunities", authMiddleware, requirePermission("organization:manage"), (request, response) => {
+  response.json({ data: businessOperationsService.opportunities(actor(request)) });
+});
+
+crmRouter.post("/opportunities", authMiddleware, requirePermission("organization:manage"), (request, response) => {
+  const parsed = opportunitySchema.safeParse(request.body || {});
+  if (!parsed.success) return response.status(400).json({ error: "Invalid opportunity request", issues: parsed.error.issues });
+  response.status(201).json({ data: businessOperationsService.createOpportunity(actor(request), parsed.data) });
+});
+
+crmRouter.patch("/opportunities/:id", authMiddleware, requirePermission("organization:manage"), (request, response) => {
+  const parsed = opportunityPatchSchema.safeParse(request.body || {});
+  if (!parsed.success) return response.status(400).json({ error: "Invalid opportunity update", issues: parsed.error.issues });
+  try {
+    response.json({ data: businessOperationsService.updateOpportunity(actor(request), String(request.params.id), parsed.data) });
+  } catch (error) {
+    response.status(404).json({ error: error instanceof Error ? error.message : "Opportunity not found" });
+  }
+});
+
 crmRouter.get("/customers", authMiddleware, async (request, response) => {
   const organizationId = request.session?.organizationId;
   response.json({ data: organizationId ? await crmService.listCustomers(organizationId) : [] });
@@ -100,3 +132,7 @@ crmRouter.post("/customers", authMiddleware, requirePermission("organization:man
   }
   response.status(201).json({ data: await crmService.createCustomer({ ...parsed.data, organizationId }) });
 });
+
+function actor(request: any) {
+  return { organizationId: request.session!.organizationId!, userId: request.session!.userId, role: request.session!.role };
+}

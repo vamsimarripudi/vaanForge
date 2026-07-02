@@ -240,6 +240,147 @@ export interface StoredCustomer {
   createdAt: string;
 }
 
+export interface StoredCrmCompany {
+  id: string;
+  companyId: string;
+  organizationId: string;
+  name: string;
+  domain?: string;
+  ownerId: string;
+  status: "active" | "archived";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredCrmContact {
+  id: string;
+  contactId: string;
+  organizationId: string;
+  companyId?: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  role?: string;
+  ownerId: string;
+  status: "active" | "archived";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredCrmOpportunity {
+  id: string;
+  opportunityId: string;
+  organizationId: string;
+  leadId?: string;
+  companyId?: string;
+  contactId?: string;
+  name: string;
+  stage: "NEW_LEAD" | "QUALIFIED" | "DEMO_SCHEDULED" | "PROPOSAL_SENT" | "NEGOTIATION" | "WON" | "CUSTOMER" | "LOST";
+  value: number;
+  probability: number;
+  expectedCloseDate?: string;
+  ownerId: string;
+  status: "open" | "won" | "lost";
+  activityHistory: Array<Record<string, unknown>>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredCrmTask {
+  id: string;
+  taskId: string;
+  organizationId: string;
+  targetType: "lead" | "contact" | "company" | "opportunity" | "customer";
+  targetId: string;
+  title: string;
+  dueDate: string;
+  ownerId: string;
+  status: "open" | "completed" | "blocked";
+  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredCustomerHealthScore {
+  id: string;
+  scoreId: string;
+  organizationId: string;
+  workspaceId?: string;
+  healthScore: number;
+  onboardingCompletion: number;
+  usageScore: number;
+  billingScore: number;
+  supportScore: number;
+  riskScore: number;
+  expansionOpportunity: "low" | "medium" | "high";
+  renewalProbability: number;
+  successManagerId?: string;
+  nextAction: string;
+  calculatedFrom: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface StoredSubscriptionOperation {
+  id: string;
+  operationId: string;
+  organizationId: string;
+  subscriptionId?: string;
+  operationType: "renewal_due" | "failed_payment" | "expired_plan" | "trial_ending" | "credits_low" | "cancellation_request" | "refund_request" | "grant_credits" | "extend_subscription" | "suspend_workspace" | "reactivate_workspace";
+  status: "open" | "completed" | "blocked";
+  ownerId: string;
+  dueDate: string;
+  evidence: Record<string, unknown>;
+  nextAction: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredProviderCostEvent {
+  id: string;
+  eventId: string;
+  organizationId: string;
+  workspaceId?: string;
+  provider: "openai" | "gemini" | "claude" | "groq" | "hugging_face" | "other";
+  requests: number;
+  inputTokens: number;
+  outputTokens: number;
+  latencyMs: number;
+  errors: number;
+  estimatedCost: number;
+  creditsConsumed: number;
+  projectId?: string;
+  agentId?: string;
+  createdAt: string;
+}
+
+export interface StoredInfrastructureCostEvent {
+  id: string;
+  eventId: string;
+  organizationId: string;
+  category: "compute" | "storage" | "bandwidth" | "cache" | "database" | "email" | "ai_provider" | "marketplace" | "support";
+  amount: number;
+  unit: string;
+  workspaceId?: string;
+  projectId?: string;
+  deploymentId?: string;
+  evidence: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface StoredBusinessReport {
+  id: string;
+  reportId: string;
+  organizationId: string;
+  reportType: "executive" | "finance" | "billing" | "support" | "marketplace" | "security" | "deployment" | "ai_usage" | "developer";
+  format: "PDF" | "CSV" | "EXCEL";
+  status: "READY" | "FAILED";
+  fileName: string;
+  mimeType: string;
+  content: string;
+  generatedBy: string;
+  createdAt: string;
+}
+
 export interface StoredSupportTicket {
   id: string;
   organizationId: string;
@@ -3182,6 +3323,15 @@ export interface StoreState {
   tasks: StoredTask[];
   leads: StoredLead[];
   customers: StoredCustomer[];
+  crmCompanies: StoredCrmCompany[];
+  crmContacts: StoredCrmContact[];
+  crmOpportunities: StoredCrmOpportunity[];
+  crmTasks: StoredCrmTask[];
+  customerHealthScores: StoredCustomerHealthScore[];
+  subscriptionOperations: StoredSubscriptionOperation[];
+  providerCostEvents: StoredProviderCostEvent[];
+  infrastructureCostEvents: StoredInfrastructureCostEvent[];
+  businessReports: StoredBusinessReport[];
   supportTickets: StoredSupportTicket[];
   ticketMessages: StoredTicketMessage[];
   supportAttachments: StoredSupportAttachment[];
@@ -3400,6 +3550,15 @@ export const store: StoreState = {
   tasks: [],
   leads: [],
   customers: [],
+  crmCompanies: [],
+  crmContacts: [],
+  crmOpportunities: [],
+  crmTasks: [],
+  customerHealthScores: [],
+  subscriptionOperations: [],
+  providerCostEvents: [],
+  infrastructureCostEvents: [],
+  businessReports: [],
   supportTickets: [],
   ticketMessages: [],
   supportAttachments: [],

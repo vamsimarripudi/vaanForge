@@ -21,6 +21,9 @@ const APP_ROUTES = new Set([
   "admin-releases", "admin-release-detail", "admin-monitoring", "admin-monitoring-services",
   "admin-monitoring-queues", "admin-monitoring-errors", "admin-monitoring-providers",
   "admin-alerts", "admin-customer-success", "admin-customer-account",
+  "admin-executive", "admin-business-crm", "admin-business-finance",
+  "admin-business-subscriptions", "admin-business-ai-costs",
+  "admin-business-infrastructure", "admin-business-reports",
   "feedback", "feedback-feature-requests", "feedback-bug-reports", "feedback-roadmap",
   "profile", "project-detail", "project-chat", "project-intake",
   "project-questions", "project-blueprint", "project-design",
@@ -150,6 +153,13 @@ function routeFromPath(pathname: string) {
   if (clean === "admin/alerts") return "admin-alerts";
   if (clean === "admin/customer-success") return "admin-customer-success";
   if (clean.startsWith("admin/customer-success/accounts/")) return "admin-customer-account";
+  if (clean === "admin/executive") return "admin-executive";
+  if (clean === "admin/business/crm") return "admin-business-crm";
+  if (clean === "admin/business/finance") return "admin-business-finance";
+  if (clean === "admin/business/subscriptions") return "admin-business-subscriptions";
+  if (clean === "admin/business/ai-costs") return "admin-business-ai-costs";
+  if (clean === "admin/business/infrastructure") return "admin-business-infrastructure";
+  if (clean === "admin/business/reports") return "admin-business-reports";
   if (clean === "feedback") return "feedback";
   if (clean === "feedback/feature-requests") return "feedback-feature-requests";
   if (clean === "feedback/bug-reports") return "feedback-bug-reports";
@@ -243,6 +253,13 @@ function pathFromRoute(route: string) {
     "admin-alerts": "/admin/alerts",
     "admin-customer-success": "/admin/customer-success",
     "admin-customer-account": "/admin/customer-success/accounts/account",
+    "admin-executive": "/admin/executive",
+    "admin-business-crm": "/admin/business/crm",
+    "admin-business-finance": "/admin/business/finance",
+    "admin-business-subscriptions": "/admin/business/subscriptions",
+    "admin-business-ai-costs": "/admin/business/ai-costs",
+    "admin-business-infrastructure": "/admin/business/infrastructure",
+    "admin-business-reports": "/admin/business/reports",
     feedback: "/feedback",
     "feedback-feature-requests": "/feedback/feature-requests",
     "feedback-bug-reports": "/feedback/bug-reports",
