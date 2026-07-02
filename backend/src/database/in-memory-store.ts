@@ -707,6 +707,44 @@ export interface StoredIntelligenceReport {
   createdAt: string;
 }
 
+export interface StoredMlScore {
+  id: string;
+  scoreId: string;
+  organizationId: string;
+  workspaceId?: string;
+  engineName: string;
+  engineType: "heuristic" | "model";
+  modelVersion?: string;
+  ruleVersion: string;
+  taskType: string;
+  score: number;
+  confidence: number;
+  explanation: string;
+  evidence: Record<string, unknown>;
+  recommendedAction: string;
+  inputHash: string;
+  createdBy: string;
+  createdAt: string;
+}
+
+export interface StoredProofRecord {
+  id: string;
+  proofId: string;
+  organizationId: string;
+  workspaceId?: string;
+  eventType: "blueprint.approved" | "agent_output.finalized" | "generated_file.approved" | "deployment.released" | "invoice.issued" | "marketplace_app.published" | "legal_policy.accepted" | "release_notes.published";
+  entityType: string;
+  entityId: string;
+  contentHash: string;
+  provider: "local" | "future_blockchain";
+  providerTransactionId?: string;
+  verificationStatus: "pending" | "verified" | "failed";
+  metadata: Record<string, unknown>;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface StoredSupportTicket {
   id: string;
   organizationId: string;
@@ -3681,6 +3719,8 @@ export interface StoreState {
   inspectionRuns: StoredInspectionRun[];
   inspectionResults: StoredInspectionResult[];
   intelligenceReports: StoredIntelligenceReport[];
+  mlScores: StoredMlScore[];
+  proofRecords: StoredProofRecord[];
   supportTickets: StoredSupportTicket[];
   ticketMessages: StoredTicketMessage[];
   supportAttachments: StoredSupportAttachment[];
@@ -3931,6 +3971,8 @@ export const store: StoreState = {
   inspectionRuns: [],
   inspectionResults: [],
   intelligenceReports: [],
+  mlScores: [],
+  proofRecords: [],
   supportTickets: [],
   ticketMessages: [],
   supportAttachments: [],

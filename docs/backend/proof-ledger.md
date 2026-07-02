@@ -1,13 +1,36 @@
 # Proof Ledger
 
-The proof ledger stores only hashes and metadata.
+VaanForge proof records provide tamper-evident metadata for critical product events.
 
-It must never store:
+## Supported Events
 
-- source code
-- customer data
-- secrets
-- private files
-- raw invoices
+- Blueprint approved
+- Agent output finalized
+- Generated file approved
+- Deployment released
+- Invoice issued
+- Marketplace app published
+- Legal policy accepted
+- Release notes published
 
-If no blockchain provider is configured, records use `local-ledger` provider mode. This is intentional and avoids fake blockchain transaction claims.
+## Storage Rules
+
+Proof records store only:
+
+- SHA-256 hashes
+- event metadata
+- entity references
+- verification status
+- provider transaction ID when a real provider exists
+
+Proof records must never store customer data, source code, uploaded files, secrets, private prompts, or provider keys.
+
+## Providers
+
+Current provider: `local`
+
+The local provider stores proof metadata in the application ledger and verifies hash format and record integrity. It does not claim an on-chain transaction and does not fabricate transaction IDs.
+
+Future provider: blockchain adapter interface
+
+Any future blockchain adapter must implement the same `ProofProvider` contract and return a real transaction ID only after successful provider confirmation.

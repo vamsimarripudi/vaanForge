@@ -40,6 +40,8 @@ import { developerGatewayRouter, developerPlatformRouter } from "./modules/devel
 import { marketplaceAdminRouter, marketplacePublisherRouter, marketplaceRouter, marketplaceWorkspaceRouter } from "./modules/marketplace/marketplace.routes";
 import { adminFactoryRouter, factoryRouter } from "./modules/factory/factory.routes";
 import { enterpriseCompletionRouter } from "./modules/enterprise-completion/enterprise-completion.routes";
+import { mlRouter } from "./modules/ml/ml.routes";
+import { proofLedgerRouter } from "./modules/proof-ledger/proof-ledger.routes";
 import { adminSupportRouter, apiKeysRouter, accountSettingsRouter, customerSupportRouter, profileRouter } from "./modules/account/account.routes";
 import {
   docsAdminRouter,
@@ -212,6 +214,8 @@ apiRouter.use("/admin/marketplace", marketplaceAdminRouter);
 apiRouter.use("/builder/workspace", marketplaceWorkspaceRouter);
 apiRouter.use("/factory", factoryRouter);
 apiRouter.use("/admin/factory", adminFactoryRouter);
+apiRouter.use("/ml", mlRouter);
+apiRouter.use("/proof-records", proofLedgerRouter);
 apiRouter.use("/", enterpriseCompletionRouter);
 
 apiRouter.use("/organizations", organizationsAliasRouter);
