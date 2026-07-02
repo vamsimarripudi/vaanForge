@@ -381,6 +381,192 @@ export interface StoredBusinessReport {
   createdAt: string;
 }
 
+export interface StoredEngineeringProject {
+  id: string;
+  engineeringProjectId: string;
+  organizationId: string;
+  projectId: string;
+  projectOwnerId: string;
+  techLeadId: string;
+  productOwnerId: string;
+  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  status: "planning" | "active" | "blocked" | "release_candidate" | "released" | "archived";
+  architectureVersion: string;
+  releaseVersion: string;
+  documentationStatus: "missing" | "draft" | "current" | "stale";
+  securityStatus: "not_reviewed" | "reviewing" | "approved" | "risk_accepted" | "blocked";
+  riskScore: number;
+  completionPercent: number;
+  dependencies: string[];
+  technicalDebtScore: number;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredEngineeringMetric {
+  id: string;
+  metricId: string;
+  organizationId: string;
+  metricName: string;
+  value: number;
+  unit: string;
+  source: string;
+  projectId?: string;
+  createdAt: string;
+}
+
+export interface StoredTechnicalDebt {
+  id: string;
+  debtId: string;
+  organizationId: string;
+  title: string;
+  description: string;
+  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  ownerId: string;
+  impact: string;
+  estimatedEffort: string;
+  relatedProjectId?: string;
+  status: "open" | "assigned" | "in_progress" | "resolved" | "accepted";
+  risk: "low" | "medium" | "high" | "critical";
+  targetSprint?: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredArchitectureReview {
+  id: string;
+  reviewId: string;
+  organizationId: string;
+  projectId: string;
+  architectureVersion: string;
+  reviewerId: string;
+  status: "requested" | "in_review" | "approved" | "changes_requested" | "rejected";
+  findings: string[];
+  evidence: Record<string, unknown>;
+  nextAction: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredArchitectureDecision {
+  id: string;
+  adrId: string;
+  organizationId: string;
+  projectId?: string;
+  title: string;
+  context: string;
+  decision: string;
+  consequences: string;
+  status: "draft" | "proposed" | "approved" | "superseded" | "rejected";
+  version: string;
+  ownerId: string;
+  approvalHistory: Array<Record<string, unknown>>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredReleasePipeline {
+  id: string;
+  pipelineId: string;
+  organizationId: string;
+  releaseId: string;
+  stage: "development" | "internal_qa" | "security_review" | "release_candidate" | "beta" | "general_availability" | "hotfix" | "patch" | "lts";
+  status: "pending" | "in_progress" | "approved" | "blocked" | "completed";
+  approvalRequired: boolean;
+  rollbackPlan: string;
+  validationReportId?: string;
+  documentationUrl?: string;
+  migrationNotes: string;
+  ownerId: string;
+  nextAction: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredEnvironmentRegistry {
+  id: string;
+  environmentId: string;
+  organizationId: string;
+  name: "development" | "testing" | "staging" | "production" | "sandbox" | "preview";
+  status: "healthy" | "degraded" | "blocked" | "maintenance";
+  region: string;
+  ownerId: string;
+  providerReadiness: "ready" | "degraded" | "missing_configuration";
+  secretsStatus: "configured" | "missing" | "rotation_due";
+  databaseStatus: "healthy" | "degraded" | "down";
+  storageStatus: "healthy" | "degraded" | "down";
+  queueStatus: "healthy" | "degraded" | "down";
+  workerStatus: "healthy" | "degraded" | "down";
+  deploymentStatus: "idle" | "deploying" | "failed";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredEnvironmentHealth {
+  id: string;
+  healthId: string;
+  organizationId: string;
+  environmentId: string;
+  status: "healthy" | "degraded" | "down";
+  latencyMs?: number;
+  evidence: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface StoredMigrationHistory {
+  id: string;
+  migrationId: string;
+  organizationId: string;
+  version: string;
+  name: string;
+  status: "pending" | "applied" | "failed" | "rolled_back";
+  appliedAt?: string;
+  rolledBackAt?: string;
+  rollbackPlan: string;
+  ownerId: string;
+  evidence: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredDatabaseMetric {
+  id: string;
+  metricId: string;
+  organizationId: string;
+  metricName: "index_health" | "query_performance" | "unused_tables" | "unused_columns" | "storage_growth";
+  value: number;
+  unit: string;
+  evidence: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface StoredEngineeringReport {
+  id: string;
+  reportId: string;
+  organizationId: string;
+  reportType: "engineering_dashboard" | "architecture_compliance" | "code_quality" | "technical_debt" | "release_pipeline" | "database_governance";
+  status: "READY" | "FAILED";
+  content: Record<string, unknown>;
+  generatedBy: string;
+  createdAt: string;
+}
+
+export interface StoredFeatureFlag {
+  id: string;
+  flagId: string;
+  organizationId: string;
+  key: string;
+  description: string;
+  enabled: boolean;
+  environment: "development" | "testing" | "staging" | "production" | "sandbox" | "preview";
+  rolloutPercent: number;
+  ownerId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface StoredSupportTicket {
   id: string;
   organizationId: string;
@@ -3332,6 +3518,18 @@ export interface StoreState {
   providerCostEvents: StoredProviderCostEvent[];
   infrastructureCostEvents: StoredInfrastructureCostEvent[];
   businessReports: StoredBusinessReport[];
+  engineeringProjects: StoredEngineeringProject[];
+  engineeringMetrics: StoredEngineeringMetric[];
+  technicalDebt: StoredTechnicalDebt[];
+  architectureReviews: StoredArchitectureReview[];
+  architectureDecisions: StoredArchitectureDecision[];
+  releasePipeline: StoredReleasePipeline[];
+  environmentRegistry: StoredEnvironmentRegistry[];
+  environmentHealth: StoredEnvironmentHealth[];
+  migrationHistory: StoredMigrationHistory[];
+  databaseMetrics: StoredDatabaseMetric[];
+  engineeringReports: StoredEngineeringReport[];
+  featureFlags: StoredFeatureFlag[];
   supportTickets: StoredSupportTicket[];
   ticketMessages: StoredTicketMessage[];
   supportAttachments: StoredSupportAttachment[];
@@ -3559,6 +3757,18 @@ export const store: StoreState = {
   providerCostEvents: [],
   infrastructureCostEvents: [],
   businessReports: [],
+  engineeringProjects: [],
+  engineeringMetrics: [],
+  technicalDebt: [],
+  architectureReviews: [],
+  architectureDecisions: [],
+  releasePipeline: [],
+  environmentRegistry: [],
+  environmentHealth: [],
+  migrationHistory: [],
+  databaseMetrics: [],
+  engineeringReports: [],
+  featureFlags: [],
   supportTickets: [],
   ticketMessages: [],
   supportAttachments: [],

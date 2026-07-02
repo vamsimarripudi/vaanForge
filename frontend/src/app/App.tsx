@@ -24,6 +24,11 @@ const APP_ROUTES = new Set([
   "admin-executive", "admin-business-crm", "admin-business-finance",
   "admin-business-subscriptions", "admin-business-ai-costs",
   "admin-business-infrastructure", "admin-business-reports",
+  "admin-engineering", "admin-engineering-projects", "admin-engineering-architecture",
+  "admin-engineering-quality", "admin-engineering-debt", "admin-engineering-releases",
+  "admin-engineering-environments", "admin-engineering-database",
+  "admin-engineering-analytics", "admin-engineering-governance",
+  "admin-engineering-admin-tools",
   "feedback", "feedback-feature-requests", "feedback-bug-reports", "feedback-roadmap",
   "profile", "project-detail", "project-chat", "project-intake",
   "project-questions", "project-blueprint", "project-design",
@@ -160,6 +165,17 @@ function routeFromPath(pathname: string) {
   if (clean === "admin/business/ai-costs") return "admin-business-ai-costs";
   if (clean === "admin/business/infrastructure") return "admin-business-infrastructure";
   if (clean === "admin/business/reports") return "admin-business-reports";
+  if (clean === "admin/engineering") return "admin-engineering";
+  if (clean === "admin/engineering/projects") return "admin-engineering-projects";
+  if (clean === "admin/engineering/architecture") return "admin-engineering-architecture";
+  if (clean === "admin/engineering/quality") return "admin-engineering-quality";
+  if (clean === "admin/engineering/technical-debt") return "admin-engineering-debt";
+  if (clean === "admin/engineering/release-pipeline") return "admin-engineering-releases";
+  if (clean === "admin/engineering/environments") return "admin-engineering-environments";
+  if (clean === "admin/engineering/database") return "admin-engineering-database";
+  if (clean === "admin/engineering/analytics") return "admin-engineering-analytics";
+  if (clean === "admin/engineering/governance") return "admin-engineering-governance";
+  if (clean === "admin/engineering/admin-tools") return "admin-engineering-admin-tools";
   if (clean === "feedback") return "feedback";
   if (clean === "feedback/feature-requests") return "feedback-feature-requests";
   if (clean === "feedback/bug-reports") return "feedback-bug-reports";
@@ -260,6 +276,17 @@ function pathFromRoute(route: string) {
     "admin-business-ai-costs": "/admin/business/ai-costs",
     "admin-business-infrastructure": "/admin/business/infrastructure",
     "admin-business-reports": "/admin/business/reports",
+    "admin-engineering": "/admin/engineering",
+    "admin-engineering-projects": "/admin/engineering/projects",
+    "admin-engineering-architecture": "/admin/engineering/architecture",
+    "admin-engineering-quality": "/admin/engineering/quality",
+    "admin-engineering-debt": "/admin/engineering/technical-debt",
+    "admin-engineering-releases": "/admin/engineering/release-pipeline",
+    "admin-engineering-environments": "/admin/engineering/environments",
+    "admin-engineering-database": "/admin/engineering/database",
+    "admin-engineering-analytics": "/admin/engineering/analytics",
+    "admin-engineering-governance": "/admin/engineering/governance",
+    "admin-engineering-admin-tools": "/admin/engineering/admin-tools",
     feedback: "/feedback",
     "feedback-feature-requests": "/feedback/feature-requests",
     "feedback-bug-reports": "/feedback/bug-reports",
